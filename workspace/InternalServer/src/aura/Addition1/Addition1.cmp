@@ -1,0 +1,12 @@
+<aura:component implements="force:appHostable">
+ <form>
+    <fieldset>
+    Enter three values:<br/>
+    <ui:inputNumber aura:id="inputOne" label="Input One" /><br/>
+    <ui:inputNumber aura:id="inputTwo" label="Input Two"/><br/>
+    <ui:inputNumber aura:id="inputThree" label="Input Three"/><br/>
+    <ui:button label="Calculate value" press="{!c.calculate}"/><br/>
+    <ui:outputNumber aura:id="totalValue" value=""/>
+   </fieldset>
+ </form>
+</aura:component>

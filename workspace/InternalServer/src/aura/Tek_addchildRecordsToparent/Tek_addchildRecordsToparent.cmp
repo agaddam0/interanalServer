@@ -1,0 +1,27 @@
+<aura:component controller='addChildRecordsController' Implements="flexipage:availableForRecordHome,force:hasRecordId">
+	<aura:attribute name='ChildRecordList' type='list'> </aura:attribute>
+    <aura:handler Name='init' action='{!c.doInit}' value='{!this}'></aura:handler>
+     <div class="slds-m-around--x-small">
+           <div class="slds-grid slds-grid--align-end slds-m-around--x-small">
+          <button class="slds-button slds-button--brand" onclick="{!c.addSelected}">Add Records</button>
+        </div>
+    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped">
+        <thead>
+            <tr >
+               <th>contact name</th>
+               <th>Email</th>
+               <th>Select</th>
+            </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items='{!v.ChildRecordList}' var='child'>
+                 <tr class="slds-hint-parent">
+                    <td><div class="slds-truncate">{!child.Name}</div></td>
+                     <td><div class="slds-truncate">{!child.Email}</div></td>
+                     <td><ui:inputCheckbox aura:id="checkBox" text="{!child.Id}" /> </td> 
+                </tr>
+            </aura:iteration>
+        </tbody>
+    </table>
+    </div>
+</aura:component>

@@ -1,0 +1,114 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction"
+                access="global"  controller='Tek_Poc1'>
+    <aura:attribute Name='contact' type='contact[]' ></aura:attribute>
+    <aura:attribute Name='Lead' type='Lead[]' ></aura:attribute>
+    <aura:handler name='init' action='{!c.doInit}' value='{!this}'></aura:handler>
+    <!--section 1 start-->  
+    <div class="slds-section slds-is-open" aura:id="fruitsSection">
+        <!--section header-->
+        <h3 class="slds-section__title">
+            <button aria-controls="fruitsList" class="slds-button slds-section__title-action">
+                <span onclick="{!c.toggleSection}" data-auraId="fruitsSection">
+                    <lightning:icon iconName="utility:switch"
+                                    size="x-small"
+                                    class="slds-section__title-action-icon slds-button__icon_left"
+                                    alternativeText="button icon" 
+                                    />
+                </span>
+                <span class="slds-truncate" title="Fruits">AccountList</span>
+            </button>
+        </h3>
+        <!--section body-->
+        <div class="slds-section__content" id="fruitsList">
+            
+            <c:Tek_POC1/>
+        </div>
+    </div>
+    <!--section 1 end-->
+    
+    <!--section 2 start-->  
+    <div class="slds-section slds-is-open" aura:id="VegetablesSection">
+        <!--section header-->
+        <h3 class="slds-section__title">
+            <button aria-controls="VegetablesId" class="slds-button slds-section__title-action">
+                <span onclick="{!c.toggleSection}" data-auraId="VegetablesSection">
+                    <lightning:icon iconName="utility:switch"
+                                    alternativeText="button icon"
+                                    size="x-small"
+                                    class="slds-section__title-action-icon slds-button__icon_left"/>
+                </span>
+                <span class="slds-truncate" title="Vegetables">ContactList</span>
+            </button>
+        </h3>
+        <!--section body-->
+        <div class="slds-section__content" id="VegetablesId">
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+        <thead>
+        <tr class="slds-line">
+        <th class="" scope="col">
+        <div class="slds-truncate" title="Contact Name">Contact Name</div>
+        </th>
+        <th class="" scope="col">
+        <div class="slds-truncate" title="Account Name">Account Name</div>
+        </th>
+        
+        </tr>
+        </thead>
+        <tbody>
+               <aura:iteration var="con" items="{!v.contact}">
+                <tr colomun='2'>
+                   <td> <a target="_blank" href="{!'/'+con.Id}">{!con.Name}</a>
+                   </td>
+                   <td> {!con.Account.Name}</td>
+                </tr>
+            </aura:iteration> 
+        </tbody> 
+    </table>     
+        </div>
+    </div>
+    <!--section 2 end-->
+    
+    <!--section 3 start-->  
+    <div class="slds-section slds-is-open" aura:id="colorSection">
+        <!--section header-->
+        <h3 class="slds-section__title">
+            <button aria-controls="VegetablesId" class="slds-button slds-section__title-action">
+                <span onclick="{!c.toggleSection}" data-auraId="colorSection">
+                    <lightning:icon iconName="utility:switch"
+                                    alternativeText="button icon"
+                                    size="x-small"
+                                    class="slds-section__title-action-icon slds-button__icon_left"/>
+                </span>
+                <span class="slds-truncate" title="Vegetables">LeadList</span>
+            </button>
+        </h3>
+        <!--section body-->
+        <div class="slds-section__content" id="VegetablesId">
+              <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+        <thead>
+        <tr class="slds-line-height_reset">
+        <th class="" scope="col">
+        <div class="slds-truncate slds-text-align--left" title="Account Name">Name</div>
+        </th>
+        <th class="" scope="col">
+        <div class="slds-truncate" title="Account Type">Status</div>
+        </th>
+        
+        </tr>
+        </thead>
+        <tbody>
+               <aura:iteration var="lead" items="{!v.Lead}">
+                <tr>
+                    <td> <a target="_blank" href="{!'/'+lead.Id}">{!lead.Name}</a></td>
+                    <td> {!lead.Status}</td>
+                </tr>
+            </aura:iteration> 
+        </tbody> 
+    </table>     
+        </div>
+    </div>
+    <!--section 3 end-->
+    <aura:iteration items="1,2,3,4,5" var="item">
+    <meter value="{!item}"/>
+  </aura:iteration>
+</aura:component>

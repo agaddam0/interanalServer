@@ -1,0 +1,11 @@
+<aura:component >
+	<aura:attribute name="text" type="String" default="Just a string. Waiting for change."/>
+<input type="button" value="Flawed HTML Button"
+onclick="alert('this will not work')"/>
+<br/>
+<ui:button label="Framework Button" press="{!c.handleClick}"/>
+122
+Communicating with Events Handling Events with Client-Side Controllers
+<br/>
+{!v.text}
+</aura:component>

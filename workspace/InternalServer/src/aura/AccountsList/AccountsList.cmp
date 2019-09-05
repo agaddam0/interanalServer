@@ -1,0 +1,39 @@
+<aura:component controller="AccountsListController" implements="flexipage:availableForAllPageTypes">
+  <link href="/resource/Bootstrap_3_3_2/bootstrap-3.3.2-dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link class="user" href="/resource/Bootstrap_3_3_2/bootstrap-3.3.2-dist/css/bootstrap-theme.min.css" 
+              rel="stylesheet" type="text/css" /> 
+        
+  <aura:attribute name="accounts" type="Account[]" />
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <table class="table">
+            <thead > 
+              
+                    <tr class="slds-text-title--caps">
+                      <th scope="col">
+                        <div class="slds-truncate" title="Expenses Name"> Name</div>
+                      </th>
+                     
+                      <th scope="col">
+                        <div class="slds-truncate" title="Amount">Industry</div>
+                      </th>
+                      <th scope="col">
+                        <div class="slds-truncate" title="Date">CreatedDate</div>
+                      </th>
+                     
+                    </tr>
+              </thead>
+            <tbody>
+            <aura:iteration var="accounts" items="{!v.accounts}">
+                <tr>
+                    <td><a href="#"> {!accounts.Name}</a></td>
+                   <td> {!accounts.Industry}</td>
+                   <td> {!accounts.CreatedDate}</td>
+                 
+                   
+                                                                                  </tr>
+            </aura:iteration> 
+        </tbody> 
+        </table>
+
+	
+</aura:component>

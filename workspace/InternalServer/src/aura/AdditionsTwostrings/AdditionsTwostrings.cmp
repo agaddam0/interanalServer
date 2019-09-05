@@ -1,0 +1,9 @@
+<aura:component >
+	<aura:attribute name="stringOne" type="string"  ></aura:attribute>
+    <aura:attribute name="stringTwo" type="string"  ></aura:attribute>
+    <aura:attribute name="sumTwo"    type="string"  ></aura:attribute>
+    {!v.sumTwo}={!v.stringOne}+{!v.stringTwo}
+    <ui:button label="Add Numbers" press="{!c.add}"/>
+
+    
+</aura:component>

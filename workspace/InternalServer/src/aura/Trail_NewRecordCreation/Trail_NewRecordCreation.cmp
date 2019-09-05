@@ -1,0 +1,45 @@
+<aura:component implements="force:appHostable" controller="TrailObject_Utility">
+    <ltng:require styles="/resource/SLDS0122/assets/styles/salesforce-lightning-design-system.min.css"/>
+<aura:attribute name="newTrail" type="Trail__c"
+     default="{ 'sobjectType': 'Trail',
+                     'Name': '',
+                   }"/>
+
+<div>
+    <form>
+  <div>
+  <ui:inputText aura:id="TName" label="New Trail Name"
+                        class="slds-input"
+                        labelClass="slds-form-element__label"
+                        value="{!v.newTrail.Name}"
+                        required="true"/>
+    <ui:inputText aura:id="Tdescription" label="New Account Name"
+                        class="slds-input"
+                        labelClass="slds-form-element__label"
+                        value="{!v.newTrail.Description__c}"
+                        required="true"/>
+    <ui:inputText aura:id="Tdistance" label="New Account Name"
+                        class="slds-input"
+                        labelClass="slds-form-element__label"
+                        value="{!v.newTrail.Distance__c}"
+                        required="true"/>
+    <ui:inputText aura:id="TlId" label="New Account Name"
+                        class="slds-input"
+                        labelClass="slds-form-element__label"
+                        value="{!v.newTrail.Last_Inspection_Date__c}"
+                        required="true"/>
+         </div>
+        <div>
+    <ui:button label="Submit" 
+                       class="slds-button slds-button--neutral"
+                       labelClass="label"
+                       press="{!c.createTrail}"/>
+              <ui:button label="Cancel" 
+                       class="slds-button slds-button--neutral"
+                       labelClass="label"
+                       press="{!c.Close}"/>
+           </div>
+    </form>
+  </div>
+	
+</aura:component>

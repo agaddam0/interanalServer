@@ -1,0 +1,13 @@
+<aura:component >
+    <aura:attribute name="Accounts" Type="Object"></aura:attribute>
+    <aura:attribute name="mycolumns" Type="List"></aura:attribute>
+    <aura:registerEvent name="totalincome" type="c:Tek_lightningEventComponent"></aura:registerEvent>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="totalincome"  event="c:Tek_lightningEventComponent" action="{!c.handledlightningEventComponent}" />
+    <lightning:card title="calculate income" iconName="standard account">
+         <aura:set attribute="actions">
+            <!-- Action to toggle display of income form -->
+            <lightning:button label="Show/Hide Income Form" onclick="{!c.toggleIncomeForm}" />
+        </aura:set>
+    </lightning:card>
+</aura:component>

@@ -1,0 +1,18 @@
+.THIS.th{
+     border:2px;
+}
+.THIS .red {
+
+    color: red;
+    border:8px;
+    padding:2px;
+
+}
+th.THIS {
+    border-collapse: collapse;
+     border: 1px solid black;
+}
+
+.THIS.table{
+    border: 1px solid black;
+}

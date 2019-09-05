@@ -1,0 +1,46 @@
+<!--
+          ** Component Details***
+         Name: CreateCandidateRecord
+         Type: Lightning Component 
+         Purpose: Component to create records
+-->
+
+
+<aura:component controller="CreateCandidateRecord" 
+				implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes" 
+				access="global" >
+    
+    <!-- Include Static Resource-->
+    <ltng:require styles="/resource/BootStrap/css/bootstrap.min.css" 
+				  scripts="/resource/bootstrap/js/jquery.js,/resource/bootstrap/js/bootstrap.min.js"/>
+    
+    <!-- Define Attribute-->
+    <aura:attribute name="candidate" type="Expense__c" default="{'sobjectType': 'Expense__c',
+                         'Name': '',
+                         'Amount__c': '',
+                         'Client__c': '', 
+                         'Reimbursed__C': ''
+                       }"/>
+    <div class="container-fluid">
+        <h3>Please Enter The Candidate Information</h3>
+        <div class="form-group">
+            <label>Name</label>
+            <ui:inputText class="form-control" value="{!v.candidate.name}"/>
+        </div>
+        <div class="form-group">
+            <label>Amount</label>
+            <ui:inputNumber class="form-control" value="{!v.candidate.Amount__c}"/>
+        </div>
+        <div class="form-group">
+            <label>client</label>
+            <ui:inputText class="form-control" value="{!v.candidate.Client__c}"/>
+        </div>
+        <div class="form-group">
+            <label>Reimbursed</label>
+            <ui:inputCheckbox class="form-control" value="{!v.candidate.Reimbursed__c}"/>
+        </div>
+    </div>
+    <div class="col-md-4 text-center">
+        <ui:button class="btn btn-default" press="{!c.create}">Create</ui:button>
+  </div>
+</aura:component>

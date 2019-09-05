@@ -1,0 +1,4 @@
+<aura:component >
+	<p>Hallo World</p>
+    <h2>Accenture india private ltd.</h2>
+</aura:component>

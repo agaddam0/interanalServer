@@ -1,0 +1,14 @@
+<aura:component >
+<aura:attribute name="contact" type="Contact"/>
+<!-- If you’re using a namespace,use {!v.contact.myNamespace__Level__c} instead -->
+<div class="{!v.contact.Level__c == 'Primary'? 'row primary' : 'row '}" >
+<div onclick="{!c.gotoRecord}">
+<force:recordView recordId="{!v.contact.Id}" type="MINI"/>
+</div>
+<!-- Open the record edit page when the button is clicked -->
+<ui:button label="Edit" press="{!c.editRecord}"/>
+<!-- Navigate to the related list when the button is clicked -->
+    
+<ui:button label="View Cases" press="{!c.relatedList}"/>
+</div>
+</aura:component>
