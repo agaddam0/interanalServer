@@ -4,5 +4,5 @@ public class AccountAura {
     {
       return [SELECT Id, NAME,phone,type FROM Account ] ;
    }
-   // ashok gaddam reddy demo
+   // internal server checking
 }
