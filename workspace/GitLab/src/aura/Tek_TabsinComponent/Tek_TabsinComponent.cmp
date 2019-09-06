@@ -1,0 +1,40 @@
+<aura:component implements="force:appHostable,flexipage:availableForRecordHome,force:hasRecordId" access="global" controller="Tek_ContactList">
+	<aura:attribute name='AccountList' Type='account[]' ></aura:attribute>
+    <aura:attribute name='contactList' Type='Contact[]' ></aura:attribute>
+    <aura:attribute name='OpportunityList' Type='Opportunity[]' ></aura:attribute>
+    <aura:attribute name='LeadList' Type='Lead[]' ></aura:attribute>
+    <aura:handler name="init" value="{!this}"  action="{!c.doInit}"></aura:handler>
+    
+    <aura:attribute name="selTabId" type="String" default="1" />
+    
+    
+    <lightning:tabset aura:id="tabs" selectedTabId="{!v.selTabId}">
+       <lightning:tab label="Account Details"  id="1"  >
+           <p>Account Records</p>
+           <aura:iteration var="acc" items="{!v.AccountList}">
+               {!acc.Name}<br/>           
+           </aura:iteration>
+       </lightning:tab>
+        <lightning:tab label="Contact Details"  id="2"  onactive="{!c.getcontacts}" class="red">
+           <p>Contact Records</p>
+            <aura:iteration var="con" items="{!v.contactList}">
+               {!con.Name}<br/>           
+           </aura:iteration>
+       </lightning:tab>
+        <lightning:tab label="Opportunity Details"  id="3" onactive="{!c.getopps}">
+           <p>Opportunity Records</p>
+            <aura:iteration var="opp" items="{!v.OpportunityList}">
+               {!opp.Name}<br/>           
+           </aura:iteration>
+       </lightning:tab>
+        <lightning:tab label="Lead Details"  id="4" onactive="{!c.getleads}">
+           <p>Lead Records</p>
+            <aura:iteration var="led" items="{!v.LeadList}">
+               {!led.Name}<br/>           
+           </aura:iteration>
+       </lightning:tab>
+    </lightning:tabset>
+    <br/>
+    <lightning:button  variant="brand" label="Next" onclick="{!c.handleClick}"></lightning:button>
+    <lightning:button variant="brand" label="Back" disabled="{!v.selTabId == '1'}" onclick="{!c.Back}" ></lightning:button>
+</aura:component>

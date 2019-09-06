@@ -1,0 +1,15 @@
+<apex:page sidebar="false" showHeader="false" standardcontroller="Expense__c">
+    <apex:includeScript value="/lightning/lightning.out.js" />
+<div id="lightning" />
+
+    <script>
+        $Lightning.use("c:expensesApp", function() {
+          $Lightning.createComponent("c:expenses",
+          { label : "" },
+          "lightning",
+          function(cmp) {
+            // do some stuff
+          });
+        });
+    </script>
+</apex:page>

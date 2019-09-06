@@ -1,0 +1,6 @@
+<aura:component >
+    <aura:attribute name="whichButton" type="String" />
+    <p>You clicked: {!v.whichButton}</p>
+    <ui:button aura:id="button1" label="Click me" press="{!c.nameThatButton}"/>
+    <ui:button aura:id="button2" label="Click me too" press="{!c.nameThatButton}"/>
+</aura:component>

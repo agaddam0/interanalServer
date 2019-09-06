@@ -1,0 +1,15 @@
+.THIS.white  {
+       font-family: "Times New Roman", Times, serif;
+      background-color: lightblue;
+}
+.THIS.table  {
+       font-family: "Times New Roman", Times, serif;
+      background-color: pink;
+      border: 1px solid black;
+      border-collapse: collapse;
+      width: 70%;
+      height: 100%;
+      text-align: left;
+     vertical-align: bottom;
+
+}

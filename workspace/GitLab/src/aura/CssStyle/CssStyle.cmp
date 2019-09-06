@@ -1,0 +1,16 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes" access="global"  >
+<div class="white">
+   Hello, HTML!
+</div>
+ <h2>Check out the style in this list.</h2>
+ <ul>
+
+    <li class="red">I'm quite.</li>
+
+    <li class="blue">I'm blue.</li>
+
+    <li class="green">I'm green.</li>
+
+  </ul>
+
+</aura:component>

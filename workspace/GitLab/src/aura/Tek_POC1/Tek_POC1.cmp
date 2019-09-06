@@ -1,0 +1,30 @@
+<aura:component controller='Tek_Poc1'  implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes" 
+				access="global" >
+
+
+    <aura:attribute name='Account' type='Account[]'></aura:attribute>
+    <aura:handler name='init' action='{!c.doInit}' value='{!this}'></aura:handler>
+    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+        <thead>
+        <tr class="slds-line-height_reset">
+        <th class="" scope="col">
+        <div class="slds-truncate" title="Account Name">Account Name</div>
+        </th>
+        <th class="" scope="col">
+        <div class="slds-truncate" title="Account Type">Type</div>
+        </th>
+        
+        </tr>
+        </thead>
+        <tbody>
+               <aura:iteration var="contacts" items="{!v.Account}">
+                <tr>
+                    
+                   <td> {!contacts.Name}</td>
+                   <td> {!contacts.Type}</td>
+                </tr>
+            </aura:iteration> 
+        </tbody> 
+    </table>     
+	
+</aura:component>

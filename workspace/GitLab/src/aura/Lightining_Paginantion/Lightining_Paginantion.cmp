@@ -1,0 +1,49 @@
+<aura:component controller="AccountPagination">
+  
+     <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+     <aura:attribute name="acccountList"   type="Account[]" />
+     <aura:attribute name="paginationList" type="Account[]"/>
+     <aura:attribute name="pageSize" 		type="Integer" default="10"/>
+     <aura:attribute name="totalSize" 		type="Integer"/>
+     <aura:attribute name="start" 			type="Integer" />
+     <aura:attribute name="end" 			type="Integer"/>
+    
+    <table class="table" >
+        <thead>
+           
+            <tr class="table">
+                      <td scope="col">
+                        <div class="slds-truncate" title=" Name">Account Name</div>
+                      </td>
+                     
+                     <td scope="col">
+                        <div class="slds-truncate" title="Rating">Rating</div>
+                      </td>
+                     
+                      <td scope="col">
+                        <div class="slds-truncate" title="Ownership">Ownership</div>
+                      </td>
+                       <td scope="col">
+                        <div class="slds-truncate" title="Type">Type</div>
+                      </td>
+                       <td scope="col">
+                        <div class="slds-truncate" title="Industry">Industry</div>
+                      </td>
+                    </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.paginationList}" var="item">
+               <tr>
+                     <td><a href="#"> {!item.Name}</a></td>
+                    <td> {!item.Rating}</td>
+                   <td> {!item.Ownership}</td>
+                   <td> {!item.Type}</td>
+                   <td> {!item.Industry}</td>
+               
+                </tr>
+            </aura:iteration>
+            <lightning:button label="Previous" disabled="{!v.start == 0}"  onclick="{!c.previous}" />
+            <lightning:button label="Next" disabled="{!v.end >= v.totalSize}" onclick="{!c.next}" />
+        </tbody>
+ </table>
+</aura:component>

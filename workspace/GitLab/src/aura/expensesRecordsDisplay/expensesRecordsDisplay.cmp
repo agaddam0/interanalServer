@@ -1,0 +1,43 @@
+<aura:component controller="expensesRecordsDisplay">
+	<p class="white" >Display Expenses Records</p >
+    <aura:attribute name="Expenses" type="Expense__c[]" ></aura:attribute>
+    <ui:button label="Get Expenses" press="{!c.getOpps}"/>
+   
+    	<table class="table">
+            <thead > 
+              
+                    <tr class="slds-text-title--caps">
+                      <th scope="col">
+                        <div class="slds-truncate" title="Expenses Name">Expenses Name</div>
+                      </th>
+                     
+                      <th scope="col">
+                        <div class="slds-truncate" title="Amount">Amount</div>
+                      </th>
+                      <th scope="col">
+                        <div class="slds-truncate" title="Date">Date</div>
+                      </th>
+                     
+                      <th scope="col">
+                        <div class="slds-truncate" title="Client">Client</div>
+                      </th>
+                       <th scope="col">
+                        <div class="slds-truncate" title="Reimbursed?">Reimbursed?</div>
+                      </th>
+                    </tr>
+              </thead>
+            <tbody>
+            <aura:iteration var="Expenses" items="{!v.Expenses}">
+                <tr>
+                    <td><a href="#"> {!Expenses.Name}</a></td>
+                   <td> {!Expenses.Amount__c}</td>
+                   <td> {!Expenses.Date__c}</td>
+                   <td> {!Expenses.Client__c}</td>
+                   <td> {!Expenses.Reimbursed__c}</td>
+                   
+                                                                                  </tr>
+            </aura:iteration> 
+            </tbody>     
+        </table>
+    
+</aura:component>

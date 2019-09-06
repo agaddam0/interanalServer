@@ -1,0 +1,45 @@
+<aura:component >
+	<aura:attribute name="accountsRows" type="Object[]" access="global"/>
+     <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+     <div class="container">
+       <p>
+
+            <b> List of Contacts </b>
+
+        </p>
+
+        <table class="table table-bordered table-hover">
+
+            <thead>
+
+                <tr>
+
+                    <th><strong> Id </strong></th>
+
+                    <th> <strong>  Name </strong> </th>
+                    <th> <strong>  Phone </strong> </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <aura:iteration var="cell" items="{!v.contactRows}">
+
+                    <tr>
+
+                        <td> <a href="{! '/'+cell.Id}"> {!cell.Id} </a> </td>
+
+                        <td> {!cell.Name}  </td>
+                        
+
+                    </tr>
+
+                </aura:iteration>
+
+            </tbody>
+
+        </table>
+    </div>
+</aura:component>
