@@ -1,0 +1,4 @@
+[http "https://gitlab.blr.teksystems.com"]
+	sslVerify = false
+[http]
+	sslVerify = false
