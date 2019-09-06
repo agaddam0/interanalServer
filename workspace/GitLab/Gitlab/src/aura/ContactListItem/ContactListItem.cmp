@@ -1,0 +1,9 @@
+<aura:component >
+    <aura:attribute name="contactRec" type="Contact" access="Global"/>
+    <aura:registerEvent name="deleteContact" type="c:deleteContactEvt"/>
+    <tr > 
+        <td class="borderCls" >{!v.contactRec.Name}</td> 
+        <td class="borderCls" >{!v.contactRec.Phone}</td>
+        <td> <ui:button label="Delete" press="{!c.deleteContact}"/></td>
+    </tr>
+</aura:component>

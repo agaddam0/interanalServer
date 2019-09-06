@@ -1,0 +1,15 @@
+<apex:page sidebar="false">
+<apex:includeScript value="/lightning/lightning.out.js" />
+ <div id="lightning" />
+
+    <script>
+        $Lightning.use("c:AccountsListApp", function() {
+          $Lightning.createComponent("c:AccountsList",
+          { label : "" },
+          "lightning",
+          function(cmp) {
+            // do some stuff
+          });
+        });
+    </script>
+</apex:page>

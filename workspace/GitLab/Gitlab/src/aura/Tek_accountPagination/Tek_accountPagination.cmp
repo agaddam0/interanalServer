@@ -1,0 +1,47 @@
+<aura:component controller="Tek_accountPagination" implements="force:appHostable,flexipage:availableForAllPageTypes">
+    <aura:attribute name="accountList" type="account[]"></aura:attribute>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />	
+    <aura:attribute name="paginationList" type="Account[]"/>
+    <aura:attribute name="pageSize" type="Integer" default="5"/>
+    <aura:attribute name="totalSize" type="Integer"/>
+    <aura:attribute name="start" type="Integer" />
+    <aura:attribute name="end" type="Integer"/>
+    <table >
+      <tr > 
+       <td style="width:5%">Show</td><td style="width:7%">
+        <ui:inputSelect aura:id="records" change="{!c.onSelectChange}">
+        <ui:inputSelectOption text="5" value="5"/>
+        <ui:inputSelectOption text="10" value="10"/>
+		<ui:inputSelectOption text="20" value="20"/>
+		<ui:inputSelectOption text="30" value="30"/>
+		</ui:inputSelect></td><td>Entries</td>
+		<td style="width:7%">Search</td>
+		<td style="width:25%">
+		<ui:inputText aura:id="input1"   change="{!c.searchKeyChange}"   required="true"></ui:inputText>
+		</td>
+       </tr>
+     </table>
+    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+        <thead>
+           <tr>
+              <th>Account Name</th>
+               <th>Type</th>
+               <th>Rating</th>
+            </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.paginationList}" var="item">
+                <tr>
+                  <td><ui:outputText value="{!item.Name}" /></td>
+                  <td><ui:outputText value="{!item.StageName}" /></td>
+                  <td><ui:outputText value="{!item.CloseDate}" /></td>
+                  <td><ui:outputText value="{!item.Amount}" /></td>
+               </tr>
+			</aura:iteration>
+            <lightning:button label="First" disabled="{!v.start == 0}"  onclick="{!c.first}" />
+            <lightning:button label="Previous" disabled="{!v.start == 0}"  onclick="{!c.previous}" />
+            <lightning:button label="Next" disabled="{!v.end >= v.totalSize}" onclick="{!c.next}" />
+           <lightning:button  label="Last" disabled="{!v.end >= v.totalSize}" onclick="{!c.last}" />
+        </tbody>
+    </table>
+</aura:component>

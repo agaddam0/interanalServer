@@ -1,0 +1,15 @@
+<aura:component access="public" controller="ContactController">
+    <aura:attribute name="contacts" type="Contact[]" access="private"/>
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}" />
+    <aura:handler name="deleteContact" event="c:deleteContactEvt" action="{!c.removeContact}" />
+    <table class="borderCls">
+        <tr>
+            <th class="borderCls">Name</th> 
+            <th class="borderCls">Phone</th>
+        </tr>   
+        <aura:iteration items="{!v.contacts}" var="contact">
+            <c:ContactListItem contactRec="{!contact}"/>
+        </aura:iteration>
+    </table>
+    <button onclick="{!c.addContact}">Add Contact</button>
+</aura:component>

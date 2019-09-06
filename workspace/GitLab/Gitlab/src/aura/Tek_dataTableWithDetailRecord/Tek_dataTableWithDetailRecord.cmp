@@ -1,0 +1,56 @@
+<aura:component controller="dataTablewithDetailRecord" Implements="flexipage:availableForRecordHome,force:hasRecordId">
+	<aura:attribute Name='accounts' type='List'></aura:attribute>
+    <aura:attribute Name='account1' type='List'></aura:attribute>
+    <aura:attribute name="show" type="boolean" default="false"/>
+    <aura:handler name='init' value="{!this}" action="{!c.doInit}"></aura:handler>
+    <div  class="slds-grid slds-gutters">
+      <div class="slds-size_1-of-3">  
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                     <tr>
+                         <td></td>
+                        <td >Account Name</td>
+                     </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items='{!v.accounts}' var="acts" indexVar="index">
+                   <tr>
+                       <td>{!index+1}</td>
+                       <td>
+                         <a onclick="{!c.detailRec}" data-record="{!index}" >{!acts.Name}</a>    
+                       </td>
+                    </tr>
+                   </aura:iteration>     
+                </tbody>
+            </table>
+      </div>
+     <aura:if  isTrue="{!v.show}">   
+      <div class="slds-size_1-of-3 ">
+          <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+           
+           <thead>   
+               <tr>
+                   <th>Name</th>
+                   <th>Type</th>
+                   <th>Industry</th>
+                   <th>Phone</th>
+                   <th>Rating</th>
+               </tr>
+               </thead>
+              <tbody>
+              <aura:iteration items='{!v.account1}' var="acc">
+               <tr>
+               <td title="Name">{!acc.Name}</td>
+               <td title="Type">{!acc.Type}</td>
+               <td title="industry">{!acc.Industry}</td>
+               <td title="Phone">{!acc.Phone}</td>
+                   <td title="Rating">{!acc.Rating}</td>
+              </tr>  
+           
+           </aura:iteration>
+          </tbody>
+              </table>
+      </div>  
+         </aura:if>
+   </div>     
+</aura:component>

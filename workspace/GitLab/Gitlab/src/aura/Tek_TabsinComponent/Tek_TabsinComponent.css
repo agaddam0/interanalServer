@@ -1,0 +1,11 @@
+.THIS .iconHack1 {
+    width: 24px !important;
+    height: 24px !important;
+    position: relative !important;
+    top: 7px !important;
+    color:Red;
+    backgroud-color: Yellow;
+}
+.THIS .iconHack1 svg {
+    vertical-align: baseline !important;
+}

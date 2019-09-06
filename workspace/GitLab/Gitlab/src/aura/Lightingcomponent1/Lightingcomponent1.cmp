@@ -1,0 +1,15 @@
+<aura:component implements="force:appHostable">
+	<aura:attribute name="princple"  type="Double" default="1000"></aura:attribute>
+    <aura:attribute name="year"  type="Double"  default="100"></aura:attribute>
+     <aura:attribute name="rate"  type="Double"  default="5"></aura:attribute>
+    <aura:attribute name="payment" type="Double"></aura:attribute>
+    <div>
+        <ui:inputnumber label="principle" value="{!v.principle}" />
+        <ui:inputnumber label="years" value="{!v.years}" />
+        <ui:inputnumber label="rate" value="{!v.rate}" />
+        <button onclick="{!c.calucaltemonthlypayment}">Calculate Monthly payment</button>
+        <h2>Monthly payment</h2>
+        <ui:outputcurrency value="{!v.monthlypayment}" class="principle" />
+        
+    </div>    
+</aura:component>

@@ -1,0 +1,13 @@
+<apex:page >
+  <apex:form >
+     <apex:pageBlock >
+            <apex:outputPanel rendered="{! $User.UIThemeDisplayed == 'Theme3' }">
+            <apex:outputText value="This is Salesforce Classic."/>
+            <apex:outputText value="These are multiple components wrapped by an outputPanel."/>
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{! $User.UIThemeDisplayed == 'Theme4d' }">
+            <apex:outputText value="Everything is simpler in Lightning Experience."/>
+        </apex:outputPanel>
+             </apex:pageBlock>
+  </apex:form>
+</apex:page>

@@ -1,0 +1,12 @@
+<apex:page standardController="Account"  recordSetVar="accounts">
+    <apex:variable value="{!1}" var="rowNum"/>
+    <apex:repeat value="{!accounts}" var="row">
+        ({!rowNum}){!row.name}<br/>
+        <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+    </apex:repeat>
+    
+    <apex:dataList value="{!accounts}" var="row" type="1">
+        {!row.name}
+    </apex:dataList>
+   
+</apex:page>

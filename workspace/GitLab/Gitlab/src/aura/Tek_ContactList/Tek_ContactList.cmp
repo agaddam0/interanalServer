@@ -1,0 +1,22 @@
+<aura:component  controller="Tek_ContactList"  implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" >
+	<aura:attribute Name="contactList" type="contact[]"></aura:attribute>
+    <aura:handler Name="init" value="{!this}" action="{!c.doInit}"></aura:handler>
+    <div>
+        <div class="slds-grid slds-wrap">
+        <aura:iteration var="con" items="{!v.contactList}">
+           <div class="slds-col slds-size-1-of-3 slds-around-p-small"> 
+              <lightning:card  title="{!con.LastName}"  >
+                    <aura:set attribute="actions">
+                        <lightning:button label="Details"/>
+                    </aura:set>
+                    <p class="slds-p-horizontal_small">
+                        <td>{!con.Name}</td><br/>
+                        <td>{!con.Phone}</td><br/>
+                        <td>{!con.Email}</td>
+                    </p>
+    		</lightning:card>
+           </div>    
+        </aura:iteration>
+            </div>
+    </div>
+</aura:component>

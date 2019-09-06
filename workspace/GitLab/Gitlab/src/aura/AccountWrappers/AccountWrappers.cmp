@@ -1,0 +1,46 @@
+<aura:component controller="AccountController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="wrappers" type="AccountWrapper" />
+    <aura:attribute name="accounts" type="Account" />
+	
+	<span class="big">Choose Accounts</span>
+<table>
+    <tr>
+        <th class="head">Name</th>
+        <th class="head">View?</th>
+    </tr>
+<aura:iteration items="{!v.wrappers}" var="wrap">
+        <tr>
+            <td class="cell">
+        <ui:outputText value="{!wrap.acc.Name}" />
+            </td>
+            <td class="cell">
+        <ui:inputCheckbox value="{!wrap.selected}" />
+            </td>
+        </tr>
+</aura:iteration>
+</table>
+<button onclick="{!c.getAccounts}">Get Accounts</button>
+
+    <span class="big">Selected Accounts</span>
+    <table>
+        <tr>
+            <th class="head">Name</th>
+            <th class="head">Industry</th>
+            <th class="head">Website</th>
+        </tr>
+        <aura:iteration items="{!v.accounts}" var="acc">
+            <tr>
+                <td class="cell">
+                <ui:outputText value="{!acc.Name}" />
+                </td>
+                <td class="cell">
+                <ui:outputText value="{!acc.Industry}" />
+                </td>
+                <td class="cell">
+                <ui:outputText value="{!acc.Website}" />
+                </td>
+            </tr>
+    </aura:iteration>
+    </table>
+</aura:component>
