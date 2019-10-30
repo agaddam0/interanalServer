@@ -1,0 +1,141 @@
+<apex:page sidebar="false" standardStylesheets="true" showHeader="false" docType="html-5.0"
+           standardcontroller="Pre_Enrollment_Marketing_Form__c" extensions="PreenrollmentMarketingSetupFormControler">
+<head> 
+        
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"/>
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"/>
+        
+        <apex:includeScript value="{!URLFOR($Resource.bootstrap3, 'js/bootstrap.min.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.bootstrapExtra, 'bootstrap-3.3.1/js/tab.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.datepicker, 'datepicker/js/bootstrap-datepicker.js')}"/> 
+        <apex:includeScript value="{!URLFOR($Resource.jQueryNumeric, 'js/jquery.numeric.min.js')}"/>
+        
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.css')}"/>
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.min.css')}"/>
+        <apex:stylesheet value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css"/>
+        
+        <!--------------- Include StyleSheet ---------------------------->     
+        <apex:include pageName="SetupFormsStyleSheet"/>
+        
+        <style>
+            .nav
+            {
+                margin-bottom:0px
+            }
+
+            .af-marketing-materials-note,
+            .af-openMarketplace-container {
+                font-size: 1.5rem;
+            }
+
+            .af-openMarketplace-container,
+            .af-benefits-site-container {
+                margin-top: 10px;
+            }
+
+            .af-benefits-site-container td {
+                padding-left: 0px !important;
+                font-size: 1rem;
+            }
+            
+        </style>
+    </head>
+    <body>
+        
+        <apex:pageBlock id="thePageBlock">
+        
+            <apex:form id="theForm">
+                 <script>
+                 var $ = jQuery.noConflict();
+                 
+                 // Luke Freeland: Added this so Salesforce won't automatically set
+                 // focus to a date field.
+                 function setFocusOnLoad() {}
+                 </script>
+                <apex:outputPanel id="page">
+                    <!---------------------------- TAB DEFINITIONS -------------------------------------->
+                    <div class="container af-container">
+                        <div class="af-header">
+                            <c:SetupFormsNavBar id="navBarComponent" formName="preenrollmentMarketingForm" submitLabel="{! $Label.Submit_Marketing_Form_Button_Label }" ReserviceSetup="{! cameFromReservice }" efId="{!PreenrollmentMarketingForm.Enrollment_Form__c}"/>
+
+	                        <div class="header-tabs">
+	                            <apex:outputPanel id="tabPanel">
+	                                <ul class="nav nav-tabs" id="tabs">
+	                                    <li class="active"><a id="marketingInformationLink" data-toggle="tab" href="#marketingInformationTab" class="af-tab-complete">{! $Label.Marketing_Information_Sub_Tab_Label }</a></li>
+	                                </ul>
+	                            </apex:outputPanel>
+	                        </div> <!-- end header-tabs -->
+	                    </div>
+                        <div class="content">
+                            <apex:outputPanel id="messages" styleClass="msgs">
+		                        <apex:pageMessages rendered="{!showErrorMessages==true}"/>
+		                        <span id="marketingInfoTabCompleteWarningContainer" style="display: none;">
+		                            <apex:pageMessage summary="This tab must be completed before continuing." severity="warning" strength="3" />
+		                        </span>
+		                    </apex:outputPanel>
+                            <span id="submitMessage" style="margin-left:10px;font-size:16pt;color:red;display:none"></span>
+                        
+                            <apex:outputPanel id="allTabs">
+                                
+                                <script>
+                                
+                                // this will display the contents of a tab clicked via javascript
+                                $('.nav').click(function (e) {
+                                    e.preventDefault();
+                                    $(this).tab('show');
+                                }) ;
+
+                                </script>
+                                <div class="tab-content">
+                                    <!--------------------------------------------DETAILS TAB  ------------------------------------------->
+                                    <!--------------------------------------------DETAILS TAB  ------------------------------------------->
+                                    <!--------------------------------------------DETAILS TAB  ------------------------------------------->
+                                    <!--------------------------------------------DETAILS TAB  ------------------------------------------->
+                                    
+                                    <div class="tab-pane in active" id="marketingInformationTab" style="padding-left:30px">
+                                        <div class="af-marketing-materials-note">
+                                            <apex:outputText value="{! $Label.Preenrollment_Marketing_Marketing_Materials_Note }" escape="false" />
+                                        </div>
+                                        
+                                        <div class="formtable af-openMarketplace-container">
+                                            <a id="openMarketPlaceLink" href="{! MarketPlaceURL }" target="_blank">Open MarketPlace</a>
+                                        </div>
+
+                                        <table class="formtable af-benefits-site-container" style="width:100%">
+                                            <tr>
+                                                <td class="fieldLabel" ><div>{! $ObjectType.Account.Fields.Enrollment_Site__c.Label }</div></td>
+                                            </tr>
+                                            <tr>
+                                                <td><a href="{!PreenrollmentMarketingForm.Enrollment_Form__r.Enrollment_Opportunity__r.Account.Enrollment_Site__c}" target="_blank">{!PreenrollmentMarketingForm.Enrollment_Form__r.Enrollment_Opportunity__r.Account.Enrollment_Site__c}</a></td>
+                                            </tr>
+                                        </table>
+                                    </div>    <!--  Details tab-->
+                                </div>     <!------- end Tab-Content (all tabs) -------->  
+                                
+                                <script>
+                                    // Luke Freeland 4/19/2017: This script block contains
+                                    // Javascript that should be executed whenever the page loads
+                                    // or when things are rerendered.
+                                    var setupNavConfirmButton = $('#confirmButton');
+                                
+                                    setupNavConfirmButton.hide();
+                                    
+                                    
+					                
+					                $(document).ready(function() {
+					                    // Hide Submit button
+					                    
+					                    var setupNavConfirmButton = $('#confirmButton');
+                                        setupNavConfirmButton.hide();
+					                });
+                                </script>
+                                
+                            </apex:outputPanel>   
+                        </div>   <!-- end content -->
+                    </div>     <!--    end "container" -->
+                    
+                </apex:outputPanel>    <!-------end "page" --------->
+            </apex:form>
+        </apex:pageBlock>
+    </body>
+</apex:page>

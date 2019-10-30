@@ -1,0 +1,38 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId" controller="CopaySummaryCTRL">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:attribute name="showFinalScreen" type="Boolean" default="false" />
+    <aura:attribute name="recordList" type="ContentDocumentLink[]" />
+    <aura:attribute name="copayList" type="Copay_Information__c[]" />
+    
+    <div class="slds-is-relative">
+        
+        <div class="{! v.showFinalScreen ? 'slds-hide' : 'slds-show' }">
+            <lightning:flow aura:id="flow" onstatuschange="{!c.statusChange}"/>
+        </div>
+        
+        <div class="{! v.showFinalScreen ? 'slds-show' : 'slds-hide' }">
+            <div class="header">
+                <h2 class="slds-text-heading_medium slds-hyphenate">Thank You</h2>
+            </div>
+            
+            <div class="slds-p-vertical_small af-bold">
+                {! $Label.c.Copay_Accounts_Updated_Message }
+            </div>
+            
+            
+            <aura:iteration items="{!v.recordList}" var="record">
+                {! record.LinkedEntity.Name }
+                <br/>
+            </aura:iteration>
+            
+            <aura:iteration items="{!v.copayList}" var="record">
+            	{! record.Name }
+            </aura:iteration>
+            
+            <div class="footer">
+                <lightning:button variant="neutral" label="Close" title="Close" onclick="{! c.closeAction }" />
+            </div>
+        </div>
+    </div>
+</aura:component>

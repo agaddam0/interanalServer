@@ -1,0 +1,131 @@
+<aura:component implements="force:hasRecordId" controller="NewProposalCTRL" >
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="valueChange" event="c:SelectChange" action="{!c.handleEvent}" />
+    <aura:handler name="updateLineItem" event="c:OpportunityProductsChanged" action="{!c.handleLineItemEvent}"/>
+    <aura:registerEvent name="navigate" type="c:navigateToCmp" />
+    
+    <aura:attribute name="Proposal" 		type="Proposal__c" default="{'sobjectType' : 'Proposal__c'}"/>
+    <aura:attribute name="validForm" 		type="Boolean" default="false" />
+    <aura:attribute name="Account"			type="Account"/>
+    <aura:attribute name="OpportunityProducts" 	type="OpportunityLineItem[]" />
+    
+    <header class="slds-modal__header header">
+        <h2 class="slds-text-heading_medium slds-hyphenate">RFP</h2>
+    </header>
+    
+    <div class="main">
+        <div aura:id="errorContainer"></div>
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small" >Proposal Information</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="RFP_ProposalInfo"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="ProposalInfoFieldSet" />
+            </div>
+        </div>
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small" >Benefits &amp; Services</span>
+            </h3>
+            <br/>
+            <div aura:id="ProductsContainer"></div>
+            
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="RFP_LTDPlan"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="RFPLTDPlan" />
+                <c:FieldSetForm fieldSetName="RFP_LTD_Details"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="RFPLTDDetails" />
+                <c:FieldSetForm fieldSetName="RFP_STDPlan"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="RFPSTDPlan" />
+                <c:FieldSetForm fieldSetName="RFP_STD_Details"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="RFPSTDDetails" />
+                <c:FieldSetForm fieldSetName="RFP_Benefits_Services"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="RFPBenefits" />
+            </div>
+            <br/>
+            <div class="slds-box">
+                <div class="slds-text-body_small">{!$Label.c.Upload_Files_For_Proposal}</div>
+                <br/>
+                <div aura:id="UploadContainer"></div>
+            </div>        
+        </div>
+        
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small" >RFP Strategy</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="RFP_Strategy"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="RFPStrategy" />                
+            </div>            
+        </div>
+        
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small" >Rep Information</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="RFP_RepInfo_1"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="RFPRepInfo1" />
+                <c:FieldSetForm fieldSetName="RFP_BranchOffice"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="RFPBranchOffice" />
+                <c:FieldSetForm fieldSetName="RFP_RepInfo_2"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="RFPRepInfo2" />
+                <c:FieldSetForm fieldSetName="RFP_BrokerName"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="RFPBrokerName" />
+            </div>            
+        </div>
+        
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small" >Additional Notes</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="RFP_AddNotes"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="AdditionalNotes" />                
+            </div>            
+        </div>
+    </div>
+    
+    <footer class="slds-modal__footer footer">
+        <ui:button aura:id="submitBtn" label="Submit" press="{!c.handleSubmit}" class="slds-button slds-button--brand" />
+        <ui:button label="Cancel" press="{!c.handleCancel}" class="slds-button slds-button--neutral" />
+    </footer>    
+</aura:component>

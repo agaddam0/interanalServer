@@ -1,0 +1,148 @@
+.THIS {
+    background-color: white;
+}
+
+.THIS .dividerLine{
+    border-bottom: 1.5px solid token(AFAgrey3);
+}
+
+.THIS .dividerLineRed{
+    border-bottom: 1.5px solid token(AFAredbrand);
+}
+
+.THIS .order-details-header-row th {
+    background-color: token(AFAgrey1);
+    text-align: center;
+    padding: 15px;
+    font-weight: normal;
+}
+
+.THIS .order-details-row-data td {
+    text-align: center;
+    font-weight: bold;
+    padding: 15px;
+}
+
+.THIS .price-line {
+    color: token(AFAgreybrand);
+}
+
+.THIS .cart-checkout-button {
+    width:100%;
+    background-color: token(AFAgreen3);
+    border: 1px solid token(AFAgreen3);
+}
+
+.THIS .cart-checkout-button:hover {
+    background-color: token(AFAgreen4);
+    border: 1px solid token(AFAgreen4);
+}
+
+.THIS .cart-cancel-button {
+    margin-right: 20px;
+    margin-left: -20px;
+}
+
+.THIS .cart-cancel-button button {
+    background-color: token(AFAgrey1);
+    border-color: token(AFAredbrand);
+    color: black;
+    width: 100%;
+}
+
+.THIS .cart-cancel-button :hover {
+    background-color: token(AFAredbrand);
+    border-color: token(AFAredbrand);
+    color: white;
+}
+
+.THIS .cart-back-button {
+    background-color: token(AFAteal5);
+    border: 1px solid token(AFAteal5);
+    width: 50%;
+}
+
+.THIS .cart-back-button:hover {
+    background-color: token(AFAteal6);
+    border: 1px solid token(AFAteal6);
+}
+
+.THIS .af-bolded-item {
+	font-weight: bold;
+}
+
+.THIS .af-rush-icon .slds-icon-text-default {
+	fill: token(AFAOrange3) !important;
+}
+
+.THIS .rush-order-header {
+	background-color: token(AFAYellow3);
+}
+
+.THIS .order-name-element .slds-form-element__control {
+    padding-left : 20%;
+}
+
+.THIS .colleague-element {
+    margin-left : 10%;
+}
+
+.THIS .colleague-element label {
+	/*font-size: 1rem;*/
+    padding-right : 10px;
+}
+
+.THIS .colleague-element .slds-form-element__control {
+    line-height : 1.875rem;
+    margin-top : -7px;
+}
+
+.THIS .order-number-element {
+    margin-top : 5px;
+}
+
+.THIS .input-label {
+    margin-top: -5px;
+}
+
+.THIS .af-shipping-state-input {
+    margin-top: -19px;
+}
+
+.THIS .af-shipping-state-input select {
+ 	min-height: calc(2.125rem + 2px);
+    height: auto;
+}
+
+.THIS .af-picklist-input select {
+    min-height: calc(2.125rem + 2px);
+    height: auto;
+}
+
+.THIS .form-name {
+    color : token(AFAteal5);
+    text-decoration : underline;
+    font-weight : bold;
+    font-size : 14px;
+    display : inline-block;
+}
+
+.THIS .requested-date {
+    width: 20%;
+}
+
+.THIS .text-align-right dt {
+    text-align : right;
+}
+
+.THIS .af-icon {
+    height: 29.5px;
+}
+
+.THIS .upload-option .slds-item_label {
+	width: 40% !important;
+}
+
+.THIS .upload-option .slds-item_detail {
+	width: 60% !important;
+}

@@ -1,0 +1,214 @@
+<apex:page standardStylesheets="false" sidebar="false" standardController="User" extensions="AccountAssessmentDetailsExt">
+
+    <script type="text/javascript">
+        console.log('the user id', '{!$User.Id}', '{!$User.UserRoleId}');
+        var userRoleId = '{!$User.UserRoleId}';
+
+        Visualforce.remoting.timeout = 120000; // Set timeout at page level
+        //<button ng-hide='!nextBtn' id="button_load" class="btn pull-right" ng-click="buttonLoad()">Load More</button>
+    </script>
+
+    <apex:stylesheet value="{!URLFOR($Resource.lib_js, 'css/angular-material-icons.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.lib_js, 'css/angular-material.min.css')}"/>
+
+    <apex:stylesheet value="{!URLFOR($Resource.lib_js, 'css/bootstrap/bootstrap.min.css')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.lib_js, 'css/font-awesome-4.0.3/css/font-awesome.min.css')}" />
+
+    <apex:stylesheet value="{!URLFOR($Resource.lib_js, 'js/ui-grid/ui-grid.css')}"/>
+
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ramda.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/underscore.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/moment.js')}"/>
+
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/bluebird/bluebird.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/bluebird/bluebird.core.min.js')}"/>
+
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-sanitize.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-animate.min.js')}"/>
+   <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-material.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-aria.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-touch.min.js')}"/>
+
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ui-grid/csv.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ui-grid/pdf-make.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ui-grid/vfs-fonts.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ui-grid/ui-grid.js')}"/>
+
+    <apex:includeScript value="{!URLFOR($Resource.angular_userService)}"/>
+    <apex:includeScript value="{!URLFOR($Resource.angular_util_remoteService)}"/>
+    <apex:includeScript value="{!URLFOR($Resource.angular_accountAssessmentDetailsController)}"/>
+
+    <apex:remoteObjects >
+        <apex:remoteObjectModel name="Account">
+            <apex:remoteObjectField name="Name"/>
+            <apex:remoteObjectField name="OwnerId"/>
+            <apex:remoteObjectField name="MCP_Number__c"/>
+            <apex:remoteObjectField name="BillingState"/>
+            <apex:remoteObjectField name="AP_Percent_of_Change__c"/>
+            <apex:remoteObjectField name="Annualized_Premium__c"/>
+            <apex:remoteObjectField name="Owner_Team_District__c"/>
+            <apex:remoteObjectField name="Policy_of_Change__c"/>
+            <apex:remoteObjectField name="Policy_Count__c"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="User" jsShorthand="Users">
+            <apex:remoteObjectField name="Name" jsShorthand="name"></apex:remoteObjectField>
+            <apex:remoteObjectField name="Agent_ID__c" jsShorthand="agentId"></apex:remoteObjectField>
+            <apex:remoteObjectField name="Region__c" jsShorthand="region"></apex:remoteObjectField>
+            <apex:remoteObjectField name="Regional_Manager__c" jsShorthand="manager"></apex:remoteObjectField>
+            <apex:remoteObjectField name="Team_District__c" jsShorthand="team"></apex:remoteObjectField>
+            <apex:remoteObjectField name="Super_Region__c" jsShorthand="superRegion"></apex:remoteObjectField>
+            <apex:remoteObjectField name="Work_State__c" jsShorthand="workState"></apex:remoteObjectField>
+            <apex:remoteObjectField name="AFA_Division__c" jsShorthand="division"></apex:remoteObjectField>
+            <apex:remoteObjectField name="UserRoleId" jsShorthand="role"></apex:remoteObjectField>
+            <apex:remoteObjectField name="IsActive" jsShorthand="isActive"></apex:remoteObjectField>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="UserRole" jsShorthand="Roles">
+            <apex:remoteObjectField name="ParentRoleId" jsShorthand="parentRoleId"></apex:remoteObjectField>
+            <apex:remoteObjectField name="Name" jsShorthand="name"></apex:remoteObjectField>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="UserLogin" jsShorthand="Logins">
+            <apex:remoteObjectField name="IsFrozen" jsShorthand="isFrozen"></apex:remoteObjectField>
+            <apex:remoteObjectField name="UserId" jsShorthand="userId"></apex:remoteObjectField>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="Asset">
+            <apex:remoteObjectField name="Name"/>
+            <apex:remoteObjectField name="AccountId"/>
+            <apex:remoteObjectField name="RecordTypeId"/>
+            <apex:remoteObjectField name="Status"/>
+            <apex:remoteObjectField name="Carrier__c"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="RecordType">
+            <apex:remoteObjectField name="Name"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="Event">
+            <apex:remoteObjectField name="AccountId"/>
+            <apex:remoteObjectField name="Type__c"/>
+            <apex:remoteObjectField name="ActivityDate"/>
+            <apex:remoteObjectField name="Sub_Type__c"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="Contact">
+            <apex:remoteObjectField name="AccountId"/>
+            <apex:remoteObjectField name="Name"/>
+            <apex:remoteObjectField name="Inactive__c"/>
+            <apex:remoteObjectField name="Email"/>
+            <apex:remoteObjectField name="Phone"/>
+            <apex:remoteObjectField name="Type__c"/>
+            <apex:remoteObjectField name="Decision_Maker__c"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="Case">
+            <apex:remoteObjectField name="AccountId"/>
+            <apex:remoteObjectField name="Date__c"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="Opportunity">
+            <apex:remoteObjectField name="AccountId"/>
+            <apex:remoteObjectField name="Record_Type__c"/>
+        </apex:remoteObjectModel>
+    </apex:remoteObjects>
+    <style>
+        .grid {
+           width: 100%;
+           height: 85vh;
+           font-size: 12px;
+        }
+        .header-blue{
+            color: blue;
+        }
+        .header-default {
+            color: dimgray;
+        }
+        .header-filtered-bad {
+            color: darkred;
+        }
+        .header-filtered-ok {
+            color: darkgoldenrod;
+        }
+        .header-filtered-awesome {
+            color: darkgreen;
+        }
+        .bad {
+            background-color: darkred;
+            fill : darkred;
+        }
+        .ok {
+            background-color: darkgoldenrod;
+            fill : darkgoldenrod;
+         }
+        .awesome {
+            background-color: darkgreen;
+            fill : darkgreen;
+        }
+        .highlight {
+            background-color: red;
+        }
+        svg {
+            background-color: inherit !important;
+        }
+        .empty {
+            fill : lightgray;
+        }
+
+        .full {
+            fill: mediumseagreen;
+        }
+        .grid-msg-overlay {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 100%;
+          background: rgba(0, 0, 0, 0.4);
+          z-index: 10;
+        }
+        .grid-msg-overlay .msg {
+          opacity: 1;
+          position: absolute;
+          top: 20%;
+          left: 20%;
+          width: 60%;
+          height: 50%;
+          background-color: #eee;
+          border-radius: 4px;
+          border: 1px solid #555;
+          text-align: center;
+          font-size: 24px;
+          display: table;
+        }
+        .grid-msg-overlay .msg span {
+          display: table-cell;
+          vertical-align: middle;
+        }
+        .btn {
+        font-size: 12px !important;
+        }
+    </style>
+    <body ng-app='assessDetailApp' ng-cloak=''>
+        <div ng-controller='ctrl'>
+            <div id='grid1' ui-grid='gridOptions' ui-grid-resize-columns='true'
+                ui-grid-move-columns='true' 
+                ui-grid-pinning='true' ui-grid-exporter='true'
+                ui-grid-selection='true' ui-grid-grouping='true' ui-grid-save-state='true' class='grid'>
+                <div class='grid-msg-overlay' ng-hide='!loading'>
+                    <div class='msg'>
+                      <span>
+                          Loading Data...
+                          <i class='fa fa-spinner fa-spin fa-2x' aria-hidden='true'></i>
+                          <p id="loaded_text" style="padding:5px;">Loaded: {{totalAccts}}</p>
+                          <footer style="font-size:12px;">*Loaded only updates count every 2000 items pulled*</footer>
+                      </span>
+                    </div>
+                </div>
+                 <div class="grid-msg-overlay" ng-hide="loading || gridOptions.data.length">
+                  <div class="msg">
+                    <span>No Data</span>
+                  </div>
+                </div>
+
+            </div>
+            <div  ng-hide='loading'>
+                <button id="button_save" class="btn" ng-click="saveState()">Save State</button>
+                <button id="button_restore" class="btn" ng-click="restoreState()">Restore State</button>
+                <h5 class="pull-right" style="padding-right:25px;">Total:{{totalAccts}}</h5>                        
+            </div>
+        </div>
+    </body>
+</apex:page>

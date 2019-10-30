@@ -1,0 +1,48 @@
+.THIS {
+	max-width: 100%;
+}
+
+.THIS .af-body-container {
+	max-width: 700px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.THIS .af-catelog-home-btn,
+.THIS .af-order-history-btn {
+    background-color: token(AFAteal5);
+    border: none;
+}
+
+.THIS .af-order-history-btn {
+	display: inline-block;
+	margin-left: 1.5rem;
+}
+
+.THIS .af-download-header {
+	background-color: token(AFAgrey1);
+}
+
+.THIS .af-download-all-btn,
+.THIS .af-download-btn {
+    background-color: token(AFAgreen4);
+    border: none;
+    width: 130px;
+}
+
+.THIS .af-downloadable-thumbnail {
+	width: 150px;
+	height: 100px;
+}
+
+.THIS .af-complete-order-button {
+	background-color: token(AFAOrange4);
+	color: white;
+}
+
+.THIS .af-complete-order-instructions-container,
+.THIS .af-complete-order-instructions-container svg {
+	fill: white;
+	background-color: token(AFAOrange4) !important;
+	color: white;
+}

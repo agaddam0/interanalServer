@@ -1,0 +1,11 @@
+.THIS .clsMsg {
+    text-align: center;
+    font-size: larger;
+    padding-top: 15%;
+}
+
+.THIS .title {
+    color: red;
+    font-weight: bold;
+    padding-bottom: 15px;
+}

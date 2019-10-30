@@ -1,0 +1,16 @@
+/* Hide the label that comes with the lightning:input so it doesn't push the control down */
+.THIS .af-lightning-input-container label {
+    display: none;
+}
+
+/* Hides the asterisk associated to a required field label */
+.THIS .af-lightning-input-container abbr {
+    display: none;
+}
+
+/* Moves the help text up so it appears vertically aligned
+   with the label */
+.THIS .af-input-help-text {
+    position: relative;
+    top: -3px;
+}

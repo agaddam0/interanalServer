@@ -1,0 +1,83 @@
+<aura:component controller="ShoppingCartController">
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler event="c:ShoppingCartNavigationEvent" action="{!c.clearSearchTerms}" />
+    <aura:handler event="c:ShoppingCartTagClickedEvent" action="{!c.checkTagFromEvent}" />
+    <aura:registerEvent name="searchEvent" type="c:ShoppingCartSearchTermsEvent" />
+    <aura:registerEvent name="navigate" type="c:ShoppingCartNavigationEvent" />     
+    
+    <aura:attribute name="keyword" type="String" default="" />
+    <aura:attribute name="selectedTags" type="String[]" />
+    <aura:attribute name="clickedTagsFromResults" type="String[]" />
+    
+    <aura:attribute name="TagCategories" type="Tag_Category__c[]" />
+    
+    <div class="slds-form-element slds-p-left_medium">
+        <label class="slds-form-element__label" for="searchBox">Search</label>
+        <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
+            <lightning:icon iconName="utility:search" size="xx-small" class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"/>
+            <ui:inputText aura:id="searchBox" value="{!v.keyword}" class="slds-input" keyup="{!c.filterResultsByKeyword}" updateOn="keyup"/>
+        </div>
+    </div>
+    
+    <br/><br/>
+    
+    <div class="slds-p-left_medium">
+        <div onclick="{!c.selectAllCheckboxes}">
+            <a href="">Select all filters</a>
+        </div>
+        <div onclick="{!c.clearAllCheckboxes}">
+            <a href="">Clear all filters</a>
+        </div>
+        <div onclick="{!c.expandAllSections}">
+            <a href="">Expand All</a>
+        </div>
+        <div onclick="{!c.collapseAllSections}">
+            <a href="">Collapse All</a>
+        </div>
+    </div>
+    <br/><br/>
+    
+    <!-- checkbox tag lists -->
+    <div>
+        <!-- Categories -->
+        <ul class="slds-accordion">
+            <aura:iteration var="tc" items="{!v.TagCategories}" indexVar="i">
+                
+                <li class="slds-accordion__list-item">
+                    <section class="slds-accordion__section slds-is-open" id="{!tc.Name}" aura:Id="sectionHeader">
+                        <div class="slds-accordion__summary">
+                            <h3 class="slds-text-heading_small slds-accordion__summary-heading">
+                                <button aria-controls="{!tc.Name}" aria-expanded="true" class="slds-button slds-button_reset slds-accordion__summary-action accordionIcon"
+                                        onclick="{!c.toggleAccordion}">
+                                    <lightning:icon class="slds-accordion__summary-action-icon slds-button__icon slds-button__icon_left" 
+                                                    iconName="utility:down" size="x-small" />
+                                    
+                                    <span class="slds-truncate" title="{!tc.Name}">{!tc.Name}</span>
+                                </button>
+                            </h3>
+                        </div>
+                        <div aria-hidden="false" class="slds-accordion__content">
+                            
+                            <!-- Category Tags -->
+                            <aura:iteration var="tag" items="{!tc.Tags__r}" indexVar="x">
+                                <fieldset class="slds-form-element slds-p-left_medium">
+                                    <legend class="slds-form-element__legend slds-form-element__label"></legend>
+                                    <div class="slds-form-element__control">
+                                        <span class="slds-checkbox">
+                                            <input type="checkbox" aura:Id="tagChecks" name="{!tag.Name}" id="{!tc.Name + '-' + x}" value="on" onchange="{!c.filterResultsByTag}" />
+                                            <label class="slds-checkbox__label" for="{!tc.Name + '-' + x}">
+                                                <span class="slds-checkbox_faux"></span>
+                                                <span class="slds-form-element__label">{!tag.Name}</span>
+                                            </label>
+                                        </span>
+                                    </div>
+                                </fieldset>
+                            </aura:iteration>
+                        </div>
+                    </section>
+                </li>
+            </aura:iteration>
+        </ul>
+    </div>
+</aura:component>

@@ -1,0 +1,43 @@
+<aura:component >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="change" value="{!v.record}" action="{!c.doInit}"/>
+    
+    <aura:attribute name="record" type="Marketing_Material__c" />
+    <aura:attribute name="useColumnSizes" type="Boolean" default="true" />
+    <aura:attribute name="containerClass" type="String" default="" />
+
+    <aura:attribute name="showPrintIcon" type="Boolean" default="false" access="private" />
+    <aura:attribute name="showDigitalIcon" type="Boolean" default="false" access="private" />
+    <aura:attribute name="showDownloadIcon" type="Boolean" default="false" access="private" />
+    
+    <div class="{! v.containerClass ? v.containerClass + ' slds-grid slds-p-top_large' : 'slds-grid slds-p-top_large' }">
+        <div class="{! v.useColumnSizes ? 'slds-size_3-of-12 slds-text-color_weak' : 'slds-text-color_weak' }">
+            <b>Available Formats</b>
+        </div>
+
+        <aura:if isTrue="{! v.showPrintIcon }">
+        <div class="{! v.useColumnSizes ? 'slds-size_1-of-12 slds-m-left_small' : 'slds-m-left_small'}">
+            <img src="{!$Resource.ShoppingCartIcons + '/Icons/06_Printed_large.png'}" title="Print Material" />
+        </div>
+        </aura:if>
+        
+        <aura:if isTrue="{! v.showDigitalIcon }">
+        <div class="{! v.useColumnSizes ? 'slds-size_1-of-12 slds-m-left_small' : 'slds-m-left_small'}">
+            <lightning:icon iconName="utility:phone_portrait" size="small" title="Digital Material"/>
+        </div>
+        </aura:if>
+        
+        <aura:if isTrue="{! v.record.Material_Type__c == 'Video' }">
+        <div class="{! v.useColumnSizes ? 'slds-size_1-of-12 slds-m-left_small' : 'slds-m-left_small'}">
+            <lightning:icon iconName="utility:video" size="small" title="Video Material"/>
+        </div>
+        </aura:if>
+
+        <aura:if isTrue="{! v.showDownloadIcon }">
+        <div class="{! v.useColumnSizes ? 'slds-size_1-of-12 slds-m-left_small' : 'slds-m-left_small'}">
+            <lightning:icon iconName="utility:download" size="small" title="Downloadable Material"/>
+        </div>
+        </aura:if>
+    </div>
+	
+</aura:component>

@@ -1,0 +1,16 @@
+<aura:component
+  implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes"
+  access="global"
+>
+  <aura:attribute name="taskLimit" type="Integer" required="true" />
+  <aura:attribute name="eventLimit" type="Integer" required="true" />
+
+  <lightning:tabset selectedTabId="one">
+    <lightning:tab label="My Tasks" id="one">
+      <c:MyTasks_AF DisplayLimit="{! v.taskLimit }" />
+    </lightning:tab>
+    <lightning:tab label="My Events" id="two">
+      <c:UpcomingEvents displayCount="{! v.eventLimit }" />
+    </lightning:tab>
+  </lightning:tabset>
+</aura:component>

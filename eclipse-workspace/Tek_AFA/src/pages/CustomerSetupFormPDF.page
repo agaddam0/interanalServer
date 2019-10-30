@@ -1,0 +1,1002 @@
+<apex:page sidebar="false" standardStylesheets="true" showHeader="false" 
+        standardController="Customer_Setup_Form__c" extensions="CustomerSetupFormPDFExt" docType="html-5.0"
+        renderAs="PDF" applyBodyTag="false">
+         
+<apex:composition template="SetupFormPDFTemplate">
+<apex:define name="body">
+
+    <c:GeneralInformationPDFInfo efId="{! c.Enrollment_Form__c }" title="Customer Setup" />
+
+    <h3 class="title">Customer Setup Information</h3>
+    <h4 class="title">Onboarding Details</h4>
+
+    <apex:outputPanel id="onboardingTab" rendered="{!onboardingTabDisplayed}" >       
+        <table class="formtable" style="width:50%">
+            <tr>
+                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.DetailsSICTypeofIndustry__c.Label }</div></td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.DetailsSICTypeofIndustry__c}" style="width:300px" /></td>
+            </tr>
+            <tr>
+                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.DetailsIsGrpmemberofanassociation__c.Label }</div></td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.DetailsIsGrpmemberofanassociation__c}" /></td>
+            </tr>
+        </table>
+
+        <apex:outputPanel rendered="{!Customer_Setup_Form__c.DetailsIsGrpmemberofanassociation__c == 'Yes'}">
+            <table class="formtable"  style="width:50%">
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.DetailsNameofassociation__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.DetailsNameofassociation__c}" /></td>
+                </tr>
+            </table> 
+        </apex:outputPanel>
+        
+        <div class="sectionHeader">
+            <div class="sectionLabel">Agent Info</div>       
+        </div>
+        
+        <table  class="formtable" style="width:50%">
+            <tr>
+                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoMainAgtName__c.Label }</div></td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.AgtInfoMainAgtName__c}" style="width:300px" /></td>
+            </tr>
+            
+            <tr>
+                <td  class="fieldLabel">Agent Number</td>
+            </tr>
+            <tr>
+                <td>{!acct.owner.Agent_ID__c }</td> 
+            </tr>
+            <tr>
+                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoIsthereabrokerinvolved__c.Label }</div></td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.AgtInfoIsthereabrokerinvolved__c}" /></td>
+            </tr>
+        </table>
+        <apex:outputPanel rendered="{!Customer_Setup_Form__c.AgtInfoIsthereabrokerinvolved__c== 'Yes'}">  
+            
+            <apex:variable var="singleCase" value="{!If(Customer_Setup_Form__c.AgtInfoBrokerstandardcontractapply__c=='No','','display:none')}"/>
+            <apex:variable var="nameOfAgency" value="{!If(Customer_Setup_Form__c.AgtInfoBrokerAffiliatedWithAnAgency__c=='Yes','','display:none')}"/>
+            
+            <table  class="formtable" style="width:100%" >
+                <tr>
+                    <td style="width:50%" class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoWhatisthebrokerlegalname__c.Label }</div> </td>
+                    <td style="width:50%"  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoAORBrokersameforAFAProd__c.Label }</div> </td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AgtInfoWhatisthebrokerlegalname__c}" /></td>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AgtInfoAORBrokersameforAFAProd__c}"  /></td>
+                </tr>
+                
+                <tr>
+                    <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoBrokerNumber__c.Label }</td>
+                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoBrokerstandardcontractapply__c.Label }</div> </td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AgtInfoBrokerNumber__c}"  /></td>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AgtInfoBrokerstandardcontractapply__c}"  /></td>
+                </tr>
+                
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoBrokerAffiliatedWithAnAgency__c.Label }</div> </td>
+                    <td class="fieldLabel singleCase" style="{!singleCase}">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoWilltherebeaSingleCase__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AgtInfoBrokerAffiliatedWithAnAgency__c}"  /></td>
+                    <td class="singleCase" style="{!singleCase}"><apex:outputField value="{!Customer_Setup_Form__c.AgtInfoWilltherebeaSingleCase__c}" /></td>
+                </tr>
+                
+                <tr>
+                    <td class="fieldLabel nameOfAgency" style="{!nameOfAgency}">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoNameofagency__c.Label }</td>
+                    <td class="fieldLabel"></td>
+                </tr>
+                <tr>
+                    <td class="nameOfAgency" style="{!nameOfAgency}"><apex:outputField value="{!Customer_Setup_Form__c.AgtInfoNameofagency__c}"  /></td>
+                    <td></td>
+                </tr>
+            </table> 
+            <table class="formtable">
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoBrokerInvolvementNotes__c.Label }</td>
+                </tr>
+            </table>
+            
+            <table class="formtable">
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AgtInfoBrokerInvolvementNotes__c}"  style="width:800px" /></td>
+                </tr>
+            </table>       
+        </apex:outputPanel>
+
+        <!--  Common Table -->
+        <apex:outputPanel id="commonPanel">
+            <apex:outputPanel rendered="{! commons.size > 0 }">
+
+                <div class="sectionHeader">
+                    <div class="sectionLabel">Common Ownership</div>
+                </div>
+                <apex:variable var="cnt" value="{!0}"/>
+                <apex:repeat value="{!commons}" var="co"> 
+                    
+                    <hr style="height:1px;margin-top:15px;margin-bottom:15px;background-color:#54698D;{!if(cnt==0,'display:none','display:block')}"/>
+                    <table  class="formtable" >
+                        
+                        <tr> 
+                            <td  class="fieldLabel"><div class="requiredLabel" >New or Existing?</div></td>
+                            <td  class="fieldLabel"><div class="requiredLabel" style="{!if(co.New_Or_Existing__c = 'New','display:none','')}">MCP#</div> </td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField id="CommonNewOrExist" value="{!co.New_Or_Existing__c}" ></apex:outputField> </td>
+                            <td><apex:outputField value="{!co.MCP_Number__c}" rendered="{!co.New_Or_Existing__c == 'Existing'}" /></td>
+                        </tr>
+                        <tr>
+                            <td  class="fieldLabel"><div class="requiredLabel"  style="{!if(co.New_Or_Existing__c = 'Existing','display:none','')}">Legal Name</div> </td>
+                            <td  class="fieldLabel">Will this common ownership be a related employer under the Section 125 Plan?</td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!co.Legal_Name__c}" rendered="{!co.New_Or_Existing__c != 'Existing'}" /></td>
+                            <td><apex:outputField value="{!co.Related_Employer_under_S125_Plan__c}"/></td>
+                        </tr>
+                        <tr>
+                            <td  class="fieldLabel"> <div style="{!if(co.New_Or_Existing__c = 'Existing','display:none','')}">DBA Name</div> </td>
+                            <td  class="fieldLabel"> <div class="requiredLabel" style="{!if(co.New_Or_Existing__c = 'Existing', 'display:none', '')}">Is the broker the same as the parent account?</div></td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!co.DBA_Name__c}"  rendered="{!co.New_Or_Existing__c != 'Existing'}" /></td>
+                            <td><apex:outputField value="{!co.Is_the_broker_the_same_as_the_Parent_Acc__c}" rendered="{!co.New_Or_Existing__c != 'Existing'}"/></td>
+                        </tr>
+                        <tr>
+                            <td  class="fieldLabel" ><div style="{!if(co.New_Or_Existing__c = 'Existing','display:none','')}">Employer Tax ID#</div></td>
+                            <td  class="fieldLabel">
+                                <div style="{! IF(AND(co.New_Or_Existing__c = 'New', co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No'), '', 'display:none')}" class="requiredLabel">
+                                    Broker Involved
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!co.Employer_Tax_ID_Number__c}" rendered="{!co.New_Or_Existing__c != 'Existing'}" /></td>
+                            <td><apex:outputField value="{!co.Broker_Involved__c}" rendered="{!co.New_Or_Existing__c != 'Existing' && co.Is_the_broker_the_same_as_the_Parent_Acc__c == 'No'}" /></td>
+                        </tr>
+                        <tr>
+                            <td  class="fieldLabel"><div class="requiredLabel" style="{!if(co.New_Or_Existing__c = 'Existing','display:none','')}">Address Line 1</div> </td>
+                            <td  class="fieldLabel">
+                                <div style="{! IF(AND(co.New_Or_Existing__c = 'New', co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', co.Broker_Involved__c = 'Yes'), '', 'display:none')}" class="requiredLabel">
+                                    Broker Legal Name
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!co.Address_Line_1__c}" rendered="{!co.New_Or_Existing__c != 'Existing'}"/></td>
+                            <td><apex:outputField value="{!co.Broker_Legal_Name__c}" rendered="{! co.New_Or_Existing__c = 'New' && co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && co.Broker_Involved__c = 'Yes'}"/></td>
+                        </tr>
+                        <tr>
+                            <td  class="fieldLabel"><div style="{!if(co.New_Or_Existing__c = 'Existing','display:none','')}">Address Line 2</div> </td>
+                            <td  class="fieldLabel">
+                                <div style="{! IF(AND(co.New_Or_Existing__c = 'New', co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', co.Broker_Involved__c = 'Yes'), '', 'display:none')}" class="requiredLabel">
+                                    Broker Number
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!co.Address_Line_2__c}" rendered="{!co.New_Or_Existing__c != 'Existing'}"/></td>
+                            <td><apex:outputField value="{!co.Broker_Number__c}" rendered="{! co.New_Or_Existing__c = 'New' && co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && co.Broker_Involved__c = 'Yes'}"/></td>
+                        </tr>
+                        <tr>
+                            <td  class="fieldLabel"><div class="requiredLabel"  style="{!if(co.New_Or_Existing__c = 'Existing','display:none','')}">City</div> </td>
+                            <td  class="fieldLabel">
+                                <div style="{! IF(AND(co.New_Or_Existing__c = 'New', co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', co.Broker_Involved__c = 'Yes'), '', 'display:none')}" class="requiredLabel">
+                                    Is the Broker Affiliated with an Agency
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!co.City__c}" rendered="{!co.New_Or_Existing__c != 'Existing'}"/></td>
+                            <td><apex:outputField value="{!co.Is_the_Broker_Affiliated_with_an_Agency__c}" rendered="{! co.New_Or_Existing__c = 'New' && co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && co.Broker_Involved__c = 'Yes'}"/></td>
+                        </tr>
+                        <tr>
+                            <td  class="fieldLabel"><div class="requiredLabel"  style="{!if(co.New_Or_Existing__c = 'Existing','display:none','')}">State</div> </td>
+                            <td  class="fieldLabel">
+                                <div style="{! IF(AND(co.New_Or_Existing__c = 'New', co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', co.Broker_Involved__c = 'Yes', co.Is_the_Broker_Affiliated_with_an_Agency__c = 'Yes'), '', 'display:none')}" >
+                                    Name of Agency
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!co.State_Picklist__c}" rendered="{!co.New_Or_Existing__c != 'Existing'}"/></td>
+                            <td><apex:outputField value="{!co.Name_of_Agency__c}" rendered="{! co.New_Or_Existing__c = 'New' && co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && co.Broker_Involved__c = 'Yes' && co.Is_the_Broker_Affiliated_with_an_Agency__c = 'Yes'}"/></td>
+                        </tr>
+                        <tr>
+                            <td  class="fieldLabel"><div class="requiredLabel" style="{!if(co.New_Or_Existing__c = 'Existing','display:none','')}">Zip</div> </td>
+                            <td  class="fieldLabel">
+                                <div style="{! IF(AND(co.New_Or_Existing__c = 'New', co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', co.Broker_Involved__c = 'Yes'), '', 'display:none')}" class="requiredLabel">
+                                    Is the Broker AOR for AFA Products
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!co.ZipCode__c}" rendered="{!co.New_Or_Existing__c != 'Existing'}"/></td>
+                            <td><apex:outputField value="{!co.Is_the_Broker_AOR_for_AFA_Products__c}" rendered="{! co.New_Or_Existing__c = 'New' && co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && co.Broker_Involved__c = 'Yes'}"/></td>
+                        </tr>
+                        <tr>
+                            <td  class="fieldLabel"><div style="{!if(co.New_Or_Existing__c = 'Existing','display:none','')}">Contact Name</div> </td>
+                            <td  class="fieldLabel">
+                                <div style="{! IF(AND(co.New_Or_Existing__c = 'New', co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', co.Broker_Involved__c = 'Yes'), '', 'display:none')}" class="requiredLabel">
+                                    Does the Standard Broker Contract Apply
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!co.Contact_Name__c}" rendered="{!co.New_Or_Existing__c != 'Existing'}"/></td>
+                            <td><apex:outputField value="{!co.Does_the_Standard_Broker_Contract_Apply__c}" rendered="{! co.New_Or_Existing__c = 'New' && co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && co.Broker_Involved__c = 'Yes'}"/></td>
+                        </tr>
+                        <tr>
+                            <td  class="fieldLabel"><div style="{!if(co.New_Or_Existing__c = 'Existing','display:none','')}">Contact Phone</div> </td>
+                            <td  class="fieldLabel">
+                                <div style="{! IF(AND(co.New_Or_Existing__c = 'New', co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', co.Broker_Involved__c = 'Yes', co.Does_the_Standard_Broker_Contract_Apply__c = 'Yes'), '', 'display:none')}" >
+                                    Will there be a Single Case Agreement
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!co.Contact_Phone_Number__c}" rendered="{!co.New_Or_Existing__c != 'Existing'}"/></td>
+                            <td><apex:outputField value="{!co.Will_there_be_a_Single_Case_Agreement__c}" rendered="{! co.New_Or_Existing__c = 'New' && co.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && co.Broker_Involved__c = 'Yes' && co.Does_the_Standard_Broker_Contract_Apply__c = 'Yes'}"/></td>
+                        </tr>
+                        <tr>
+                            <td  class="fieldLabel"><div style="{!if(co.New_Or_Existing__c = 'Existing','display:none','')}">Contact Email</div>  </td>
+                            <td  class="fieldLabel"><div></div></td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!co.Contact_Phone_Number__c}" rendered="{!co.New_Or_Existing__c != 'Existing'}"/></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                    <apex:variable var="cnt" value="{!cnt+1}"/>  
+                </apex:repeat> 
+            </apex:outputPanel> 
+        </apex:outputPanel>   <!--  End Related Employers (Common) Panel -->
+    </apex:outputPanel>   <!-- end Onboarding Details -->
+        
+    <!--  Billing Info -->
+
+    <apex:outputPanel rendered="{!productBillingTabDisplayed}">
+        <h3 class="title">Product Billing</h3>
+
+        <table>
+            <tr>
+                <td class="fieldLabel">{! $Label.What_date_does_the_employer_need_to_key_c }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.What_date_does_the_employer_need_to_key__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Enroll_Info_First_Payroll_Deduction_Date__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!ps.Enroll_Info_First_Payroll_Deduction_Date__c}"/></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Enroll_Info_Payroll_Deduction_Begins__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!ps.Enroll_Info_Payroll_Deduction_Begins__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Coverage_Effective_Date__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!ps.Coverage_Effective_Date__c}" /></td>
+            </tr>
+        </table>
+
+        <div class="sectionHeader">
+            <div class="sectionLabel">Bill Modes</div>
+        </div>
+
+        <apex:outputText value="{! $Label.Billing_Modes_Disclaimer }" escape="false" styleClass="af-section-note" />
+        
+        
+        <table class="table table-bordered dataTable">
+            <thead>
+                <tr>
+                    <apex:repeat value="{! $ObjectType.Bill_Mode__c.FieldSets.Product_Billing }" var="f">
+                    <th>{! f.Label }</th>
+                    </apex:repeat>
+                </tr>
+            </thead>
+            <tbody>
+                <apex:repeat value="{! BillModes }" var="billMode">
+                    <tr>
+                    <apex:repeat value="{! $ObjectType.Bill_Mode__c.FieldSets.Product_Billing }" var="f">
+                        <td><apex:outputField value="{! billMode[f] }" /></td>
+                    </apex:repeat>
+                    </tr>
+                </apex:repeat>
+            </tbody>
+        </table>
+        
+        <div class="sectionHeader">
+            <div class="sectionLabel">Bill Information</div>       
+        </div>
+
+        <table>
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoIfMultipleBills__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.BillInfoIfMultipleBills__c}" /></td>
+            </tr>
+            
+            <apex:outputPanel layout="none" rendered="{! Customer_Setup_Form__c.BillInfoIfMultipleBills__c == true }">
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoIfMultipleBillsPlsExpln__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.BillInfoIfMultipleBillsPlsExpln__c}" /></td>
+            </tr>
+            </apex:outputPanel>
+        </table>
+        <table>
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoEmployersPaidByAnotherEntity__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.BillInfoEmployersPaidByAnotherEntity__c}" /></td>
+            </tr>
+            
+            <apex:outputPanel layout="none" rendered="{! Customer_Setup_Form__c.BillInfoEmployersPaidByAnotherEntity__c == 'Yes' }">
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoTPAorExistingMCPnumber__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.BillInfoTPAorExistingMCPnumber__c}" /></td>
+            </tr>
+            </apex:outputPanel>
+
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoEmployerNeedSeparateBills__c.Label }:</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.BillInfoEmployerNeedSeparateBills__c}" styleClass="myMultiClass" /></td>
+            </tr>
+
+            <apex:outputPanel layout="none" rendered="{! Customer_Setup_Form__c.BillInfoEmployerNeedSeparateBills__c != 'No' && Customer_Setup_Form__c.BillInfoEmployerNeedSeparateBills__c != '' }">
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoBillNames__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.BillInfoBillNames__c}" /></td>
+            </tr>
+            </apex:outputPanel>
+        </table>
+                   
+        <table class="formtable">
+            <tr>
+                <td class="fieldLabel" style="vertical-align:bottom">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoBillingNotes__c.Label }</td>
+            </tr>
+        </table>
+                 
+        <table class="formtable">
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.BillInfoBillingNotes__c}"  style="width:1000px" /></td>
+            </tr>
+        </table>
+        
+        <apex:variable var="showPayrollDeductionFileDueDate" value="{! Customer_Setup_Form__c.BillInfoPayrollDedFileDueDate__c != null }" />
+        <apex:variable var="showPayrollDeductionFrequency" value="{! ps.EnrollInfoPayrollDeductFrequenc__c != null && ps.EnrollInfoPayrollDeductFrequenc__c != '' }" />
+        <apex:variable var="showPayrollNumberOfPayPeriods" value="{! Customer_Setup_Form__c.BillInfoPayrollInfoNbrofPayPds__c != null && Customer_Setup_Form__c.BillInfoPayrollInfoNbrofPayPds__c != '' }" />
+        <apex:variable var="showPayrollSkipMonths" value="{! ps.PayrollInfo9MoCheck__c == true || ps.PayrollInfoSkipMonths9__c != null || ps.PayrollInfo10MoCheck__c == true || ps.PayrollInfoSkipMonths10__c != null || ps.PayrollInfo11MoCheck__c == true || ps.PayrollInfoSkipMonths11__c != null }" />
+        
+        <apex:outputPanel layout="none" rendered="{! showPayrollDeductionFileDueDate || showPayrollNumberOfPayPeriods || showPayrollDeductionFrequency || showPayrollSkipMonths}">
+        <table>
+            <tr>
+                <td class="af-previouslyEnteredValuesHeader fieldLabel">
+                    <apex:outputText value="Previously Entered Values"/>
+                    <hr />
+                </td>
+            </tr>
+        
+            <apex:outputPanel layout="none" rendered="{! showPayrollDeductionFrequency }">
+            <tr>
+                <td  class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.EnrollInfoPayrollDeductFrequenc__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!ps.EnrollInfoPayrollDeductFrequenc__c}"/></td>
+            </tr>
+            </apex:outputPanel>
+        
+            <apex:outputPanel layout="none" rendered="{! showPayrollNumberOfPayPeriods }">
+            <tr>
+                <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoPayrollInfoNbrofPayPds__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.BillInfoPayrollInfoNbrofPayPds__c}"/></td>
+            </tr>
+            </apex:outputPanel>
+        
+            <apex:outputPanel layout="none" rendered="{! showPayrollDeductionFileDueDate }">
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoPayrollDedFileDueDate__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.BillInfoPayrollDedFileDueDate__c}"/></td>
+            </tr>
+            </apex:outputPanel>
+        </table>
+        </apex:outputPanel>
+        
+        <apex:outputPanel layout="none" rendered="{! showPayrollSkipMonths }">
+        <table class="formtable" > 
+            <tr>
+                <td class="fieldLabel" >Are there any skip months?</td>
+                <td></td>
+            </tr>
+        </table>
+        <table class="formtable" style="width:350px" > 
+            <tr>
+                <td style="width:100px" ><apex:outputField value="{!ps.PayrollInfo9MoCheck__c}" styleClass="skipMonths"/>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfo9MoCheck__c.Label }</td>
+                <td>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfoSkipMonths9__c.Label } <br/><apex:outputField value="{!ps.PayrollInfoSkipMonths9__c}" styleClass="skipMonths" style="width:200px"/></td>
+            </tr>
+            <tr>
+                <td style="width:100px" ><apex:outputField value="{!ps.PayrollInfo10MoCheck__c}" styleClass="skipMonths"/> {! $ObjectType.Platform_Setup__c.Fields.PayrollInfo10MoCheck__c.Label }</td>
+                <td>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfoSkipMonths10__c.Label }<br/> <apex:outputField value="{!ps.PayrollInfoSkipMonths10__c}" styleClass="skipMonths" style="width:200px"/></td>
+            </tr>
+            <tr>
+                <td style="width:100px"><apex:outputField value="{!ps.PayrollInfo11MoCheck__c}" styleClass="skipMonths"/>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfo11MoCheck__c.Label }</td>
+                <td>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfoSkipMonths11__c.Label }<br/> <apex:outputField value="{!ps.PayrollInfoSkipMonths11__c}" styleClass="skipMonths" style="width:200px" /></td>
+            </tr>
+        </table>
+        </apex:outputPanel>
+        
+        
+    </apex:outputPanel>   <!--  End Product Billing Tab -->
+            
+            
+    <!-- Group Plans Tab -->
+    <apex:outputPanel rendered="{!groupPlansTabDisplayed}">
+        <h3 class="title">Group Plans</h3>
+        
+        <div class="sectionHeader">
+            <div class="sectionLabel">General Information</div>       
+        </div>
+
+        <table  class="formtable" >
+            <tr>
+                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdTakeoverOfGroupPlan__c.Label }</div></td>
+            </tr>
+                       
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdTakeoverOfGroupPlan__c}"/></td>
+            </tr>
+
+            <tr style="{!if(!GrpProdSelectProductsTakingOver,'display:none','')}">
+                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSelectProductsTakingOver__c.Label }</div></td>
+            </tr>
+        
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdSelectProductsTakingOver__c}" 
+                               rendered="{!GrpProdSelectProductsTakingOver}" /></td>
+            </tr>
+
+            <tr style="{!if(!GrpProdProvideCarriersofTakeoverProducts,'display:none','')}">
+                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdProvideCarriersofTakeoverProducts__c.Label }</div></td>
+            </tr>
+
+            <tr> 
+                <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdProvideCarriersofTakeoverProducts__c}" 
+                         rendered="{!GrpProdProvideCarriersofTakeoverProducts}"/></td>
+            </tr>
+        
+            <tr  style="{!if(!GrpProdSelectProductsTakingOver,'display:none','')}">
+                <td  class="fieldLabel" style="font-weight:bold">Please upload a Bill that includes the Customer Names and Benefit Periods.</td>
+            </tr>
+
+            <tr  style="{!if(!GrpProdSelectProductsTakingOver,'display:none','')}">
+                <td><apex:iframe id="uploadFrame" src="/apex/uploadFiles?id={!Customer_Setup_Form__c.Id}" height="60%" ></apex:iframe></td>
+            </tr>
+        
+            <tr style="{!if(!GrpProdHowwouldyouliketoselectDisplans,'display:none','')}">
+                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdHowwouldyouliketoselectDisplans__c.Label }</div></td>
+            </tr>
+
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c}" style="width:250px"
+                         rendered="{!GrpProdHowwouldyouliketoselectDisplans}"/></td>
+            </tr>
+
+            <tr style="{!if(!GrpProdHowwouldyouliketoselectGrpCIplans,'display:none','')}">
+                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdHowwouldyouliketoselectGrpCIplans__c.Label }</div></td>
+            </tr>
+
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGrpCIplans__c}"  style="width:250px" 
+                         rendered="{!GrpProdHowwouldyouliketoselectGrpCIplans}"/></td>
+            </tr>
+
+            <tr style="{!if(!GrpProdHowwouldyouliketoselectGAPplans,'display:none','')}">
+                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdHowwouldyouliketoselectGAPplans__c.Label }</div></td>
+            </tr>
+
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGAPplans__c}"  style="width:250px" 
+                         rendered="{!GrpProdHowwouldyouliketoselectGAPplans}"/></td>
+            </tr>
+            <tr>
+                <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpHospitalIndemnity__c.Label }</td>
+            </tr>
+                       
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.GrpHospitalIndemnity__c}"/></td>
+            </tr>
+            <tr style="{!if(showGroupCancer, '', 'display:none')}">
+                <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.Adding_Group_Cancer__c.Label}</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.Adding_Group_Cancer__c}" style="width:250px"
+                rendered="{!showGroupCancer}"/></td>
+            </tr>
+            
+        </table> 
+                   
+        <apex:outputPanel id="matchPanel">   
+            <div class="sectionHeader" style="{!if(!showMatchPanel,'display:none','')}">
+                <div class="sectionLabel">Match to MCP</div>  
+            </div>   
+
+            <table  class="formtable" >
+                <tr style="{!if(!GrpProdLTDplanstomatchAccount,'display:none','')}">
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDplanstomatchAccount__c.Label }</div></td>
+                    <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDplansmatchingMCP__c.Label }</td>
+                </tr>
+
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdLTDplanstomatchAccount__c}"   style="width:50%" 
+                           rendered="{!GrpProdLTDplanstomatchAccount}" /></td>
+                    <td><apex:outputField value="{!csfMatchingMCP.GrpProdLTDplansmatchingMCP__c}" 
+                           rendered="{!GrpProdLTDplanstomatchAccount}"/></td>
+                </tr> 
+                    
+                <tr style="{!if(!GrpProdSTDplanstomatchAccount,'display:none','')}">
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDplanstomatchAccount__c.Label }</div></td>
+                    <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDplansmatchingMCP__c.Label }</td>
+                </tr>
+
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdSTDplanstomatchAccount__c}" style="width:50%" 
+                            rendered="{!GrpProdSTDplanstomatchAccount}" /></td>
+                    <td><apex:outputField value="{!csfMatchingMCP.GrpProdSTDplansmatchingMCP__c}"  
+                            rendered="{!GrpProdSTDplanstomatchAccount}"/></td>
+                </tr>
+
+                <tr style="{!if(!GrpProdGroupCIplanstomatchAccount,'display:none','')}">
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdGroupCIplanstomatchAccount__c.Label }</div></td>
+                    <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdGroupCIplansmatchingMCP__c.Label }</td>
+                </tr>
+
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdGroupCIplanstomatchAccount__c}" style="width:50%" 
+                            rendered="{!GrpProdGroupCIplanstomatchAccount}" /></td>
+                    <td><apex:outputField value="{!csfMatchingMCP.GrpProdGroupCIplansmatchingMCP__c}"  
+                            rendered="{!GrpProdGroupCIplanstomatchAccount}"/></td>
+                </tr>
+
+                <tr style="{!if(!GrpProdGAPplanstomatchAccount,'display:none','')}">
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdGAPplanstomatchAccount__c.Label }</div></td>
+                    <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdGAPplansmatchingMCP__c.Label }</td>
+                </tr>
+
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdGAPplanstomatchAccount__c}" style="width:50%" 
+                           rendered="{!GrpProdGAPplanstomatchAccount}" /></td>
+                    <td><apex:outputField value="{!csfMatchingMCP.GrpProdGAPplansmatchingMCP__c}"
+                           rendered="{!GrpProdGAPplanstomatchAccount}"/></td>
+                </tr>
+            </table>    
+        </apex:outputPanel>
+                    
+        <apex:outputPanel rendered="{!formType == 'AFES' && showPlanInfo}">   
+            <div class="sectionHeader"   style="margin-bottom:5px">       
+                <div class="sectionLabel">Plan Codes</div>
+            </div>      
+      
+            <div style="margin-top:20px">
+            
+                <apex:outputPanel id="productPanel">
+                    <table class="table table-bordered dataTable">
+                        <thead>
+                            <tr>
+                                <th>New or Replace</th>
+                                <th>Product</th>
+                                <th>MCH/Company</th>
+                                <th>Plan Codes/Benefits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <apex:repeat value="{!products}"  var="p">
+                            <tr>
+                                <td><div class="requiredLabel"><apex:outputField value="{!p.Group_Products__c}"/></div></td>
+                                <td><div class="requiredLabel"><apex:outputField value="{!p.ProductName__c}"/></div></td>
+                                <td><div class="requiredLabel"><apex:outputField value="{!p.MCH_Company__c}" /></div></td>
+                                <td><div class="requiredLabel"> <apex:outputField value="{!p.Plan_Codes_Benefits__c}" /></div></td>
+                            </tr>
+                        </apex:repeat>
+                        </tbody>
+                    </table>
+                </apex:outputPanel>
+            </div>    
+        </apex:outputPanel> 
+        
+        <apex:outputPanel rendered="{!formType == 'AWD' && showPlanInfo}"> 
+            <div class="sectionHeader" style="{!if(!showPlanInfo,'display:none','')}">
+                <div class="sectionLabel">Plan Information</div>
+            </div>   
+
+            <table  class="formtable" style="width:100%" >
+                <tr>
+                    <td  class="fieldLabel" style="width:50%;">
+                        <div class="requiredLabel" style="{!if(!GrpProdLTDEliminationPeriod,'display:none','')}">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDEliminationPeriod__c.Label }</div></td>
+                    <td  class="fieldLabel" style="width:50%;">
+                        <div class="requiredLabel" style="{!if(!GrpProdLTDOtherElimination,'display:none','')}">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDOtherElimination__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><div><apex:outputField value="{!Customer_Setup_Form__c.GrpProdLTDEliminationPeriod__c}" 
+                                rendered="{!GrpProdLTDEliminationPeriod}"/></div></td>
+                    <td style="vertical-align:top"><apex:outputField value="{!Customer_Setup_Form__c.GrpProdLTDOtherElimination__c}" 
+                                rendered="{!GrpProdLTDOtherElimination}"/></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">
+                        <div class="requiredLabel" style="{!if(!GrpProdLTDBenefitPlan,'display:none','')}">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDBenefitPlan__c.Label }</div></td>
+                    <td class="fieldLabel">
+                        <div class="requiredLabel" style="{!if(!GrpProdLTDCustomBenefitPlan,'display:none','')}">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDCustomBenefitPlan__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><div ><apex:outputField value="{!Customer_Setup_Form__c.GrpProdLTDBenefitPlan__c}" 
+                                rendered="{!GrpProdLTDBenefitPlan}"/></div></td>
+                    <td style="vertical-align:top"><apex:outputField value="{!Customer_Setup_Form__c.GrpProdLTDCustomBenefitPlan__c}" 
+                                rendered="{!GrpProdLTDCustomBenefitPlan}"/></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">
+                        <div class="requiredLabel" style="{!if(!GrpProdSTDEliminationPeriod,'display:none','')}">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDEliminationPeriod__c.Label }</div></td>
+                    <td class="fieldLabel">
+                        <div class="requiredLabel" style="{!if(!GrpProdSTDOtherElimination,'display:none','')}">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDOtherElimination__c.Label }</div></td>
+                 </tr>
+                <tr>
+                    <td><div><apex:outputField value="{!Customer_Setup_Form__c.GrpProdSTDEliminationPeriod__c}" 
+                                rendered="{!GrpProdSTDEliminationPeriod}"/></div></td>
+                    <td style="vertical-align:top"><apex:outputField value="{!Customer_Setup_Form__c.GrpProdSTDOtherElimination__c}" 
+                                rendered="{!GrpProdSTDOtherElimination}"/></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel" >
+                        <div class="requiredLabel" style="{!if(!GrpProdSTDBenefitPlan,'display:none','')}">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDBenefitPlan__c.Label }</div> </td>
+                    <td class="fieldLabel">
+                        <div class="requiredLabel" style="{!if(!GrpProdSTDCustomBenefitPlan,'display:none','')}">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDCustomBenefitPlan__c.Label }</div> </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top"><div style="width:90%"><apex:outputField value="{!Customer_Setup_Form__c.GrpProdSTDBenefitPlan__c}"  
+                            rendered="{!GrpProdSTDBenefitPlan }"/></div></td>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdSTDCustomBenefitPlan__c}" 
+                            rendered="{!GrpProdSTDCustomBenefitPlan}"/></td>
+                </tr>
+                <tr  style="{!if(!GrpCIGrpCritIll_MCH_7268,'display:none','')}">
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpCIGrpCritIll_MCH_7268__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><div><apex:outputField value="{!Customer_Setup_Form__c.GrpCIGrpCritIll_MCH_7268__c}" 
+                                rendered="{!GrpCIGrpCritIll_MCH_7268}"/></div></td>
+                </tr>
+                <tr style="{!if(!GrpProdSpouseBenefitAmount,'display:none','')}">
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSpouseBenefitAmount__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><div><apex:outputField value="{!Customer_Setup_Form__c.GrpProdSpouseBenefitAmount__c}" 
+                                rendered="{!GrpProdSpouseBenefitAmount}"/></div></td>
+                </tr>
+            </table>
+           
+            <table class="formtable" style="width:48%">
+                <tr style="{!if(!GrpCIGrpCritIllMCH7268PlanCode,'display:none','')}">
+                    <td  class="fieldLabel"><div class="requiredLabel">Group CI Plan Codes</div></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.GrpCIGrpCritIllMCH7268PlanCode__c}" 
+                        rendered="{!GrpCIGrpCritIllMCH7268PlanCode}"/></td>
+                </tr>
+            </table>
+          
+            <table class="formtable" style="width:100%">
+                <tr>
+                    <td  class="fieldLabel" style="width:50%">
+                        <div class="requiredLabel" style="{!if(!HospitalGAPInfoPlanOption,'display:none','')}">{! $ObjectType.Customer_Setup_Form__c.Fields.HospitalGAPInfoPlanOption__c.Label }</div></td>
+                   
+                    <td  class="fieldLabel"  style="{!if(!HospitalGapInfoEmployerContribution,'display:none','')};width:50%">{! $ObjectType.Customer_Setup_Form__c.Fields.HospitalGapInfoEmployerContribution__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.HospitalGAPInfoPlanOption__c}"  
+                            rendered="{!HospitalGAPInfoPlanOption}"/></td>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.HospitalGapInfoEmployerContribution__c}" 
+                            rendered="{!HospitalGapInfoEmployerContribution}"/></td>
+                </tr>
+                <tr style="{!if(!HospitalGapInfoHospGapPlanAmount,'display:none','')}">
+                    <td class="fieldLabel">
+                        <div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.HospitalGapInfoHospGapPlanAmount__c.Label }</div> </td>
+                    <td/>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.HospitalGapInfoHospGapPlanAmount__c}" 
+                                rendered="{!HospitalGapInfoHospGapPlanAmount}"/></td>
+                    <td/>
+                </tr>
+            </table> 
+        </apex:outputPanel>  <!-- end AWD fields -->
+           
+        <div class="sectionHeader">  
+            <div class="sectionLabel">Comments</div>
+        </div>
+
+        <table  class="formtable" >
+            <tr>
+                <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdGroupSetupComments__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.GrpProdGroupSetupComments__c}" style="width:750px" /></td>
+            </tr>
+        </table>
+    </apex:outputPanel>    <!--  End Group Plans Tab -->
+         
+    <apex:outputPanel rendered="{!openEnrollmentTabDisplayed}">
+        <div class="sectionHeader">  
+            <div class="sectionLabel">Open Enrollment</div>
+        </div>
+
+        <table  class="formtable" style="width:60%">
+            <tr>
+                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.OpnEnrollReasonforRequest__c.Label }</div></td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.OpnEnrollReasonforRequest__c}" style="width:60%" /></td>
+            </tr>
+            <tr>
+                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.OpnEnrollExpectationofOpenEnrollment__c.Label }</div></td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.OpnEnrollExpectationofOpenEnrollment__c}" style="width:60%"  /></td>
+            </tr>
+            <tr>
+                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.OpnEnrollPlanCodes__c.Label }</div></td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.OpnEnrollPlanCodes__c}"  style="width:60%" /></td>
+            </tr>
+            <tr>
+                <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.OpnEnrollMCH__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.OpnEnrollMCH__c}" /></td>
+            </tr>
+        </table>   
+    </apex:outputPanel>  <!-- End Open Enrollment -->
+ 
+ 
+    <apex:outputPanel rendered="{!AnnuitiesTabDisplayed}">
+        <h3 class="title">Annuities</h3>
+
+        <apex:variable var="beforeSkipMonths" value="{!If(Customer_Setup_Form__c.AnnBeforeTaxBillModeSkipMonths__c=='Yes','','display:none')}"/>
+        <apex:variable var="afterSkipMonths" value="{!If(Customer_Setup_Form__c.AnnAfterTaxBillModeSkipMonths__c=='Yes','','display:none')}"/>
+
+        <apex:variable var="beforeTPA" value="{!If(Customer_Setup_Form__c.AnnBeforeTaxWhowillsubmitpremiums__c == 'TPA','','display:none')}"/>
+        <apex:variable var="afterTPA" value="{!If(Customer_Setup_Form__c.AnnAfterTaxWhowillsubmitpremiums__c == 'TPA','','display:none')}"/>
+
+        <table  class="formtable" >
+            <tr>
+                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxAddressInfothesame__c.Label }</div> </td>
+                <td/>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxAddressInfothesame__c}" /></td>
+                <td/>
+            </tr>
+        </table>
+           
+        <apex:outputPanel rendered="{!Customer_Setup_Form__c.AnnBeforeTaxAddressInfothesame__c != 'Yes'}">
+            <table class="formtable">
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxAddressLine1__c.Label }</div></td>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxState__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxAddressLine1__c}" /></td>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxState__c}" /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxAddressLine2__c.Label }</td>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxZip__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxAddressLine2__c}" /></td>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxZip__c}" /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxCity__c.Label }</div></td>
+                    <td/>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxCity__c}" /></td>
+                    <td/>
+                </tr>
+            </table> 
+        </apex:outputPanel>
+           
+        <div class="sectionHeader">
+            <div class="sectionLabel">Before Tax 403(b) Annuity</div>  
+        </div>
+
+        <table  class="formtable" style="width:90%">
+            <tr>
+                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAddaBeforeTaxAnnuity__c.Label }</div></td>
+                <td/>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.AnnAddaBeforeTaxAnnuity__c}" /></td>
+                <td/>
+            </tr>
+        </table>
+          
+        <apex:outputPanel rendered="{!Customer_Setup_Form__c.AnnAddaBeforeTaxAnnuity__c=='Yes'}">
+            <table class="formtable"  style="width:90%">
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxBillingModes__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><div style="width:85%"><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxBillingModes__c}" /></div></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxBillModesStatus__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxBillModesStatus__c}" /></td>
+                </tr>
+                <tr>
+                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxBillModePayDed__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxBillModePayDed__c}" /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxBillModeSkipMonths__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxBillModeSkipMonths__c}" /></td>
+                </tr>
+                <tr style="{!beforeSkipMonths}">
+                    <td class="fieldLabel beforeSkipMonths"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxBillModeWhatMonths__c.Label }</div></td>
+                </tr>
+                 <tr>
+                    <td class="beforeSkipMonths"><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxBillModeWhatMonths__c}" style="width:400px" /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxMethodofPayment__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top"><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxMethodofPayment__c}" /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxWhowillsubmitpremiums__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxWhowillsubmitpremiums__c}" /></td>
+                </tr>
+                <tr style="{!beforeTPA}">
+                    <td class="fieldLabel beforeTPA" ><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxNameofTPA__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td class="beforeTPA"><apex:outputField value="{!Customer_Setup_Form__c.AnnBeforeTaxNameofTPA__c}"  style="width:400px" /></td>
+                </tr>
+            </table>    
+        </apex:outputPanel>
+         
+        <div class="sectionHeader">   
+            <div class="sectionLabel">After-Tax Annuity</div> 
+        </div>
+
+        <table  class="formtable" style="width:90%">
+            <tr>
+                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAddanAfterTaxAnnuity__c.Label }</div></td>
+            </tr>
+            <tr>
+                <td style="vertical-align:top"><apex:outputField value="{!Customer_Setup_Form__c.AnnAddanAfterTaxAnnuity__c}" /></td>
+            </tr>
+        </table>
+
+        <apex:outputPanel rendered="{!Customer_Setup_Form__c.AnnAddanAfterTaxAnnuity__c=='Yes'}">
+            <table class="formtable" style="width:90%">
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">Select a plan</div></td>
+                    <td/>
+                </tr>
+                <tr>
+                    <td><div style="width:85%"><apex:outputField value="{!Customer_Setup_Form__c.AnnAfterTaxSelectaPlan__c}" /></div></td>
+                    <td/>
+                </tr>
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBilllingMode__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><div style="width:85%"><apex:outputField value="{!Customer_Setup_Form__c.AnnAfterTaxBilllingMode__c}" /></div></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBillModesStatus__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnAfterTaxBillModesStatus__c}" /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBillModePayrollDeds__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnAfterTaxBillModePayrollDeds__c}" /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBillModeSkipMonths__c.Label }</div></td>
+                    <td/>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnAfterTaxBillModeSkipMonths__c}" /></td>
+                    <td/>
+                </tr>
+                <tr style="{!afterSkipMonths}">
+                    <td class="fieldLabel afterSkipMonths"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBillModeMonths__c.Label }</div></td>
+                    <td/>
+                </tr>
+                <tr>
+                    <td class="afterSkipMonths"><apex:outputField value="{!Customer_Setup_Form__c.AnnAfterTaxBillModeMonths__c}" /></td>
+                    <td/>
+                </tr> 
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxMethodofPayment__c.Label }</td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top"><apex:outputField value="{!Customer_Setup_Form__c.AnnAfterTaxMethodofPayment__c}" /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxWhowillsubmitpremiums__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnAfterTaxWhowillsubmitpremiums__c}"/></td>
+                </tr>
+                <tr style="{!afterTPA}">
+                    <td  class="fieldLabel afterTPA"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxTPAName__c.Label }</div> </td>
+                </tr>
+                <tr>
+                    <td class="afterTPA"><apex:outputField value="{!Customer_Setup_Form__c.AnnAfterTaxTPAName__c}" /></td>
+                </tr>
+            </table>    
+        </apex:outputPanel>
+
+        <div class="sectionHeader">  
+            <div class="sectionLabel">Comments</div>    
+        </div>
+
+        <table  class="formtable" >
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBillModeSpecialInstr__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Customer_Setup_Form__c.AnnAfterTaxBillModeSpecialInstr__c}" style="width:850px" /></td>
+            </tr>
+        </table>
+    </apex:outputPanel>   <!--  End Annuities Tab -->
+ 
+</apex:define>       
+</apex:composition>
+</apex:page>

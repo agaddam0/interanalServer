@@ -1,0 +1,11 @@
+.THIS .slds-item_label {
+	width: 40% !important;
+}
+
+.THIS .slds-item_detail {
+	width: 60% !important;
+}
+
+.THIS .af-field-set-record-display-field-value {
+    overflow-wrap: break-word;
+}

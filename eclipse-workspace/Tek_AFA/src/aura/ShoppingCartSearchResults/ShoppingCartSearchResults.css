@@ -1,0 +1,80 @@
+.THIS {
+    background-color: white;
+}
+
+.THIS .tag-bottom {
+    bottom: 0px;
+    margin-top : 15px;
+}
+
+.THIS .button-add-to-cart {
+    width:50%;
+    background-color: token(AFAgreen3);
+    border: none;
+}
+
+.THIS .button-add-to-cart:hover {
+    background-color: token(AFAgreen4);
+}
+
+.THIS .pill-tag {
+    background: #EEEEEE;
+    font-size: 11px;
+    font-weight: bold;
+    color: #6E6D71;
+    padding: 0 10px;
+    margin: 3px;
+    border-radius: .30rem;
+    border: none;
+    cursor : pointer;
+}
+
+.THIS .form-name {
+    color: token(AFAteal5);
+    text-decoration: underline;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.THIS .af-thumbnail-img-container {
+	cursor: pointer;
+}
+
+.THIS .dividerLine {
+    border-bottom: 1.5px solid token(AFAgrey3);
+}
+
+.THIS .corner-triangle {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 75px 75px 0 0;
+    border-color: #ffc800 transparent transparent transparent;
+    position: relative;
+    margin-right: -75px;
+    vertical-align:top;
+    float:left;
+}
+
+.THIS .image-container {
+    display:inline-block;
+    vertical-align:top;
+}
+
+.THIS .triangle-text {
+    position: absolute;
+    font-size: 1rem;
+    top: -58px;
+    right: -52px;
+    font-family: 'Salesforce Sans', Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-transform: rotate(-45deg); 
+    -moz-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    -o-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+}
+
+.THIS .favorite {
+    margin-top: -4px;
+}

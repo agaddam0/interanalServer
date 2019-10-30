@@ -1,0 +1,112 @@
+<aura:component extends="c:ReserviceComponentContainer" controller="ReserviceSetupController">
+    
+    <aura:attribute name="opportunity" type="Opportunity" />
+    <aura:attribute name="EnrollmentForm" type="Enrollment_Form__c" />
+    <aura:attribute name="PlatformSetup" type="Platform_Setup__c"/>
+    <aura:attribute name="Account" type="Account" />
+    <aura:attribute name="disableInputFields" type="Boolean" default="false" />
+    
+    <aura:registerEvent name="submitForms" type="c:ReserviceSubmitForms" />
+    
+    <aura:method name="validateChildComponents" />
+    <aura:method name="disableForms">
+        <aura:attribute name="disabled" type="Boolean" />
+    </aura:method>
+    
+    <div class="slds-p-around_small">
+        
+        <div class="slds-section slds-is-open af-border-radius">
+            <h3 class="slds-section__title afa-section-header">
+                <span class="slds-truncate slds-p-horizontal_small" title="General Information">General Information</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content slds-p-bottom_large">
+                <div class="slds-p-left_medium">
+                    <c:ReserviceGeneralInformationSection aura:Id="generalInfo" 
+                                                          Opportunity="{!v.opportunity}" 
+                                                          Account="{! v.Account }"
+                                                          disableFormFields="{!v.disableInputFields}"/>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slds-section slds-is-open af-border-radius">
+            <h3 class="slds-section__title afa-section-header">
+                <span class="slds-truncate slds-p-horizontal_small" title="Key Dates">Key Dates</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content slds-p-bottom_large">
+                <div class="slds-p-left_medium">
+                    <c:ReserviceKeyDatesSection aura:id="keyDates" 
+                                                opportunity="{!v.opportunity}" 
+                                                PlatformSetup="{!v.PlatformSetup}" 
+                                                disableFormFields="{!v.disableInputFields}"/>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slds-section slds-is-open af-border-radius">
+            <h3 class="slds-section__title afa-section-header">
+                <span class="slds-truncate slds-p-horizontal_small" title="AFEnroll Platform Details">AFEnroll Platform Details</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content slds-p-bottom_large">
+                <div class="slds-p-left_medium">
+                    <c:ReservicePlatformDetails aura:id="platformDetails" 
+                                                Opportunity="{!v.opportunity}" 
+                                                PlatformSetup="{!v.PlatformSetup}"
+                                                disableInputFields="{!v.disableInputFields}"/>
+                    
+                    <c:ReserviceReturnDataInformation aura:id="returnDataInfo" 
+                                                      PlatformSetup="{!v.PlatformSetup}"
+                                                      Opportunity="{! v.opportunity }"
+                                                      disableInputFields="{!v.disableInputFields}"/>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slds-section slds-is-open af-border-radius">
+            <h3 class="slds-section__title afa-section-header">
+                <span class="slds-truncate slds-p-horizontal_small" title="Setup Changes">Setup Changes</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content slds-p-bottom_large">
+                <div class="slds-p-left_medium">
+                    <c:ReserviceSetupChanges aura:id="setupChanges" 
+                                             PlatformSetup="{!v.PlatformSetup}" 
+                                             Opportunity="{!v.opportunity}" 
+                                             EnrollmentForm="{!v.EnrollmentForm}" 
+                                             disableInputFields="{!v.disableInputFields}"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="slds-section slds-is-open af-border-radius">
+                <h3 class="slds-section__title afa-section-header">
+                    <span class="slds-truncate slds-p-horizontal_small" title="Core Benefits Folder">Core Benefits Folder</span>
+                </h3>
+                <div aria-hidden="false" class="slds-section__content slds-p-bottom_large">
+                    <div class="slds-p-horizontal_medium">
+                        <c:ReserviceCoreBenefits PlatformSetup="{!v.PlatformSetup}"
+                                                 disableInputFields="{!v.disableInputFields}"
+                                                 aura:id="coreBenefits" />
+                    </div>
+                </div>
+            </div>
+        
+        <div class="slds-section slds-is-open af-border-radius">
+            <h3 class="slds-section__title afa-section-header">
+                <span class="slds-truncate slds-p-horizontal_small" title="Notes">Notes</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content slds-p-bottom_large">
+                <div class="slds-p-horizontal_medium">
+                    <div class="slds-size_2-of-3">
+                        <lightning:textarea value="{! v.opportunity.Enrollment_Setup_Notes__c }" label="Enrollment Setup Notes" onchange="{! c.save}" disabled="{!v.disableInputFields}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="slds-p-around_medium">
+            <button class="slds-button slds-button_neutral af-standard-button" onclick="{!c.navigateBack}">Back</button>
+            <button class="slds-button slds-button_neutral af-progress-button secondarySubmitButton" onclick="{!c.submitForm}">Submit</button>
+        </div>
+    </div>
+</aura:component>

@@ -1,0 +1,4 @@
+<aura:event type="COMPONENT" description="Event to send status variable to other components">
+    <aura:attribute name="Status" type="String" />
+    <aura:attribute name="RequestEdit" type="Boolean" />
+</aura:event>

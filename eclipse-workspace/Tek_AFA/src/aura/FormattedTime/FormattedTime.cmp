@@ -1,0 +1,17 @@
+<aura:component>
+    <aura:attribute name="value" type="String" />
+
+    <aura:attribute name="isMillisecondsTimeValue" type="Boolean" access="private" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="change" value="{!v.value}" action="{!c.doInit}"/>
+    
+    <aura:if isTrue="{! and(v.value, v.isMillisecondsTimeValue) }">
+        <lightning:formattedDateTime value="{! v.value }" hour="2-digit" minute="2-digit" timeZone="UTC" />
+    </aura:if>
+    
+    <aura:if isTrue="{! and(v.value, !v.isMillisecondsTimeValue) }">
+        <ui:outputDateTime value="{! v.value }" format="h:mm a" timezone="UTC" />
+    </aura:if>
+    	
+</aura:component>

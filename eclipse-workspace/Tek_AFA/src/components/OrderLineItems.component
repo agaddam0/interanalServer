@@ -1,0 +1,170 @@
+<apex:component controller="EmailComponentGetLineItems" access="global">
+    <apex:attribute name="OrderId" type="Id" description="Id of the user" assignTo="{!order_Id}"/>
+    <apex:attribute name="ProcessingType" type="String" description="The processing type you want to query by" assignTo="{!processing_Type}"/>
+    
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .cell-class {
+            border-bottom: 1.5px solid #C6C8CA;
+            line-height: 2rem;
+        	padding: 20px 0;
+        	vertical-align: top;
+        }
+        
+        .cell-class-center {
+        	border-bottom: 1.5px solid #C6C8CA;
+            line-height: 2rem;
+        	text-align: center;
+        	padding: 20px 0;
+        	vertical-align: top;
+        }
+        
+        .cell-class-right {
+        	border-bottom: 1.5px solid #C6C8CA;
+            line-height: 2rem;
+        	text-align: center;
+        	padding: 20px 0;
+        }
+        
+        .cell-class-bolded {
+        	border-bottom: 1.5px solid #C6C8CA;
+            line-height: 2rem;
+        	font-weight: bold;
+        	padding: 20px 0;
+        	vertical-align: top;
+        }
+        
+        .cell-class-image {
+        	border-bottom: 1.5px solid #C6C8CA;
+            line-height: 2rem;
+        	width: 120px;
+        	padding: 20px 0;
+        }
+        
+        .title {
+            color : #157885;
+            text-decoration : underline;
+            font-weight : bold;
+            font-size : 14px;
+        }
+        
+        .pad-left {
+        	padding-left : 20px;
+        	line-height: 1rem;
+        }
+        
+        img {
+        	width : 100px;
+        }
+        .additionalFields{
+        	vertical-align: top;
+        	line-height: normal;
+        }
+        
+        .additionalFieldsTable {
+        	margin-top: 20px;
+        	width: 310px;
+        }
+        
+    </style>
+        <table class="mainTable">
+            <tr>
+            	<td colspan="4" class="cell-class"></td>
+            </tr>
+            <apex:repeat value="{!OrderLineItems}" var="item" >
+                <tr>
+                    <td class="cell-class">
+                        <span class="title">{! item.OrderLineItem.Material_Title__c } </span>
+                        <apex:outputPanel rendered="{!item.CustomizationFieldSet != null}">
+                            <div class="pad-left"><br/><br/>
+                                <table>
+                                    <apex:repeat value="{!item.CustomFields}" var="field">
+                                        <tr>
+                                        	<td width="15%">{!field.Label}</td>
+                                            <td>{!field.FieldValue}</td>
+                                        </tr>
+                                    </apex:repeat> 
+                                </table> 								                              
+                            </div>                            
+                        </apex:outputPanel>
+                        <div style="width:100%">
+                            <table style="width:100%">
+                                <tr>
+                                    <apex:outputPanel rendered="{!item.OrderLineItem.Account__c != null}">
+                                        <td style="width:25%" class="additionalFields">
+                                            <table class="additionalFieldsTable">
+                                                <tr>
+                                                    <td><b>Account</b></td>
+                                                </tr>
+                                                <apex:repeat value="{!item.AccountFields}" var="field">
+                                                    <tr>
+                                                        <td width="50%">{!field.Label}</td>
+                                                        <td width="50%">{!field.FieldValue}</td>
+                                                    </tr>
+                                                </apex:repeat>
+                                            </table>
+                                        </td>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!item.OrderLineItem.Opportunity__c != null}">
+                                        <td width="25%" class="additionalFields">
+                                            <table class="additionalFieldsTable">
+                                                <tr>
+                                                    <td><b>Opportunity Products</b></td>
+                                                </tr>
+                                                <apex:repeat value="{!item.MarketedProducts}" var="product">
+                                                    <tr>
+                                                        <td>{!product.Name}</td>
+                                                    </tr>
+                                                </apex:repeat>
+                                            </table>
+                                        </td>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!item.OrderLineItem.Colleague__c != null}">
+                                        <td width="25%" class="additionalFields">
+                                            <table class="additionalFieldsTable">
+                                                <tr>
+                                                    <td><b>Colleague</b></td>
+                                                </tr>
+                                                <apex:repeat value="{!item.UserFields}" var="field">
+                                                    <tr>
+                                                        <td>{!field.Label}</td>
+                                                        <td>{!field.FieldValue}</td>
+                                                    </tr>
+                                                </apex:repeat>
+                                            </table>
+                                        </td>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!item.OrderLineItem.Sales_Office__c != null}">
+                                        <td width="25%" class="additionalFields">
+                                            <table class="additionalFieldsTable">
+                                                <tr>
+                                                    <td><b>Sales Office</b></td>
+                                                </tr>
+                                                <apex:repeat value="{!item.SalesOfficeFields}" var="field">
+                                                    <tr>
+                                                        <td>{!field.Label}</td>
+                                                        <td>{!field.FieldValue}</td>
+                                                    </tr>
+                                                </apex:repeat>
+                                            </table>
+                                        </td>
+                                    </apex:outputPanel>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                    <td class="cell-class-bolded">{! item.OrderLineItem.Material_Number__c }</td>
+                    <td class="cell-class">
+                        <apex:outputText value="${0} Each Unit">
+                            <apex:param value="{! item.OrderLineItem.Unit_Price__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td class="cell-class-center">Qty {! item.OrderLineItem.Quantity__c }</td>
+                </tr>
+            </apex:repeat>
+        </table>  
+</apex:component>

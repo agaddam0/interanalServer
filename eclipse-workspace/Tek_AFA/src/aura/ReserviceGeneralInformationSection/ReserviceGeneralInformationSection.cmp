@@ -1,0 +1,66 @@
+<aura:component extends="c:ReserviceComponentContainer" controller="ReserviceSetupController">
+    <aura:handler name="init" value="{!this}" action="{!c.init}"/>
+    <aura:handler name="valueChange" event="c:SelectChange" action="{!c.handleEvent}" />
+    
+    <aura:attribute name="Opportunity" type="Opportunity"/>
+    <aura:attribute name="Account" type="Account" />
+    
+    <aura:attribute name="showEligibilityWaitingPeriod" type="Boolean" default="false" />
+    <aura:attribute name="showOtherEligibilityWaitingPeriod" type="Boolean" default="false" />
+    <aura:attribute name="showWaitingPeriodEffective" type="Boolean" default="false" />
+    <aura:attribute name="isValid" type="Boolean" access="private" default="false" />
+    <aura:attribute name="disableFormFields" type="Boolean" default="false" />
+    
+    <aura:method name="validateForm" />
+    <aura:method name="disableForm" >
+        <aura:attribute name="disabled" type="Boolean" />
+    </aura:method>
+	
+    <div class="slds-grid slds-wrap">
+        <div class="slds-size_1-of-3 slds-p-horizontal_large">
+            
+            <c:FieldSetRecordDisplay aura:Id="accountReadOnlyFields"
+                                     fieldSetName="Quick_Setup_Account_Details_ReadOnly"
+                                     record="{! v.Account }" 
+                                     objectName="Account"/>
+            
+            <c:FieldSetForm aura:Id="opportunityGeneralInfo"
+                            objectName="Opportunity" 
+                            fieldSetName="Quick_Setup_General_Info"
+                            record="{!v.Opportunity}"
+                            disableInputFields="{! v.disableFormFields }"
+                            useStrikePicklist="true"/>
+                         
+        </div>
+        
+        <div class="slds-size_1-of-3 slds-p-horizontal_large">
+        
+            <aura:if isTrue="{! v.showEligibilityWaitingPeriod }">
+                <c:FieldSetForm aura:Id="opportunityGenInfoWaiting"
+                                objectName="Opportunity" 
+                                fieldSetName="Quick_Setup_Gen_Info_Waiting"
+                                record="{!v.Opportunity}"
+                                disableInputFields="{! v.disableFormFields }"/>
+            </aura:if>
+            
+            <div class="{! v.showOtherEligibilityWaitingPeriod ? 'slds-show' : 'slds-hide' }">
+                <c:FieldSetForm aura:Id="opportunityGenInfoOther"
+                                objectName="Opportunity" 
+                                fieldSetName="Quick_Setup_Gen_Info_Other_Eligibility"
+                                record="{!v.Opportunity}"
+                                disableInputFields="{! v.disableFormFields }"/>
+            </div>
+            
+            <aura:if isTrue="{! v.showWaitingPeriodEffective }" >
+                <c:FieldSetForm aura:Id="opportunityGenInfoEffective"
+                                objectName="Opportunity" 
+                                fieldSetName="Quick_Setup_Gen_Info_Effective"
+                                record="{!v.Opportunity}"
+                                disableInputFields="{! v.disableFormFields }"/>
+            </aura:if>
+            
+        </div>
+        
+    </div>
+	
+</aura:component>

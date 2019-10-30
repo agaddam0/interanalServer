@@ -1,0 +1,23 @@
+<aura:component controller="CreateEnrollmentOppComponent" implements="force:lightningQuickActionWithoutHeader,force:hasRecordId">
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="message" type="String"/>
+    <aura:attribute name="messageTitle" type="String" />
+    <aura:attribute name="newEnrollmentOpportunity" type="Opportunity" />
+    <aura:attribute name="showMessageScreen" type="Boolean" />
+    
+    <div class="slds-is-relative">
+        
+        <div class="{! v.showMessageScreen ? 'slds-hide' : 'slds-show' }">
+            <lightning:flow aura:id="flow" onstatuschange="{!c.statusChange}"/>
+        </div>
+        
+        <div  class="{! v.showMessageScreen ? 'slds-show clsMsg' : 'slds-hide clsMsg' }">
+            <span class="title">{!v.messageTitle}</span>
+            <div>{!v.message}</div>
+        </div>
+        
+        <lightning:spinner aura:Id="onboardingSpinner" variant="brand" size="medium"/>
+        
+    </div>
+</aura:component>

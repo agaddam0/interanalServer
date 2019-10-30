@@ -1,0 +1,6 @@
+<aura:event type="APPLICATION" description="Event template">
+    
+    <aura:attribute name="Order" type="Order__c" />
+	<aura:attribute name="OrderLineItems" type="Order_Line_Item__c[]" />
+    
+</aura:event>

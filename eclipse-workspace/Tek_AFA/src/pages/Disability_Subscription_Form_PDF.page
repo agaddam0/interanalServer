@@ -1,0 +1,210 @@
+<apex:page standardController="Enrollment_Form__c" extensions="SignatureFormPDFext" standardStylesheets="false" docType="html-5.0" sidebar="false" showHeader="false" renderAs="pdf" applyHtmlTag="false">
+    <head>
+        <style type="text/css" media="print">
+            @page :first {
+                padding-top: 50px;
+                padding-bottom: 0px;
+                @top-center {
+                    content: element(header);
+                }
+            }
+            @page {
+                padding-top: 25px;
+                padding-bottom: 0px;
+                @top-center {
+                    content: element(header2);
+                }
+                @bottom-center {
+                    content: element(footer);
+                }
+            }
+            body {
+                font-family: sans-serif;
+            }
+            .logo {
+                width: 300px;
+                padding-left: 300px;
+                padding-top: 0px;
+            }
+            div.header {
+                padding: 25px 10px 10px;
+                position: running(header);
+                text-align: center;
+                font-size: x-small;
+                color: gray;
+            }
+            div.header2 {
+                padding: 25px 10px 10px;
+                position: running(header2);
+                text-align: center;
+                font-size: x-small;
+                color: gray;
+            }
+            div.footer {
+                display: block;
+                padding-bottom: 20px;
+                position: running(footer);
+                font-size: small;
+                color: gray;
+            }
+            .pagenumber:before 
+            {
+                content: counter(page);
+            }
+            .pagecount:before 
+            {
+                content: counter(pages);
+            }
+            #double {
+                margin-bottom: 20px;
+                overflow: hidden;
+            } 
+            #double li {
+                float:left;
+                width: 50%;
+            }
+            
+        </style>
+    </head>
+   <div class="header">
+        <div>
+            <apex:image styleClass="logo" url="{!$Resource.AFALogo}"/>
+        </div>
+    </div>
+    
+    <div class="header2">
+    </div>
+    
+    <div class="footer" style="text-align: right;">
+        <div>Page <span class="pagenumber"/> of <span class="pagecount"/></div>
+    </div>
+    
+    <div class="footer">   
+        
+        <div style="float:left;">M2963</div>
+        <div style="text-align:right; float:right;">Page <span class="pagenumber"/> of <span class="pagecount"/></div>
+    </div>
+    
+    <div class="content">
+        <div>
+            <div class="col-md-12 title">
+                <center><h3>SUBSCRIPTION AGREEMENT</h3></center>
+            </div>
+        </div>
+        <div class="row">
+            <p>
+                The Employer hereby subscribes to one or more of the following trusts and makes application for coverage issued
+                by American Fidelity Assurance Company (the "Underwriter") based on the following:
+            </p>
+        </div>
+        <div class="row" style="display:block;">
+            <ul id="double">
+                <li>Higher Education Insurance Trust</li>
+                <li>National Public Employees Insurance Trust</li>
+                <li>National Business Insurance Trust</li>
+                <li>National Service Industry Insurance Trust</li>
+                <li>National Education Association Insurance Trust</li>
+                <li>National School Employees Insurance Trust</li>
+                <li>National Employers Insurance Trust (Group Life Insurance not available)</li>
+                <li>U.S. Business Insurance Trust</li>
+            </ul>
+        </div>
+        <div class="row">
+            <p>
+                We have reviewed the eligibility rules and understand and agree that:
+            </p>
+            <ol>
+                <li>All eligible Employees who enroll must comply with the participation requirements established by the Underwriter.</li>
+                <li>Coverage is not in force until: the Underwriter and Trustee have approved this agreement,
+                    individual applications have been approved by the Underwriter, and the first premium for the
+                    insurance provided under the plan is paid. Premiums are due each month thereafter based upon
+                    the Employer’s mode of payment.</li>
+                <li>The Underwriter will issue a certificate of insurance on behalf of the Employer to each Employee
+                    participating in the plan.</li>
+            </ol>
+        </div>
+        <div class="row">
+            <p>
+                Upon approval by the Underwriter, it is requested that the agreement become effective at 12:01 AM Standard Time
+                on the Group Effective Date indicated below.  It is agreed that the coverage of an eligible person will not take
+                effect until the first premium has been paid on the application's behalf.
+            </p>
+        </div>
+        
+        <div class="row">
+           <p>
+               <b>ERISA Acknowledgment:</b> The Employer named below acknowledges that the Employee Retirement Income Security 
+               Act of 1974 (ERISA), as amended or other laws, if applicable, may require that certain Employers be responsible 
+               for certain duties or obligations with respect to the Employer or Employer's Employees and dependents under any 
+               certificate under such group policy or policies subject to this law.
+            </p>
+        </div>
+        <div class="row">
+            <p>
+                Dated this
+                <u>&nbsp;&nbsp;<apex:outputText id="numberDate" value="{!eForm.Day__c}"/>&nbsp;&nbsp;</u>
+                day of&nbsp;
+                <u>&nbsp;&nbsp;<apex:outputText id="month" value="{!eForm.Month__c}"/>&nbsp;&nbsp;</u>
+                , 20 
+                <u>&nbsp;&nbsp;<apex:outputText id="year" value="{!eForm.Year__c}"/>&nbsp;&nbsp;</u>
+            </p>
+        </div>
+        <table style="width:100%; margin-top: -60px;">
+            <tr>
+                <td style="width:40%; border-bottom:solid; vertical-align:bottom; height:100px;">{!eForm.Enrollment_Opportunity__r.Account.Name}</td>
+                <td style="width:10%"></td>
+                <td style="width:40%; border-bottom:solid;"><apex:image url="/servlet/servlet.FileDownload?file={!signature.Id}" width="200px" rendered="{!IF(NOT(ISBLANK(signature.Id)),true,false)}"/></td>
+            </tr>
+            <tr>
+                <td style="color:gray; font-size: 12px;vertical-align:top;">Name of Master Contract Participant (Employer)</td>
+                <td style="width:10%"></td>
+                <td style="color:gray; font-size: 12px; height: 50px;vertical-align:top;">Signature - (Must be signed by a person authorized to make a legally binding decision for the Employer)</td>
+            </tr>
+            <tr>
+                <td style="border-bottom:solid;">{!eForm.Enrollment_Opportunity__r.Account.MCP_Number__c}</td>
+                <td></td>
+                <td style="border-bottom:solid;">{!eForm.Printed_Signature__c}</td>
+            </tr>
+            <tr>
+                <td style="color:gray; font-size: 12px;">MCP Number</td>
+                <td></td>
+                <td style="color:gray; font-size: 12px;">Print Signature</td>
+            </tr>
+            <tr>
+                <td style="border-bottom:solid;">{!eForm.Enrollment_Opportunity__r.Account.BillingStreet}</td>
+                <td style="width:10%"></td>
+                <td style="border-bottom:solid;">{!eForm.Title__c}</td>
+            </tr>
+            <tr>
+                <td style="color:gray; font-size: 12px;">Address</td>
+                <td style="width:10%"></td>
+                <td style="color:gray; font-size: 12px;">Title</td>
+            </tr>
+            <tr>
+                <td style="border-bottom:solid;">{!eForm.Enrollment_Opportunity__r.Account.BillingCity}, {!eForm.Enrollment_Opportunity__r.Account.BillingState} {!eForm.Enrollment_Opportunity__r.Account.BillingPostalCode}</td>
+                <td></td>
+                <td style="border-bottom:solid;"><apex:outputText value="{0, date, MMMM d','  yyyy}">
+                    <apex:param value="{!eForm.Enrollment_Opportunity__r.Effective_Date_of_AFA_Products__c}"/>
+                    </apex:outputText>
+                </td>
+            </tr>
+            <tr>
+                <td style="color:gray; font-size: 12px;">City, State and Zip</td>
+                <td></td>
+                <td style="color:gray; font-size: 12px;">Group Effective Date</td>
+            </tr>
+        </table> 
+        <div class="row">
+            <p>
+                <b>Only one Subscription Agreement is necessary for Common Ownership Groups.  Please list groups in common
+                    ownership.</b>
+            </p>
+            <p>
+                <b>Common Ownership Groups</b> are controlled groups defined by the IRS as a parent-subsidiary group, brother-sister
+                controlled group, combined group or a life insurance controlled group.  Please list all businesses under
+                Common Ownership to be covered under this Agreement.
+            </p>
+            <apex:outputField value="{!eForm.Common_Ownership__c}"/>
+        </div>
+    </div>
+</apex:page>

@@ -1,0 +1,9 @@
+<apex:page standardController="Project__c" recordSetVar="projects" >
+
+    <flow:interview name="Create_Opportunity_Project_From_Selected_Opportunity"/>
+    
+    <apex:form >
+        <apex:commandButton action="{!cancel}" immediate="true" value="Cancel"/>
+    </apex:form>
+
+</apex:page>

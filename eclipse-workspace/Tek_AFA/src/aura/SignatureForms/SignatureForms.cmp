@@ -1,0 +1,43 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global"
+                controller="SignatureFormCompCTRL">
+    
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:attribute name="SignatureForms" type="Enrollment_Form__c[]" />
+    
+    <div class="exampleHolder">
+        <lightning:spinner aura:id="mySpinner" />
+    </div>
+    <div class="slds">
+        <div class="slds-box" aura:id="main">
+            <lightning:icon iconName="standard:custom" size="small" class="slds-float--left slds-m-right_small" />
+            <b><h1 class="slds-text-heading_small slds-truncate slds-align-middle" title="">Signature Forms</h1></b>
+            <br/>
+            <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                <thead>
+                    <tr class="slds-text-title--caps">
+                        <th scope="col">
+                            <div class="slds-truncate" title="Signature Form">Signature Form</div>
+                        </th>
+                        <th scope="col">
+                            <div class="slds-truncate" title="Status">Status</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration var="sf" items="{!v.SignatureForms}" indexVar="i">
+                        <tr>
+                            <th scope="row" data-label="Signature Form">
+                                <div class="slds-truncate" title="{!sf.Signature_Form_Name__c}">
+                                    <a href="" data-recId="{!sf.Id}" data-recordType="{!sf.RecordType.Name}" onclick="{!c.goToPDF}">{!sf.Signature_Form_Name__c}</a></div>
+                            </th>
+                            <th scope="row" data-label="Status">
+                                <div class="slds-truncate" title="{!sf.Status__c}">{!sf.Status__c}</div>
+                            </th>
+                        </tr>
+                    </aura:iteration>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</aura:component>

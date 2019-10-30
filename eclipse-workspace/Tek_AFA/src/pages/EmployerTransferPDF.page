@@ -1,0 +1,109 @@
+<apex:page standardController="Change_Request__c" extensions="EmployerTransferPDFEXT" applyBodyTag="false" showHeader="false" sidebar="false" renderAs="pdf">
+    <head>
+        <style type="text/css" media="print">
+            @page 
+            {
+                padding-top: 150px;
+                padding-bottom: 50px;
+                @top-center 
+                {
+                    content: element(header);
+                }
+                @bottom-center 
+                {
+                    content: element(footer);
+                }
+            }
+            body
+            {
+                font-family: sans-serif;
+                color: gray;
+            }
+            img
+            {
+                width: 300px;
+                padding-left: 300px;
+                padding-top: 50px;
+            }
+            div.header 
+            {
+                padding: 25px 10px 10px;
+                position: running(header);
+                text-align: center;
+                font-size: x-small;
+            }
+            div.footer 
+            {
+                display: block;
+                padding-bottom: 20px;
+                position: running(footer);
+                text-align: center;
+                font-size: small;
+            }
+            .formNum
+            {
+                position: absolute;
+                padding-top: 730px;
+            }
+            .pagenumber:before 
+            {
+                content: counter(page);
+            }
+            .pagecount:before 
+            {
+                content: counter(pages);
+            }
+        </style>
+    </head>
+    
+    <div class="header">
+            S P E C I A L I Z I N G&nbsp;&nbsp; I N&nbsp;&nbsp; E M P L O Y E R&nbsp;&nbsp; B E N E F I T&nbsp;&nbsp; S O L U T I O N S&nbsp;&nbsp; F O R&nbsp;&nbsp; Y O U R&nbsp;&nbsp; I N D U S T R Y
+        <div>
+            <apex:image url="{!$Resource.AFALogo}"/>
+        </div>
+    </div>
+    
+    <div class="footer">
+        American Fidelity Assurance Company &bull; P.O. Box 25523 Oklahoma City, OK  73125-0523 &bull; <span style="color:red">americanfidelity.com</span>
+    </div>
+    
+    <div class="formNum" style="float: page bottom">
+        ESB-5430-1116
+    </div>
+    
+    <div class="content">
+        <apex:outputField value="{!request.Date_of_Request__c}"/>
+        <br/>
+        <br/>
+        <br/>
+        <b><apex:outputText value="{!request.New_Account_Name__r.Name}"/></b><br/>
+        <apex:outputText value="CUSTOMER NUMBER {!request.New_Account_Name__r.MCP_Number__c}"/>
+        <br/>
+        <br/>
+        <br/>
+        <apex:outputText value="An American Fidelity policyholder has requested their policies be transferred to your 
+                                bill effective {0, date, MM/dd/yyyy}. Please see below for additional information.">
+            <apex:param value="{!request.Effective_Date_of_Transfer__c}"/>
+        </apex:outputText><br/>
+        <br/>
+        <br/>
+        <b><apex:outputText value="Name: "/></b><apex:outputText value="{!holder.First_Name__c} {!holder.Last_Name__c}"/><br/>
+        <br/>
+        <b><apex:outputText value="Policyholder Customer Number: "/></b><apex:outputText value="{!holder.Customer_Number__c}"/><br/>
+        <br/>
+        <b><apex:outputText value="Phone Number: "/></b><apex:outputText value="{!holder.Primary_Phone__c}"/><br/>        
+        <br/>
+        <b><apex:outputText value="Policies Being Transferred: "/></b><br/>
+        <br/>
+        <div style="padding-left: 25px;">
+            <apex:repeat value="{!AffectedProducts}" var="ap" >
+                <div>
+                    <b>&bull;</b>
+                    <div style="display:block; padding-left:30px; margin-top:-18px;">
+                        <apex:outputText value="{!ap}"/>
+                    </div>
+                </div>
+            </apex:repeat>
+        </div>
+    </div> 
+</apex:page>

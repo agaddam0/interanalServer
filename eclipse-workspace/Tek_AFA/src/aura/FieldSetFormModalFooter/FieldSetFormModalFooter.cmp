@@ -1,0 +1,12 @@
+<aura:component >
+    <aura:attribute name="cancelHandler" type="Aura.Action" />
+    <aura:attribute name="saveHandler" type="Aura.Action" />
+    <aura:attribute name="saveAndNewHandler" type="Aura.Action" />
+    <aura:attribute name="showSaveAndNewButton" type="Boolean" default="false" />
+
+	<button class="slds-button slds-button_neutral" onclick="{! v.cancelHandler }">Cancel</button>
+    <button class="slds-button slds-button_brand" onclick="{! v.saveHandler }">Save</button>
+    <aura:if isTrue="{! v.showSaveAndNewButton}">
+    	<button class="slds-button slds-button_brand" onclick="{! v.saveAndNewHandler }">Save &amp; New</button>
+    </aura:if>
+</aura:component>

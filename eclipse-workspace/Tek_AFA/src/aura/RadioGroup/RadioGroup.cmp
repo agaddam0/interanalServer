@@ -1,0 +1,16 @@
+<aura:component extends="c:LightningInputContainer">
+    <aura:set attribute="labelClass" value="slds-form-element__legend" />
+
+    <aura:method name="getInputComponent" />
+
+    <aura:attribute name="options" type="List" />
+
+    <lightning:radioGroup aura-id="myInput"
+                          value="{! v.value }"
+                          onchange="{! c.onValueChange }"
+                          disabled="{! v.disabled }"
+                          messageWhenValueMissing="{! v.messageWhenValueMissing }"
+                          options="{! v.options }"
+                          label=" "
+                          variant="label-hidden" />
+</aura:component>

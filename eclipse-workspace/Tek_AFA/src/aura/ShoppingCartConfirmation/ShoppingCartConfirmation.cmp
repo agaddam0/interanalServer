@@ -1,0 +1,119 @@
+<aura:component controller="ShoppingCartController">
+    <aura:attribute name="orderId" type="Id" />
+
+    <aura:attribute name="order" type="Object" access="private" />
+    <aura:attribute name="otherActionsNeededOrderLines" type="Order_Line_Item__c[]" access="private" />
+
+    <aura:handler name="change" value="{!v.orderId}" action="{!c.onOrderIdChanged}"/>
+    
+    <lightning:navigation aura:id="navService"/>
+
+	<div class="slds-box slds-theme_default slds-text-align_center af-shopping-cart-confirmation-container">
+        <h2 class="slds-text-heading_large">{! format($Label.c.Shopping_Cart_Order_Confirmation_Title, v.order.Order.Name) }</h2>
+
+        <div class="slds-m-vertical_large slds-text-heading_small">
+            {! format($Label.c.Shopping_Cart_Order_Confirmation_Body, v.order.Order.Name) }
+        </div>
+                                      
+        <lightning:button variant="brand"
+                          label="Catalog Home"
+                          class="af-catelog-home-btn"
+                          onclick="{! c.onCategoryHomeClick }"/>
+
+        <lightning:button variant="brand"
+                          label="Order History"
+                          class="af-order-history-btn"
+                          onclick="{! c.onOrderHistoryClick }"/>
+
+        <aura:if isTrue="{! v.otherActionsNeededOrderLines.length > 0 }">
+        <div class="af-body-container slds-m-top_large">
+            <div class="slds-grid slds-p-around_small slds-m-bottom_small af-complete-order-instructions-container">
+                <div class="slds-align_absolute-center slds-col slds-size_2-of-12">
+                    <lightning:icon iconName="utility:warning" />
+                </div>
+                
+                <div class="slds-text-align_left slds-col slds-size_10-of-12">
+                    <span class="slds-text-heading_small slds-text-align_left">{! $Label.c.Shopping_Cart_Order_Confirmation_Complete_Order_Instructions }</span>
+                </div>
+            </div>
+
+            <aura:iteration items="{! v.otherActionsNeededOrderLines }" var="otherActionsNeededOrderLine">
+                <lightning:layout horizontalAlign="spread">
+                    <lightning:layoutitem >
+                        <img class="af-downloadable-thumbnail" src="{! otherActionsNeededOrderLine.Marketing_Material__r.Thumbnail_URL__c }" />
+                    </lightning:layoutitem>
+
+                    <lightning:layoutitem class="slds-text-heading_small">
+                        <span>{! otherActionsNeededOrderLine.Marketing_Material__r.Title__c }</span>
+                    </lightning:layoutitem>
+                    
+                    <lightning:layoutitem class="slds-text-heading_small">
+                        <span>{! otherActionsNeededOrderLine.Marketing_Material__r.Material_Number__c }</span>
+                    </lightning:layoutitem>
+
+                    <lightning:layoutitem>
+                        <lightning:button variant="brand"
+                                          label="Complete Now"
+                                          onclick="{! otherActionsNeededOrderLine.isBuildYourOwnEmail ? c.onOpenEmailBuilderClick : c.onOpenApptSchedulerClick }"
+                                          class="af-complete-order-button"
+                                          value="{! otherActionsNeededOrderLine }" />
+                    </lightning:layoutitem>
+                </lightning:layout>
+            </aura:iteration>
+
+            
+        </div>
+        </aura:if>
+
+        <aura:if isTrue="{! v.order.DownloadableOrderLines.length > 0 }">
+        <div class="af-body-container slds-m-top_large">
+            <div class="af-download-header slds-p-around_medium">
+                <div class="slds-grid">
+                	<div class="slds-text-align_left slds-col slds-size_1-of-12">
+                        <lightning:icon iconName="utility:download" />
+                    </div>
+                    
+                    <div class="{! v.order.DownloadAllURL ? 'slds-text-align_left slds-col slds-size_8-of-12' : 'slds-text-align_left slds-col slds-size_11-of-12'}">
+                        <span class="slds-text-heading_small slds-text-align_left">{! $Label.c.Shopping_Cart_Order_Confirmation_Download_Instructions }</span>
+                    </div>
+                    
+                    <div class="{! v.order.DownloadAllURL ? 'slds-text-align_right slds-col slds-size_3-of-12' : 'slds-hide'}">
+                        <lightning:button variant="brand"
+                                          label="Download All"
+                                          class="af-download-all-btn"
+                                          onclick="{! c.onDownloadAllClick }"
+                                          value="{! v.order.DownloadAllURL }" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="af-download-body slds-m-top_medium">
+                <aura:iteration items="{! v.order.DownloadableOrderLines }" var="downloadableOrderLine">
+                    <lightning:layout horizontalAlign="spread">
+	                    <lightning:layoutitem >
+	                        <img class="af-downloadable-thumbnail" src="{! downloadableOrderLine.MarketingMaterial.Record.Thumbnail_URL__c }" />
+	                    </lightning:layoutitem>
+	
+	                    <lightning:layoutitem class="slds-text-heading_small">
+	                        <span>{! downloadableOrderLine.MarketingMaterial.Record.Title__c }</span>
+	                    </lightning:layoutitem>
+	
+	                    <lightning:layoutitem class="slds-text-heading_small">
+	                        <span>{! downloadableOrderLine.MarketingMaterial.Record.Material_Number__c }</span>
+	                    </lightning:layoutitem>
+	
+	                    <lightning:layoutitem class="slds-p-right_medium">
+	                        <lightning:button variant="brand"
+	                                          label="{! downloadableOrderLine.MarketingMaterial.Record.Material_Type__c == 'Video' ? 'Open Video' : 'Download' }"
+	                                          class="af-download-btn"
+	                                          onclick="{! c.onDownloadClick }"
+	                                          value="{! downloadableOrderLine.MarketingMaterial.Record.Download_URL__c }" />
+	                    </lightning:layoutitem>
+                    </lightning:layout>
+                </aura:iteration>
+            </div>
+        
+        </div>
+        </aura:if>
+    </div>
+</aura:component>

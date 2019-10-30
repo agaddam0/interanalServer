@@ -1,0 +1,74 @@
+<aura:component extends="c:ReserviceComponentContainer" controller="ReserviceSetupController">
+    <aura:attribute name="Account" type="Account" />
+    <aura:attribute name="Opportunity" type="Opportunity" />
+    <aura:attribute name="disableInputFields" type="Boolean" default="false" />
+    
+    <aura:attribute name="SimpleCustomAttributes" type="Object" access="private" />
+    <aura:attribute name="SignificantCustomAttributes" type="Object" access="private" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    
+    <aura:registerEvent name="reloadReserviceSetup" type="c:ReloadReserviceSetup"/>
+    
+    <aura:method name="disableForm">
+        <aura:attribute name="disabled" type="Boolean" />
+    </aura:method>
+    
+    <div>
+        
+        <div class="slds-section slds-is-open">
+            
+            <h3 class="slds-section__title afa-section-header">
+                <span class="slds-truncate slds-p-horizontal_small" title="General Update">General Update for {!v.Account.Name}</span>
+            </h3>
+            
+            <div aria-hidden="false" class="slds-section__content">
+                <div class="slds-p-left_medium">
+                    
+                    <div class="slds-p-vertical_medium">{! $Label.c.Reservice_Changes_Instructions}</div>
+                    
+                    <div class="slds-grid">
+                        
+                        <div class="slds-size_1-of-2">
+                        
+                            <div class="af-label slds-p-vertical_medium">
+                                Simple Setup Changes
+                            </div>
+                            
+                            <c:FieldSetForm aura:Id="simpleChangesForm"
+                                            objectName="Opportunity" 
+                                            record="{!v.Opportunity}"
+                                            customAttributes="{! v.SimpleCustomAttributes }"
+                                            fieldSetName="Opportunity_Reservice_Simple_Changes"
+                                            formClass="form-spacing"
+                                            disableInputFields="{!v.disableInputFields}"/>
+                        </div>
+                        
+                        <div class="slds-size_1-of-2">
+                        
+                            <div class="af-label slds-p-vertical_medium">
+                                Significant Setup Changes
+                            </div>
+                            
+                            <c:FieldSetForm aura:Id="significantChangesForm"
+                                            objectName="Opportunity" 
+                                            record="{!v.Opportunity}"
+                                            customAttributes="{! v.SignificantCustomAttributes }"
+                                            fieldSetName="Opportunity_Reservice_Significant_Change"
+                                            formClass="form-spacing"
+                                            disableInputFields="{!v.disableInputFields}"/>
+                        </div>
+                    
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="slds-p-around_medium">
+                        <!--<button class="slds-button slds-button_neutral af-standard-button" onclick="{!c.navigateBack}">Back</button>-->
+                        <button class="slds-button slds-button_neutral af-progress-button" onclick="{!c.determineNavigation}">Continue</button>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</aura:component>

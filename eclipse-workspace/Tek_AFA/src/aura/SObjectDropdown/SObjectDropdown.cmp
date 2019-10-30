@@ -1,0 +1,17 @@
+<aura:component extends="c:LightningInputContainer" controller="SObjectDropdownController">
+    <aura:attribute name="displayField" type="String" default="Name" description="The API name of the field on the given sobject used for the select labels." />
+    <aura:attribute name="sobjectName" type="String" />
+    <aura:attribute name="blankOptionLabel" type="String" default="-- None --" />
+    
+    <aura:attribute name="options" type="Object[]" access="private" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <aura:method name="getInputComponent" />
+    
+    <lightning:select label=" " required="{! v.required }" value="{! v.value }">
+        <aura:iteration items="{!v.options}" var="option">
+            <option value="{! option.value }" text="{! option.label }" selected="{! option.selected }" />
+        </aura:iteration>
+    </lightning:select>
+</aura:component>

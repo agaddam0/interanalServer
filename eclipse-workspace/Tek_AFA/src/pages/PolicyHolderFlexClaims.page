@@ -1,0 +1,318 @@
+<apex:page standardController="Policyholder__c" extensions="PolicyHolderClaimEXT" showHeader="false" sidebar="false">
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"/>
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.tablesorter, '/tablesorter-master/jquery.tablesorter.min.js')}"/>
+    <apex:slds />
+    <style>
+        .header div:hover
+        {
+        text-decoration: underline;
+        cursor:pointer;
+        }
+        .headerSortUp div::after
+        {
+        content: " &#x25BC;";
+        }
+        .headerSortDown div::after
+        {
+        content: ' &#x25B2;';
+        }
+        .odd
+        {
+        background-color: aliceblue;
+        }
+        .ct
+        {
+        text-align: -webkit-center;
+        } 
+        .currencyRow
+        {
+        text-align:right;
+        padding-right:10px;
+        width:10%;
+        }
+    </style>
+    <script type="text/javascript">
+    var $ = jQuery.noConflict();
+    
+    $(document).ready(function ($) {
+        getClaimData('{!holder.Customer_Number__c}');
+        $.tablesorter.addParser({
+            // set a unique id
+            id: 'dateRange',
+            is: function(s, table, cell, $cell) {
+                // return false so this parser is not auto detected
+                return false;
+            },
+            format: function(s, table, cell, cellIndex) {
+                // format your data for normalization
+                return s.split(' -')[0];
+            },
+            // set type, either numeric or text
+            type: 'text'
+        });
+        
+        $("[id$=Flex]").tablesorter({
+            sortList: [[5,1]]
+        });
+        
+        
+    });
+    
+    function resetTableSort(){
+        $.tablesorter.addParser({
+            // set a unique id
+            id: 'dateRange',
+            is: function(s, table, cell, $cell) {
+                // return false so this parser is not auto detected
+                return false;
+            },
+            format: function(s, table, cell, cellIndex) {
+                // format your data for normalization
+                return s.split(' -')[0];
+            },
+            // set type, either numeric or text
+            type: 'text'
+        });
+        
+        $("[id$=Flex]").tablesorter({
+            sortList: [[5,1]]
+        });        
+    }
+    
+    function overridePageMessages(){
+        $('ul[role="alert"] li').addClass('slds-notify slds-notify--alert slds-theme--error');
+    }
+    
+    </script>
+    <apex:form >
+        
+        <div id="responseErrors"></div>    
+            <apex:outputPanel id="ErrorPanel">
+                <apex:messages />
+            </apex:outputPanel>
+        
+        
+            <apex:outputPanel id="FlexAccountPanel">
+                <div class="slds-section slds-is-open">
+                    <apex:outputPanel layout="none" rendered="{! HasErrorMessages = false }">
+                    <h3 class="slds-section__title slds-theme_shade">
+                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Flex Account Information</span>
+                    </h3>
+                    </apex:outputPanel>
+                    
+                    <div aria-hidden="false" class="slds-section__content">
+                        <apex:outputPanel rendered="{!(FAccounts == null || FAccounts.size == 0) && showTable && HasErrorMessages = false }">
+                            This policyholder does not have flex account information.
+                        </apex:outputPanel>
+                        
+                        <apex:outputPanel layout="none" rendered="{! FAccounts != null && FAccounts.size > 0 && HasErrorMessages = false }">
+                            
+                            <apex:repeat value="{!FAccounts}" var="a">
+                                <div class="slds-card">
+                                    <div class="slds-card__header slds-grid">
+                                        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                            <div class="slds-media__body">
+                                                <h2>
+                                                    <span class="slds-text-heading_small">{!a.Account}</span>
+                                                </h2>
+                                                <p class="slds-text-body_small slds-line-height_reset">
+                                                    <apex:outputText value="Effective Dates: {0, date, yyyy'/'MM'/'dd} - {1, date, yyyy'/'MM'/'dd}">
+                                                        <apex:param value="{!a.EffStartDate}"/>
+                                                        <apex:param value="{!a.EffEndDate}"/>
+                                                    </apex:outputText>
+                                                </p>
+                                            </div>
+                                        </header>
+                                    </div>
+                                    <div class="slds-card__body slds-card__body_inner">
+                                        <table style="width:70%;">
+                                            <tr>
+                                                <td style="width:22%;" class="slds-text-color_weak">Election Amount:</td>
+                                                <td style="width:35%;" class="slds-text-color_weak">
+                                                    <strong>
+                                                        <apex:outputText value="$ {0, number, ###,###,##0.00}">
+                                                            <apex:param value="{!a.ElectionAmount}"/>
+                                                        </apex:outputText>
+                                                    </strong>
+                                                </td>
+                                                <td style="width:20%" class="slds-text-color_weak">Available Balance:</td>
+                                                <td class="slds-text-color_weak">
+                                                    <strong>
+                                                        <apex:outputText value="$ {0, number, ###,###,##0.00}">
+                                                            <apex:param value="{!a.AvailableBalance}"/>
+                                                        </apex:outputText>
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="slds-text-color_weak">Total Deposits:</td>
+                                                <td class="slds-text-color_weak">
+                                                    <strong>
+                                                        <apex:outputText value="$ {0, number, ###,###,##0.00}">
+                                                            <apex:param value="{!a.TotalDeposits}"/>
+                                                        </apex:outputText>
+                                                    </strong>
+                                                </td>
+                                                <td class="slds-text-color_weak">Account Balance:</td>
+                                                <td class="slds-text-color_weak">
+                                                    <strong>
+                                                        <apex:outputText value="$ {0, number, ###,###,##0.00}">
+                                                            <apex:param value="{!a.AccountBalance}"/>
+                                                        </apex:outputText>
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="slds-text-color_weak">Total Paid:</td>
+                                                <td class="slds-text-color_weak">
+                                                    <strong>
+                                                        <apex:outputText value="$ {0, number, ###,###,##0.00}">
+                                                            <apex:param value="{!a.TotalPaid}"/>
+                                                        </apex:outputText>
+                                                    </strong>
+                                                </td>
+                                                <td class="slds-text-color_weak">Runoff Days:</td>
+                                                <td class="slds-text-color_weak"><strong>{!a.RunoffDays}</strong></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="slds-text-color_weak">Total Pending:</td>
+                                                <td class="slds-text-color_weak">
+                                                    <strong>
+                                                        <apex:outputText value="$ {0, number, ###,###,##0.00}">
+                                                            <apex:param value="{!a.TotalPending}"/>
+                                                        </apex:outputText>
+                                                    </strong>
+                                                </td>
+                                                <td class="slds-text-color_weak">Grace Period:</td>
+                                                <td class="slds-text-color_weak"><strong>{!a.GradePeriod}</strong></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="slds-text-color_weak">Total Denied:</td>
+                                                <td class="slds-text-color_weak">
+                                                    <strong>
+                                                        <apex:outputText value="$ {0, number, ###,###,##0.00}">
+                                                            <apex:param value="{!a.TotalDenied}"/>
+                                                        </apex:outputText>
+                                                    </strong>
+                                                </td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </apex:repeat>
+                        </apex:outputPanel>
+                    </div>
+                </div>
+            </apex:outputPanel>
+            
+            <br/>
+            
+            <apex:outputPanel id="FlexClaimPanel">
+                <div class="slds-section slds-is-open">
+                    <apex:outputPanel layout="none" rendered="{! HasErrorMessages = false }">
+                    <h3 class="slds-section__title slds-theme_shade">
+                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Flex Claims</span>
+                    </h3>
+                    </apex:outputPanel>
+                    
+                    <div aria-hidden="false" class="slds-section__content">
+                        <apex:outputPanel rendered="{!(FClaims == null || FClaims.size == 0) && showTable && HasErrorMessages = false }">
+                            This policyholder does not have any flex claims for the current plan year.
+                        </apex:outputPanel>
+                        <apex:outputPanel layout="none" rendered="{! FClaims != null && FClaims.size > 0 && HasErrorMessages = false }">
+                            <table id="Flex" class="slds-table slds-table_bordered slds-table_cell-buffer " style="width:98%">
+                                <thead>
+                                    <tr class="slds-text-title_caps">
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Account">Account</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Claim Amount">Claim Amount</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Paid Amount">Paid Amount</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Paid Date">Paid Date</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Description">Description</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Claim Incurred Dates">Claim Incurred Dates</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Claim Number">Claim Number</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <apex:repeat value="{!Fclaims}" var="f">
+                                        <tr>
+                                            <th scope="row" data-label="Policy">
+                                                <div class="slds-truncate" title="Account">{!f.Account}</div>
+                                            </th>
+                                            <td data-label="Claim Amount" class="currencyRow">
+                                                <div class="slds-truncate" title="Claim Amount">
+                                                    <apex:outputText value="$ {0, number, ###,###,##0.00}">
+                                                        <apex:param value="{!f.ClaimAmount}"/>
+                                                    </apex:outputText>
+                                                </div>
+                                            </td>
+                                            <td data-label="Paid Amount" class="currencyRow">
+                                                <div class="slds-truncate" title="Paid Amount">
+                                                    <apex:outputText value="$ {0, number, ###,###,##0.00}">
+                                                        <apex:param value="{!f.PaidAmount}"/>
+                                                    </apex:outputText>
+                                                </div>
+                                            </td>
+                                            <td data-label="Paid Date">
+                                                <div class="slds-truncate" title="Paid Date">
+                                                    <apex:outputText value="{0, date, yyyy'/'MM'/'dd}">
+                                                        <apex:param value="{!f.PaidDate}"/>
+                                                    </apex:outputText>
+                                                </div>
+                                            </td>
+                                            <td data-label="Description">
+                                                <div class="slds-truncate" title="Description">{!f.CodeDesc}</div>
+                                            </td>
+                                            <td data-label="Claim Incurred Dates">
+                                                <div class="slds-truncate" title="Claim Incurred Dates">
+                                                    <apex:outputText value="{0, date, yyyy'/'MM'/'dd} - {1, date, yyyy'/'MM'/'dd}">
+                                                        <apex:param value="{!f.IncurBeginDate}"/>
+                                                        <apex:param value="{!f.IncurEndDate}"/>
+                                                    </apex:outputText>
+                                                </div>
+                                            </td>
+                                            <td data-label="Claim Number">
+                                                <div class="slds-truncate" title="Claim Number">{!f.ClaimNumber}</div>
+                                            </td>
+                                        </tr>
+                                    </apex:repeat>
+                                </tbody>
+                            </table>
+                        </apex:outputPanel>
+                    </div>
+                </div>
+            </apex:outputPanel>
+            
+        <apex:actionFunction name="getClaimData" action="{!getFlexInfo}" rerender="FlexAccountPanel, FlexClaimPanel, ErrorPanel" status="sts" oncomplete="resetTableSort();overridePageMessages();">
+            <apex:param name="CustomerNo" value="" assignTo="{!CustomerNo}"/>
+        </apex:actionFunction>
+        
+        <apex:actionstatus id="sts">
+            <apex:facet name="start">
+                <div class="slds-spinner_container">
+                    <div id="mySpinner" role="status" class="slds-spinner slds-spinner_medium">
+                        <span class="slds-assistive-text">Loading</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                    </div>
+                </div>
+            </apex:facet>
+        </apex:actionstatus>  
+    </apex:form>
+</apex:page>

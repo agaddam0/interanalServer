@@ -1,0 +1,17 @@
+<aura:component extends="c:LightningInputContainer">
+    <aura:method name="getInputComponent" />
+    
+    <aura:attribute name="validity" type="Boolean" default="true" />
+    <aura:attribute name="errorMessage" type="String" default="Complete this field."/>
+
+    <lightning:inputRichText aura:id="myInput" 
+                             value="{! v.value }" 
+                             onblur="{!c.onValueChange}" 
+                             disabled="{! v.disabled }" 
+                             valid="{!v.validity}" 
+                             messageWhenBadInput="{! v.messageWhenValueMissing }"/>
+    
+    <div class="{! v.validity ? 'slds-hide' : 'slds-show errorClass' }">
+    	{! v.errorMessage }
+    </div>
+</aura:component>

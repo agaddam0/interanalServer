@@ -1,0 +1,532 @@
+<apex:page standardController="Section_125_Plan_Summary__c" extensions="PlanSummaryFormPDFExt" 
+           standardStylesheets="false" docType="html-5.0" sidebar="false" showHeader="false" 
+           renderAs="pdf" applyBodyTag="false">
+    <head>
+        <style type="text/css" media="print">
+            @page :first {
+            padding-top: 50px;
+            padding-bottom: 50px;
+            @top-center {
+            content: element(header);
+            }
+            @bottom-center {
+            content: element(footer);
+            }
+            }
+            @page {
+            padding-top: 25px;
+            padding-bottom: 50px;
+            @top-center {
+            content: element(header2);
+            }
+            @bottom-center {
+            content: element(footer);
+            }
+            }
+            body {
+            font-family: sans-serif;
+            }
+            img {
+            width: 300px;
+            padding-left: 300px;
+            padding-top: 0px;
+            }
+            div.header {
+            padding: 25px 10px 10px;
+            position: running(header);
+            text-align: center;
+            font-size: x-small;
+            color: gray;
+            }
+            div.header2 {
+            padding: 25px 10px 10px;
+            position: running(header2);
+            text-align: center;
+            font-size: x-small;
+            color: gray;
+            }
+            div.footer {
+            display: block;
+            padding-bottom: 20px;
+            position: running(footer);
+            text-align: center;
+            font-size: small;
+            color: gray;
+            }
+            .fieldLabel {
+            text-align: left;
+            color: rgb(84, 105, 141) !important;
+            font-size: 14px;
+            padding-top:5px;
+            }
+            .sectionHeader {
+            color: rgb(22, 50,92) !important;
+            background-color: rgb(244, 246, 249) !important;
+            font-size: 16px;
+            font-weight: normal;
+            font-family:"Salesforce Sans", Arial, sans-serif;
+            border-radius: 4px;
+            box-sizing: border-box;
+            line-height:19.5px;
+            margin-top:4px;
+            text-size-adjust:100%;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+            height:33px;
+            line-height:33px;
+            vertical-align: middle;
+            padding-left:10px;
+            }
+            .title {
+            color: gray;
+            }
+            td {
+            width: 50%;
+            }
+        </style>
+    </head>
+    
+    <div class="header">
+        <div>
+            <apex:image url="{!$Resource.AFALogo}"/>
+        </div>
+    </div>
+    
+    <div class="header2">
+    </div>
+    
+    <div class="footer">
+        <apex:outputText value="American Fidelitiy Assurance Company &bull; P.O. Box 25523 Oklahoma City, OK  73125-0523 &bull; " escape="false"/><span style="color:red">americanfidelity.com</span>
+    </div>
+    <div>
+        <div class="title">
+            <center>
+                <h3>Plan Summary Form</h3>
+            </center>
+        </div>
+    </div>
+    <div class="sectionHeader">
+        <apex:outputText styleclass="sectionLabel" value="Account Information"/>
+    </div>
+    <table id="accountInformation" class="formtable" style="width:100%">
+        <tr>
+            <td class="fieldLabel">Account Name</td>
+            <td class="fieldLabel">Assigned To</td>
+        </tr>
+        <tr>
+            <td><apex:outputField value="{!acc.Name}"/></td>
+            <td ><apex:outputField value="{!acc.Owner.Name}" /></td>
+        </tr>
+        <tr>
+            <td class="fieldLabel">MCP Number</td>
+            <td class="fieldLabel">Agent No.</td>
+        </tr>
+        <tr>
+            <td><apex:outputField value="{!enrollmentOpp.MCP_Number__c}"/></td>
+            <td ><apex:outputText value="{!acc.Owner.Agent_ID__c}"/></td>
+        </tr>
+        <tr>
+            <td class="fieldLabel">Additional MCPs</td>
+            <td class="fieldLabel"></td>
+        </tr>
+        <tr>
+            <td><apex:outputField value="{!enrollmentOpp.Additional_MCPs__c}"/></td>
+            <td ></td>
+        </tr>
+        <tr>
+            <td class="fieldLabel" style="vertical-align:top;" >Comments</td>
+        </tr>
+        <tr>
+            <td colspan="2"><apex:outputField value="{!Section_125_Plan_Summary__c.Additional_Changes_or_Comments__c}" style="width:75%" /></td>
+        </tr>
+    </table>
+    <div class="sectionHeader">
+        <apex:outputText styleclass="sectionLabel" value="Current Plan Information"/>
+    </div>
+    <apex:outputPanel rendered="{!planDates.size == 0}">
+        <table>
+            <tr>
+                <td class="fieldLabel">No Current Plans</td>
+            </tr>    
+        </table>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!planDates.size > 0}">
+        <table id="currentPlanInfo" class="formtable" style="width:100%">
+            <apex:repeat value="{!planDates}" var="p">
+                <tr>
+                    <td class="fieldLabel">Plan Number</td>
+                    <td class="fieldLabel">Plan Description</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!p.Name}" /></td>
+                    <td><apex:outputField value="{!p.Plan_Name__c}"/></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">Plan Start Date</td>
+                    <td class="fieldLabel">Plan Status</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!p.Plan_Start_Date__c}"/></td>
+                    <td><apex:outputField value="{!Section_125_Plan_Summary__c.Plan_Status__c}"/></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">Plan End Date</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!p.Plan_End_Date__c}"/></td>
+                    <td></td>
+                </tr>
+            </apex:repeat>
+        </table>
+    </apex:outputPanel>
+    <div class="sectionHeader">
+        <apex:outputText styleclass="sectionLabel" value="Plan Changes"/>
+    </div>
+    <table id="planChangesQuestion" class="formtable" style="width:100%">
+        <tr>
+            <td class="fieldLabel"><div class="requiredLabel"/>Changes</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><apex:outputField value="{!Section_125_Plan_Summary__c.Changes__c}"/></td>
+            <td></td>
+        </tr>
+    </table>
+    <apex:outputPanel rendered="{!Section_125_Plan_Summary__c.Changes__c == 'Yes'}">
+        <table id="multiPlanYears" class="formtable" style="width:100%; ">
+            <tr>
+                <td class="fieldLabel">If multiple plan years, which plan number are you changing?</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td ><apex:outputField value="{!Section_125_Plan_Summary__c.If_multiple_changed_plan_number__c}"/></td>
+                <td></td>
+            </tr>
+        </table>
+    </apex:outputPanel>
+    <table id="termEffective" class="formtable" style="width:100%">
+        <tr>
+            <td class="fieldLabel">Termination Effective Date</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td ><apex:outputField value="{!Section_125_Plan_Summary__c.Termination_Effective_Date__c}"/></td>
+            <td></td>
+        </tr>
+    </table>
+    <apex:outputPanel rendered="{!Section_125_Plan_Summary__c.Changes__c == 'Yes'}">
+        <table id="planYears" class="formtable" style="width:100%">
+            <tr>
+                <td class="fieldLabel">Short Plan Year</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td ><apex:outputField value="{!Section_125_Plan_Summary__c.Short_Plan_Year__c}"/></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">New Plan Start Date</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td ><apex:outputField value="{!Section_125_Plan_Summary__c.New_Plan_Start_Date__c}"/></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">New Plan End Date</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td ><apex:outputField value="{!Section_125_Plan_Summary__c.New_Plan_End_Date__c}"/></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Related Employers Changes</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td colspan="2"><apex:outputField value="{!Section_125_Plan_Summary__c.Related_Employers_Changes__c}" style="width:75%"/></td>
+            </tr>
+        </table>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!Section_125_Plan_Summary__c.Changes__c == 'Yes'}">
+        <div class="sectionHeader" id="contactChangesHeader">
+            <apex:outputText styleclass="sectionLabel" value="Contact Changes"/>
+        </div>
+        <table id="contactChangesTable" class="formtable" style="width:100%;">
+            <tr>
+                <td class="fieldLabel"><b>Section 125 Contact</b></td>
+                <td class="fieldLabel"><b>Flex Contact</b></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Contact Name</td>
+                <td class="fieldLabel">Contact Name</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Section_125_Contact__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Contact_Name__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Phone</td>
+                <td class="fieldLabel">Phone</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Section_125_Contact_Phone__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Contact_Phone__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Email</td>
+                <td class="fieldLabel">Email</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Section_125_Contact_Email__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Contact_Email__c}" /></td>
+            </tr>
+        </table>
+        <div class="sectionHeader" id="planInfoHeader">
+            <apex:outputText styleclass="sectionLabel" value="Plan Information Changes"/>
+        </div>
+        <table id="planInfoTable" class="formtable" style="width:100%">
+            <tr>
+                <td class="fieldLabel">Eligibility</td>
+                <td class="fieldLabel">Elective Contributions</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Plan_Information__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Plan_Information_Elective_Contributions__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Non-Elective Contributions</td>
+                <td class="fieldLabel">Minimum Hours</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Plan_Info_Non_Elective_Contributions__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Plan_Information_Minimum_Hours__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Unused Taxable</td>
+                <td class="fieldLabel">Minimum Age</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Plan_Information_Unused__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Plan_Information_Minimum_Age__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Opt Out Option</td>
+                <td class="fieldLabel">Retires Eligible</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Plan_Information_Opt_Out_Option__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Plan_Information_Retirees_Eligible__c}" /></td>
+            </tr>
+        </table>
+        <div class="sectionHeader" id="flexInfoHeader">
+            <apex:outputText styleclass="sectionLabel" value="Flex Information Changes"/>
+        </div>
+        <table id="flexInfoTable" class="formtable" style="width:100%">
+            <tr>
+                <td class="fieldLabel">Dependent Daycare FSA</td>
+                <td class="fieldLabel">Carryover Provision</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Carryover_Provisions__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Health FSA Recordkeeper</td>
+                <td class="fieldLabel">Minimum Carryover</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Acct_Info_Health_FSA_Record_keeper__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Min_Carryover__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Minimum Election</td>
+                <td class="fieldLabel">Maximum Carryover</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Min_Election__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Max_Carryover__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Maximum Election</td>
+                <td class="fieldLabel">Flex Admin Fee</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Max_Election__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Admin_Fee__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Employer Paid Max</td>
+                <td class="fieldLabel">Flex Card</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Employer_Paid_Max__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Debit_Card__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Health FSA Premium</td>
+                <td class="fieldLabel">Flex Card Fee</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Health_FSA_Premium__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Debit_Card_Fee__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">FSA Eligibility</td>
+                <td class="fieldLabel">Deposit Required</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Eligibility__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Deposit_Required__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Heart Act</td>
+                <td class="fieldLabel">Eligible Expenses</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Heart_Act__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Eligible_Expenses__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Grace Period</td>
+                <td class="fieldLabel"></td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Grace_Period__c}" /></td>
+                <td></td>
+            </tr>
+        </table>
+        <div class="sectionHeader" id="qualifiedBenefitsHeader">
+            <apex:outputText styleclass="sectionLabel" value="Qualified Benefit Changes"/>
+        </div>
+        <table id="qualifiedBenefitsTable" class="formtable" style="width:100%;border-collapse: collapse;">
+            <tr>
+                <td class="fieldLabel"><b>Medical</b></td>
+                <td class="fieldLabel"><b>Disability</b></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Medical Carrier</td>
+                <td class="fieldLabel">Disability Carrier</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Medical_Carrier__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Disability_Carrier__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Medical Description</td>
+                <td class="fieldLabel">Disability Description</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Medical_Description__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Disability_Description__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Medical Eligibility</td>
+                <td class="fieldLabel">Disability Eligibility</td>
+            </tr>
+            <tr>
+                <td style="border-bottom:1pt solid rgb(244, 246, 249);"><apex:outputField value="{!Section_125_Plan_Summary__c.Medical_Eligibility__c}" /></td>
+                <td style="border-bottom:1pt solid rgb(244, 246, 249);"><apex:outputField value="{!Section_125_Plan_Summary__c.Disability_Eligibility__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel"><b>Accident</b></td>
+                <td class="fieldLabel"><b>Cancer</b></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Accident Carrier</td>
+                <td class="fieldLabel">Cancer Carrier</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Accident_Carrier__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Cancer_Carrier__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Accident Description</td>
+                <td class="fieldLabel">Cancer Description</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Accident_Description__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Cancer_Description__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Accident Eligibility</td>
+                <td class="fieldLabel">Cancer Eligibility</td>
+            </tr>
+            <tr>
+                <td style="border-bottom:1pt solid rgb(244, 246, 249);"><apex:outputField value="{!Section_125_Plan_Summary__c.Accident_Eligibility__c}" /></td>
+                <td style="border-bottom:1pt solid rgb(244, 246, 249);"><apex:outputField value="{!Section_125_Plan_Summary__c.Cancer_Eligibility__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel"><b>Dental</b></td>
+                <td class="fieldLabel"><b>Vision</b></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Dental Carrier</td>
+                <td class="fieldLabel">Vision Carrier</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Dental_Carrier__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Vision_Carrier__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Dental Description</td>
+                <td class="fieldLabel">Vision Description</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Dental_Description__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Vision_Description__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Dental Eligibility</td>
+                <td class="fieldLabel">Vision Eligibility</td>
+            </tr>
+            <tr>
+                <td style="border-bottom:1pt solid rgb(244, 246, 249);"><apex:outputField value="{!Section_125_Plan_Summary__c.Dental_Eligibility__c}" /></td>
+                <td style="border-bottom:1pt solid rgb(244, 246, 249);"><apex:outputField value="{!Section_125_Plan_Summary__c.Vision_Eligibility__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel"><b>Group Life</b></td>
+                <td class="fieldLabel"><b>Other</b></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Group Life Carrier</td>
+                <td class="fieldLabel">Other Carrier</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Group_Life_Carrier__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Other_Carrier__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Group Life Description</td>
+                <td class="fieldLabel">Other Description</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Group_Life_Description__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Other_Description__c}" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Group Life Eligibility</td>
+                <td class="fieldLabel">Other Eligibility</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Group_Life_Eligibility__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Other_Eligibility__c}" /></td>
+            </tr>
+        </table>
+        <div class="sectionHeader" id="HSAHeader">
+            <apex:outputText styleclass="sectionLabel" value="HSA Changes"/>
+        </div>
+        <table id="HSATable" class="formtable" style="width:100%">
+            <tr>
+                <td class="fieldLabel">Trustee</td>
+                <td class="fieldLabel">Health FSA Limited to Dental/Vision</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.HSA_Trustee__c}" /></td>
+                <td><apex:outputField value="{!Section_125_Plan_Summary__c.Health_FSA_Limited_to_Dental_Vision__c}" /></td>
+            </tr>
+        </table>
+        <apex:outputField rendered="false" value="{!Section_125_Plan_Summary__c.Enrollment_Form__c}"/>
+    </apex:outputPanel>
+</apex:page>

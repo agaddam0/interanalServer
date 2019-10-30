@@ -1,0 +1,114 @@
+<aura:component implements="force:appHostable,flexipage:availableForRecordHome,force:hasRecordId,lightning:isUrlAddressable" access="global" controller="EmailBuilderController">
+    <aura:attribute name="emailPreviewHTML" type="String" access="private" />
+    <aura:attribute name="showSpinner" type="Boolean" default="false" access="private" />
+    <aura:attribute name="context" type="EmailBuilderController.EmailBuilderContext" access="private" />
+    <aura:attribute name="selectedEmailTemplate" type="String" access="private" />
+    <aura:attribute name="data1" type="String" access="private" />
+    <aura:attribute name="sectionsMetadata" type="Object[]" access="private" />
+    <aura:attribute name="dataContainer" type="Object" access="private" />
+    <aura:attribute name="sectionsComponents" type="Aura.Component[]" access="private" />
+    <aura:attribute name="recipientContactId" type="Id" access="private" />
+    <aura:attribute name="pageState" type="Object" access="private" />
+    <aura:attribute name="showSendConfirmation" type="Boolean" access="private" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+
+    <!-- Luke Freeland 5/14/2019: This div that surrounds the main contents was used so that the two main
+         column would have a height of 100% of the available space and will extend to the bottom
+         of the viewport. -->
+    <div class="oneContent active forceContentWrapper af-emailbuilder-container">
+        <div class="af-emailbuilder-sub-container slds-p-around_small">
+        
+            <h2 class="slds-text-heading_large slds-m-bottom_small">Email Builder</h2>
+        
+    
+	        <div class=" af-main-content-container">
+	            <h3 class="slds-text-heading_small slds-p-around_small af-email-template-header">
+	                <span>Email Template</span>
+	            </h3>
+	                
+	            <h3 class="slds-text-heading_small slds-p-around_small slds-is-relative af-email-preview-header">
+                    <span class="af-move-right-small-amt">Preview - {! $Label.c.Emailbuilder_Preview_Disclaimer }</span>
+                </h3>
+	            	            
+                <div class=" slds-m-top_small slds-m-left_small slds-p-right_small af-subcontainer">
+
+                    <p class="slds-m-bottom_small">{!$Label.c.EmailBuilder_Email_Template_Instructions}</p>
+
+                    <lightning:select value="{! v.selectedEmailTemplate }" onchange="{! c.onEmailTemplateChange }" class="af-email-template-select" aura:id="emailTemplatesSelect">
+                        <option value="">Choose Template to Start Building...</option>
+
+                        <aura:iteration items="{! v.context.AvailableEmailTemplates }" var="availableEmailTemplate">
+                            <option value="{! availableEmailTemplate.LegacyId }" selected="{!availableEmailTemplate.LegacyId == v.selectedEmailTemplate}" >{! availableEmailTemplate.Name }</option>
+                        </aura:iteration>
+                    </lightning:select>
+    
+                    <aura:if isTrue="{! v.sectionsComponents }">
+                        {! v.sectionsComponents }
+                    <aura:set attribute="else">
+                      sections metadata is false
+                    </aura:set>
+                    </aura:if>
+
+                    <aura:if isTrue="{! v.selectedEmailTemplate }">
+                        <hr class="slds-m-vertical_small" />
+
+                        <h2 class="slds-text-heading_medium slds-m-top_medium">Email Recipient</h2>
+
+                        <p class="slds-m-left_medium">{! $Label.c.EmailBuilder_Email_Recipient_Instructions }</p>
+
+                        <c:strike_lookup searchField="Name"
+                             order="Name"
+                             label="Recipient Contact"
+                             limit="10"
+                             class="slds-p-vertical_xx-small slds-m-left_medium af-recipient-contact"
+                             object="Contact"
+                             loadingMessage="Loading..."
+                             errorMessage="Invalid user input"
+                             value="{! v.recipientContactId }" />
+                    </aura:if>
+
+                </div>
+
+                <div class="slds-box slds-m-right_medium slds-m-top_small slds-m-left_small af-subcontainer af-move-right-small-amt">
+                    <aura:unescapedHtml value="{! v.emailPreviewHTML }"/>
+                    
+                    <aura:if isTrue="{! !v.emailPreviewHTML }">
+                        <div class="slds-align_absolute-center slds-text-heading_large af-preview-instructions">
+                            Choose a template on the left. <br /><br />
+                            Your chosen template will appear in this preview area.
+                        </div>
+                    
+                    </aura:if>
+                </div>
+	        </div>
+	        
+	        <div class="slds-m-top_x-small slds-align--absolute-center">
+	            <lightning:button label="Preview" onclick="{!c.previewEmail}" variant="brand" class="af-preview-btn af-button slds-m-right_medium" disabled="{! !v.selectedEmailTemplate }" />
+                <lightning:button label="Send Email" onclick="{!c.openSendConfirmation}" variant="brand" class="af-button" disabled="{! !v.selectedEmailTemplate }" />
+	        </div>
+	        
+            <lightning:spinner aura:id="mySpinner" class="{! v.showSpinner ? 'slds-show' : 'slds-hide' }" />
+
+            <div class="{! v.showSendConfirmation ? 'slds-show' : 'slds-hide'}">
+                    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                        <div class="slds-modal__container">
+                            <header class="slds-modal__header">
+                                <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeSendConfirmation }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+            
+                                <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Are you sure?</h2>
+                            </header>
+                            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                {! $Label.c.EmailBuilder_Send_Email_Confirmation }
+                            </div>
+                            <footer class="slds-modal__footer">
+                                <button class="slds-button slds-button_neutral" onclick="{! c.closeSendConfirmation }">Close</button>
+                                <button class="slds-button slds-button_brand" onclick="{! c.sendEmailToRecipient }">Confirm</button>
+                            </footer>
+                        </div>
+                    </section>
+                    <div class="slds-backdrop slds-backdrop_open"></div>
+                </div>
+        </div>
+    </div>
+</aura:component>

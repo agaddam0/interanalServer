@@ -1,0 +1,5 @@
+<aura:event access="global" type="APPLICATION" description="Event template" >
+    <aura:attribute name="navigate" type="String"/>
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="opportunityId" type="String" />
+</aura:event>

@@ -1,0 +1,41 @@
+<aura:component extends="c:ReserviceComponentContainer" controller="ReserviceSetupController">
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    <aura:handler name="valueChange" event="c:SelectChange" action="{!c.handleEvent}" />
+    <aura:handler event="c:FieldSetFormValueChange" action="{!c.checkBusinessDays}"/>
+    
+    <aura:attribute name="PlatformSetup" type="Platform_Setup__c" />
+    <aura:attribute name="Opportunity" type="Opportunity" />
+    <aura:attribute name="disableInputFields" type="Boolean" default="false" />
+    
+    <aura:attribute name="showPayrollDetails" type="Boolean" default="false" access="private" />
+    <aura:attribute name="showPayrollRushReason" type="Boolean" default="false" access="private" />
+    
+    <aura:method name="validateForm" />
+    <aura:method name="disableForm" >
+        <aura:attribute name="disabled" type="Boolean" />
+    </aura:method>
+    
+    <div class="slds-size_1-of-3">
+        <c:FieldSetForm aura:Id="payrollMain"
+                        objectName="Platform_Setup__c" 
+                        fieldSetName="Quick_Setup_Return_Data_Info_Upload"
+                        record="{!v.PlatformSetup}"
+                        disableInputFields="{! v.disableInputFields }"/>
+    </div>
+    <div class="{! v.showPayrollDetails ? 'slds-show slds-size_1-of-3' : 'slds-hide'}">
+        <c:FieldSetForm aura:Id="payrollDetails"
+                        objectName="Platform_Setup__c" 
+                        fieldSetName="Quick_Setup_Return_Data_Info_Upload_Yes"
+                        record="{!v.PlatformSetup}"
+                        disableInputFields="{! v.disableInputFields }"/>
+    </div>
+    <div class="{! v.showPayrollRushReason ? 'slds-show slds-size_1-of-3' : 'slds-hide'}">
+        <c:FieldSetForm aura:Id="payrollRushForm"
+                        objectName="Platform_Setup__c"
+                        fieldSetName="Quick_Setup_Payroll_Rush_Reason"
+                        record="{!v.PlatformSetup}"
+                        disableInputFields="{! v.disableInputFields }" />
+
+        <span class="afa-warning-text">{!$Label.c.Payroll_Upload_Warning_Message}</span>
+    </div>
+</aura:component>

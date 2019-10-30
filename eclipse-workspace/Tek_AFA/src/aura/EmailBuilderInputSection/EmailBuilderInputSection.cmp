@@ -1,0 +1,31 @@
+<aura:component>
+    <aura:attribute name="sectionMetadata" type="Object" access="public" />
+    <aura:attribute name="dataContainer" type="Object" access="public" />
+    <aura:attribute name="sectionNumber" type="Integer" access = "public" />
+    
+    <aura:attribute name="sectionInputComponents" type="Aura.Component[]" access="private" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}" />
+    
+    <div>
+        <aura:if isTrue="{! v.sectionNumber > 1 }">
+        <hr class="slds-m-vertical_small" />
+        </aura:if>
+    
+	    <h2 class="slds-text-heading_medium slds-m-top_medium">{! v.sectionMetadata.Name }</h2>
+	    
+	    <div class="slds-m-horizontal_medium">
+		    <aura:if isTrue="{! v.sectionMetadata.Description }">
+		        <p>{! v.sectionMetadata.Description }</p>
+		    </aura:if>
+		                                    
+		    <aura:if isTrue="{! v.sectionInputComponents }">
+		        {! v.sectionInputComponents }
+		    </aura:if>
+		    
+		    <!-- <aura:iteration items="{! v.sectionMetadata.Inputs }" var="sectionInput">
+		       <c:EmailBuilderSectionInput sectionInput="{! sectionInput }" dataContainer="{! v.dataContainer }" aura:id="{! sectionInput.TargetField }" />
+		    </aura:iteration> -->
+	    </div>
+    </div>
+</aura:component>

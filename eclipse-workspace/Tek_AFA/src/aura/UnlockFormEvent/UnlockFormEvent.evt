@@ -1,0 +1,3 @@
+<aura:event type="Component" description="Event that sets boolean value to unlock or lock">
+    <aura:attribute name="UnlockForm" type="Boolean" />
+</aura:event>

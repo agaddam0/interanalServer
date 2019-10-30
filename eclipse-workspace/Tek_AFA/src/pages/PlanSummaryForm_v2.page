@@ -1,0 +1,1092 @@
+<apex:page sidebar="false" standardStylesheets="true" showHeader="false"
+           standardController="Section_125_Plan_Summary__c"
+           extensions="PlanSummaryFormCTRL_v2" docType="html-5.0" action="{!init}">
+    <head> 
+        
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"/>
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"/>
+        
+        <apex:includeScript value="{!URLFOR($Resource.bootstrap3, 'js/bootstrap.min.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.bootstrapExtra, 'bootstrap-3.3.1/js/tab.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.datepicker, 'datepicker/js/bootstrap-datepicker.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.jQueryNumeric, 'js/jquery.numeric.min.js')}"/>
+        
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.css')}"/>
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.min.css')}"/>
+        <apex:stylesheet value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css"/>
+        
+        
+        
+        <!--------------- Include StyleSheet ---------------------------->     
+        <apex:include pageName="SetupFormsStyleSheet"/>
+        <style>
+            body{
+                margin:0px;
+            }
+            .header-tabs {
+                margin-top: 20px;
+            }
+            .nav {
+                margin-bottom: 0px;
+            }
+            
+        </style> 
+        
+    </head>
+    <body>
+        <apex:pageBlock id="thePageBlock">
+            <apex:form id="theForm">
+                
+                <!---------------------------- HEADER -------------------------------------->
+                
+                
+                
+                <script>        
+                var $ = jQuery.noConflict();
+                $(document).ready(function() {
+                    
+                }); 
+                
+                $( ".helpButton" ).hover(
+                    function() {
+                        $(this).addClass("helpButtonOn");
+                        $(this).removeClass("helpButton");
+                        $(this).children('span.spanText').css("display", "inline");
+                    }, function() {
+                        $(this).removeClass("helpButtonOn");
+                        $(this).addClass("helpButton");
+                        $(this).children('span.spanText').css("display", "none");
+                    }
+                );
+                
+                // Luke Freeland: Added this so Salesforce won't automatically set
+                // focus to a date field.
+                function setFocusOnLoad() {}
+                </script>
+                
+                <!---------- Navigation Bar ----------- -->
+                <div class="header-cont">
+                    <div style="margin-bottom:-2px; margin-top:2px">
+                        <c:SetupFormsNavBar formName="onePage" submitLabel="Submit Plan Summary" efId="{!enrollmentForm.Id}"/>
+                    </div>
+                    
+                    <div style="clear:both"/>
+                </div>
+                    <apex:outputPanel id="thePage">
+                        <div class="container">
+                            <div class="header-tabs">
+                                <apex:outputPanel id="tabPanel">
+                                    <ul class="nav nav-tabs" id="tabs">
+                                        <li class="active" ><a id="summaryTabLink" data-toggle="tab" href="#plansummary" style="{!if(summaryTabComplete ,'color:black','color:red')}">
+                                            Plan Summary</a></li>
+                                    </ul>       
+                                </apex:outputPanel>
+                            </div>
+                            <div class="content">
+                                <apex:outputPanel id="messages">
+		                            <apex:pageMessages rendered="{!showErrorMessages==true}"/>
+		                        </apex:outputPanel>
+                            
+                                <span id="submitmessage" style="margin-left:10px;font-size:16pt;color:red;"></span>
+                            
+                                <apex:outputPanel id="allTabs">
+                                    <div class="tab-content">
+                                        <!--------------------------------------------PLAN SUMMARY TAB  ----------------------------------------- -->
+                                        <!--------------------------------------------PLAN SUMMARY TAB  ----------------------------------------- -->
+                                        <!--------------------------------------------PLAN SUMMARY TAB  ----------------------------------------- -->
+                                        <!--------------------------------------------PLAN SUMMARY TAB  ----------------------------------------- -->
+                                        <div class="tab-pane active" id="plansummary" style="padding-left:30px">
+                                            <!-- Table to split 2 rows -->
+                                            <table>
+                                                <tr>
+                                                    <!------------------------------- SUMMARY REPORT -------------------------------------------- -->
+                                                    <td style="width: 50%; vertical-align:top; padding-right:5%;" class="plan-summary">
+                                                        <apex:outputPanel rendered="{! PlanDateInformationContext.size < 1 }" >
+                                                            <span style="color:#EB0029">
+                                                                {! $Label.No_Section_125_Plan}
+                                                            </span>
+                                                        </apex:outputPanel>
+                                                    
+                                                        <apex:outputPanel rendered="{! PlanDateInformationContext.size > 0 }">
+                                                            <div class="page-1-content">
+                                                                <div class="summary-box" style="background-color: #EEEEEE;">
+                                                                    <div style="padding: 20px;">
+                                                                        <div class="fieldLabel">
+                                                                            Employer Name
+                                                                        </div>
+                                                                        <div class="fieldValue">
+                                                                            {!acc.Name}
+                                                                        </div>
+                                                    
+                                                                        <div class="fieldLabel">
+                                                                            Assigned Account Manager
+                                                                        </div>
+                                                                        <div class="fieldValue">
+                                                                            {!acc.Owner.Name}
+                                                                        </div>
+                                                                        <div class="info-text">
+                                                                            {! $Label.Most_Recent_Plan_Info}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                    
+                                                                <!-- Page 1 -->
+                                                    
+                                                                <div>
+                                                                    <table class="container-table">
+                                                                        <tr>
+                                                                            <!-- right hand section -->
+                                                                            <td style="width: 50%; vertical-align: top;">
+                                                                                <div class="section-sub-heading">
+                                                                                    Employer Information
+                                                                                </div>
+                                                                                <div class="fieldLabel">
+                                                                                    {! $ObjectType.Account.Fields.MCP_Number__c.Label }
+                                                                                </div>
+                                                                                <div class="fieldValue">
+                                                                                    {! acc.MCP_Number__c }
+                                                                                </div>
+                                                                                <div class="fieldLabel">
+                                                                                    {! $ObjectType.Account.Fields.Tax_ID_Number__c.Label }
+                                                                                </div>
+                                                                                <div class="fieldValue">
+                                                                                    {! acc.Tax_ID_Number__c }
+                                                                                </div>
+                                                                                <div class="fieldLabel">
+                                                                                    Billing Address
+                                                                                </div>
+                                                                                <div class="fieldValue">
+                                                                                    {! acc.BillingStreet }
+                                                                                    <apex:outputText value="{0}, {1}  {2}">
+                                                                                        <apex:param value="{! acc.BillingCity }"/>
+                                                                                        <apex:param value="{! acc.BillingState }"/>
+                                                                                        <apex:param value="{! acc.BillingPostalCode }" />
+                                                                                    </apex:outputText>
+                                                                                </div>
+                                                                                <div class="fieldLabel">
+                                                                                    Pysical Address
+                                                                                </div>
+                                                                                <div class="fieldValue">
+                                                                                    {! acc.ShippingStreet }
+                                                                                    <apex:outputText value="{0}, {1}  {2}">
+                                                                                        <apex:param value="{! acc.ShippingCity }"/>
+                                                                                        <apex:param value="{! acc.ShippingState }"/>
+                                                                                        <apex:param value="{! acc.ShippingPostalCode }" />
+                                                                                    </apex:outputText>
+                                                                                </div>
+                                                                                <div class="section-sub-heading">
+                                                                                    Related Employers
+                                                                                </div>
+                                                                                <apex:repeat value="{!PlanDateInformationContext}" var="planDate">
+                                                                                    <apex:repeat value="{!planDate.RelatedEmployers}" var="relatedEmployer">
+                                                                                        <div class="fieldLabel">
+                                                                                                {! $ObjectType.Account.Fields.Name.Label }
+                                                                                            </div>
+                                                                                            <div class="fieldValue">
+                                                                                                {! relatedEmployer.Name }
+                                                                                            </div>
+                                                                                        <div class="fieldLabel">
+                                                                                            {! $ObjectType.Account.Fields.MCP_Number__c.Label }
+                                                                                        </div>
+                                                                                        <div class="fieldValue">
+                                                                                            {! relatedEmployer.MCP_Number__c }
+                                                                                        </div>
+                                                                                        <div class="fieldLabel">
+                                                                                            {! $ObjectType.Account.Fields.Tax_ID_Number__c.Label }
+                                                                                        </div>
+                                                                                        <div class="fieldValue">
+                                                                                            {! relatedEmployer.Tax_ID_Number__c }
+                                                                                        </div>
+                                                                                        <div class="fieldLabel">
+                                                                                            Billing Address
+                                                                                        </div>
+                                                                                        <div class="fieldValue">
+                                                                                            {! relatedEmployer.BillingStreet }
+                                                                                            <apex:outputText value="{0}, {1}  {2}">
+                                                                                                <apex:param value="{! relatedEmployer.BillingCity }"/>
+                                                                                                <apex:param value="{! relatedEmployer.BillingState }"/>
+                                                                                                <apex:param value="{! relatedEmployer.BillingPostalCode }" />
+                                                                                            </apex:outputText>
+                                                                                        </div>
+                                                                                    </apex:repeat>
+                                                                                </apex:repeat>
+                                                                            </td>
+                                                    
+                                                                            <!-- left hand section -->
+                                                    
+                                                                            <td style="width: 50%; vertical-align: top;">
+                                                                                <div class="section-sub-heading">
+                                                                                    125 Contact
+                                                                                </div>
+                                                                                <apex:repeat value="{! generalContacts }" var="generalContact">
+                                                                                    <div class="fieldLabel">
+                                                                                        {! $ObjectType.Contact.Fields.Name.Label }
+                                                                                    </div>
+                                                                                    <div class="fieldValue">
+                                                                                        {! generalContact.Name }
+                                                                                    </div>
+                                                                                    <div class="fieldLabel">
+                                                                                        {! $ObjectType.Contact.Fields.Phone.Label }
+                                                                                    </div>
+                                                                                    <div class="fieldValue">
+                                                                                        {! generalContact.Phone }
+                                                                                    </div>
+                                                                                    <div class="fieldLabel">
+                                                                                        {! $ObjectType.Contact.Fields.Email.Label }
+                                                                                    </div>
+                                                                                    <div class="fieldValue">
+                                                                                        {! generalContact.Email }
+                                                                                    </div>
+                                                                                </apex:repeat>
+                                                                                <div class="section-sub-heading">
+                                                                                    Billing Contact
+                                                                                </div>
+                                                                                <apex:repeat value="{! billingContacts }" var="billingContact">
+                                                                                    <div class="fieldLabel">
+                                                                                        {! $ObjectType.Contact.Fields.Name.Label }
+                                                                                    </div>
+                                                                                    <div class="fieldValue">
+                                                                                        {! billingContact.Name }
+                                                                                    </div>
+                                                                                    <div class="fieldLabel">
+                                                                                        {! $ObjectType.Contact.Fields.Phone.Label }
+                                                                                    </div>
+                                                                                    <div class="fieldValue">
+                                                                                        {! billingContact.Phone }
+                                                                                    </div>
+                                                                                    <div class="fieldLabel">
+                                                                                        {! $ObjectType.Contact.Fields.Email.Label }
+                                                                                    </div>
+                                                                                    <div class="fieldValue">
+                                                                                        {! billingContact.Email }
+                                                                                    </div>
+                                                                                </apex:repeat>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </div>
+                                                            </div> <!-- End Page 1 -->
+                                                            <div class="pageBreak" />
+                                                    
+                                                            <!-- Page 2 Begin -->
+                                                            <div class="page-2">
+                                                                <apex:repeat value="{!PlanDateInformationContext}" var="context">
+                                                                    <div class="plan-header">
+                                                                        Plan Information
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.Name.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.Name }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        Plan Year
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        <apex:outputText value="{0, date, MM'/'d'/'yyyy} - {1, date, MM'/'d'/'yyyy}" >
+                                                                            <apex:param value="{! context.PlanDate.Plan_Start_Date__c }"/>
+                                                                            <apex:param value="{! context.PlanDate.Plan_End_Date__c }" />
+                                                                        </apex:outputText>
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.PlanStatus__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.PlanStatus__c }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.LegalName__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.LegalName__c }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.DBA__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.DBA__c }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.EntityType__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.EntityType__c }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.Plan_Name__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.Plan_Name__c }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.EligibilityPeriod__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.EligibilityPeriod__c }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.NonElectiveContribution__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.NonElectiveContribution__c }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.UnusedTaxable__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.UnusedTaxable__c }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.CashoutOption__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.CashoutOption__c }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        Elective Contributions
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        <apex:outputText value="{0} & {1}">
+                                                                            <apex:param value="{! context.PlanDate.EmployeeContributionAmount__c }"/>
+                                                                            <apex:param value="{! context.PlanDate.EmployeeContributionPercent__c }"/>
+                                                                        </apex:outputText>
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.MinimumHours__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.MinimumHours__c }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.MinimumAge__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.MinimumAge__c }
+                                                                    </div>
+                                                                    <div class="fieldLabel">
+                                                                        {! $ObjectType.Plan_Date__c.Fields.RetireesEligible__c.Label }
+                                                                    </div>
+                                                                    <div class="fieldValue">
+                                                                        {! context.PlanDate.RetireesEligible__c }
+                                                                    </div>
+                                                    
+                                                                    <div class="section-sub-heading">
+                                                                        Medical Benefits
+                                                                    </div>
+                                                                    <apex:outputPanel rendered="{! context.MedicalBenefits.size > 0 }">
+                                                                        <apex:repeat value="{! context.MedicalBenefits }" var="medicalBenefit">
+                                                                            <div class="fieldLabel">
+                                                                                {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                                                                            </div>
+                                                                            <div class="fieldValue">
+                                                                                <span style="{!IF(medicalBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                                                                    {! medicalBenefit.CarrierName__c }
+                                                                                </span>
+                                                                            </div>
+                                                    
+                                                                            <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! medicalBenefit }" layout="vertical" />
+                                                    
+                                                                        </apex:repeat>
+                                                                    </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{! context.MedicalBenefits.size == 0 }">
+                                                                        There are no benefits offered on a pre-tax basis.
+                                                                    </apex:outputPanel>
+                                                    
+                                                                    <div class="section-sub-heading">
+                                                                        Cancer Benefits
+                                                                    </div>
+                                                                    <apex:outputPanel rendered="{! context.CancerBenefits.size > 0 }">
+                                                                        <apex:repeat value="{! context.CancerBenefits }" var="cancerBenefit">
+                                                                            <div class="fieldLabel">
+                                                                                {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                                                                            </div>
+                                                                            <div class="fieldValue">
+                                                                                <span style="{!IF(cancerBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                                                                    {! cancerBenefit.CarrierName__c }
+                                                                                </span>
+                                                                            </div>
+                                                    
+                                                                            <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! cancerBenefit }" layout="vertical" />
+                                                    
+                                                                        </apex:repeat>
+                                                                    </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{! context.CancerBenefits.size == 0 }">
+                                                                        There are no benefits offered on a pre-tax basis.
+                                                                    </apex:outputPanel>
+                                                    
+                                                                    <div class="section-sub-heading">
+                                                                        Disability Benefits
+                                                                    </div>
+                                                                    <apex:outputPanel rendered="{! context.DisabilityBenefits.size > 0 }">
+                                                                        <apex:repeat value="{! context.DisabilityBenefits }" var="disabilityBenefit">
+                                                                            <div class="fieldLabel">
+                                                                                {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                                                                            </div>
+                                                                            <div class="fieldValue">
+                                                                                <span style="{!IF(disabilityBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                                                                    {! disabilityBenefit.CarrierName__c }
+                                                                                </span>
+                                                                            </div>
+                                                                            
+                                                                            <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! disabilityBenefit }" layout="vertical" />
+                                                                            
+                                                                        </apex:repeat>
+                                                                    </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{! context.DisabilityBenefits.size == 0 }">
+                                                                        There are no benefits offered on a pre-tax basis.
+                                                                    </apex:outputPanel>
+                                                    
+                                                                    <div class="section-sub-heading">
+                                                                        Dental Benefits
+                                                                    </div>
+                                                                    <apex:outputPanel rendered="{! context.DentalBenefits.size > 0 }">
+                                                                        <apex:repeat value="{! context.DentalBenefits }" var="dentalBenefit">
+                                                                            <div class="fieldLabel">
+                                                                                {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                                                                            </div>
+                                                                            <div class="fieldValue">
+                                                                                <span style="{!IF(dentalBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                                                                    {! dentalBenefit.CarrierName__c }
+                                                                                </span>
+                                                                            </div>
+                                                                            
+                                                                            <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! dentalBenefit }" layout="vertical" />
+                                                                            
+                                                                        </apex:repeat>
+                                                                    </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{! context.DentalBenefits.size == 0 }">
+                                                                        There are no benefits offered on a pre-tax basis.
+                                                                    </apex:outputPanel>
+                                                    
+                                                                    <div class="section-sub-heading">
+                                                                        Vision Benefits
+                                                                    </div>
+                                                                    <apex:outputPanel rendered="{! context.VisionBenefits.size > 0 }">
+                                                                        <apex:repeat value="{! context.VisionBenefits }" var="visionBenefit">
+                                                                            <div class="fieldLabel">
+                                                                                {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                                                                            </div>
+                                                                            <div class="fieldValue">
+                                                                                <span style="{!IF(visionBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                                                                    {! visionBenefit.CarrierName__c }
+                                                                                </span>
+                                                                            </div>
+                                                                            
+                                                                            <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! visionBenefit }" layout="vertical" />
+                                                                            
+                                                                        </apex:repeat>
+                                                                    </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{! context.VisionBenefits.size == 0 }">
+                                                                        There are no benefits offered on a pre-tax basis.
+                                                                    </apex:outputPanel>
+                                                    
+                                                                    <div class="section-sub-heading">
+                                                                        Group Life Benefits
+                                                                    </div>
+                                                                    <apex:outputPanel rendered="{! context.GroupLifeBenefits.size > 0 }">
+                                                                        <apex:repeat value="{! context.GroupLifeBenefits }" var="groupLifeBenefit">
+                                                                            <div class="fieldLabel">
+                                                                                {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                                                                            </div>
+                                                                            <div class="fieldValue">
+                                                                                <span style="{!IF(groupLifeBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                                                                    {! groupLifeBenefit.CarrierName__c }
+                                                                                </span>
+                                                                            </div>
+                                                                            
+                                                                            <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! groupLifeBenefit }" layout="vertical" />
+                                                                            
+                                                                        </apex:repeat>
+                                                                    </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{! context.GroupLifeBenefits.size == 0 }">
+                                                                        There are no benefits offered on a pre-tax basis.
+                                                                    </apex:outputPanel>
+                                                    
+                                                                    
+                                                                    <apex:outputPanel rendered="{! context.FlexAccountInformation.size > 0 }">
+                                                                        <div class="section-sub-heading">
+                                                                            Flex Account Information
+                                                                        </div>
+                                                                    
+                                                                        <apex:repeat value="{! context.FlexAccountInformation }" var="flexInfo">
+                                                                            <div class="fieldLabel">
+                                                                                {! $ObjectType.Eligible_Coverage__c.Fields.Recordkeeper__c.Label }
+                                                                            </div>
+                                                                            <div class="fieldValue">
+                                                                                <span style="{!IF(flexInfo.Recordkeeper__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                                                                    {! flexInfo.Recordkeeper__c }
+                                                                                </span>
+                                                                            </div>
+                                                                            
+                                                                            <apex:outputPanel rendered="{! flexInfo.BenefitCode__c == 'DDC' }">
+                                                                                <c:FieldSetRecordDisplay fieldSetName="DDC_Coverages" record="{! flexInfo }" layout="vertical" />
+                                                                            </apex:outputPanel>
+                                                    
+                                                                            <apex:outputPanel rendered="{! flexInfo.BenefitCode__c == 'URM' || flexInfo.BenefitCode__c == 'LPF' }">
+                                                                                <c:FieldSetRecordDisplay fieldSetName="URM_or_LPF_Coverages" record="{! flexInfo }" layout="vertical" />
+                                                                            </apex:outputPanel>
+                                                                            
+                                                                        </apex:repeat>
+                                                                    </apex:outputPanel>
+                                                    
+                                                                    <apex:outputPanel rendered="{! context.HSAInformation.size > 0 }">
+                                                                        <div class="section-sub-heading">
+                                                                                HSA Information
+                                                                        </div>
+                                                                    
+                                                                        <apex:repeat value="{! context.HSAInformation }" var="hsaInfo">
+                                                                            <div class="fieldLabel">
+                                                                                {! $ObjectType.Eligible_Coverage__c.Fields.Recordkeeper__c.Label }
+                                                                            </div>
+                                                                            <div class="fieldValue">
+                                                                                <span style="{!IF(hsaInfo.Recordkeeper__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                                                                    {! hsaInfo.Recordkeeper__c }
+                                                                                </span>
+                                                                            </div>
+                                                    
+                                                                            <c:FieldSetRecordDisplay fieldSetName="HSA_Coverages" record="{! hsaInfo }" layout="vertical" />
+                                                                            
+                                                                        </apex:repeat>
+                                                                    </apex:outputPanel>
+                                                                </apex:repeat>
+                                                            </div>
+                                                        </apex:outputPanel>
+                                                    </td>
+
+                                                    <!---------------------------------------- CHANGES SECTION ------------------------------------ -->
+                                                    <!---------------------------------------- CHANGES SECTION ------------------------------------ -->
+                                                    <!---------------------------------------- CHANGES SECTION ------------------------------------ -->
+                                                    <!---------------------------------------- CHANGES SECTION ------------------------------------ -->
+
+                                                    <td style="width: 50%; vertical-align:top;">
+                                                        <apex:outputPanel id="planSummaryPanel">
+                                                            <div class="sectionHeader">
+                                                                <apex:outputText styleclass="sectionLabel" value="Plan Changes"/>
+                                                            </div>
+                                                            <table id="planChangesQuestion" class="formtable" style="width:100%">
+                                                                <tr>
+                                                                    <td class="fieldLabel"><div class="requiredLabel">Changes<c:cHelp helpText="{!hMap[LOWER('Changes__c')]}"/></div></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Changes__c}" onchange="if(this.value == 'Yes')showFields(); else hideFields(); saveRecord();" /></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </table>
+                                                            <table id="multiPlanYears" class="formtable" style="width:100%; ">
+                                                                <tr>
+                                                                    <td class="fieldLabel">If multiple plan years, which plan number are you changing?<c:cHelp helpText="{!hMap[LOWER('If_multiple_changed_plan_number__c')]}"/></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td ><apex:inputField value="{!Section_125_Plan_Summary__c.If_multiple_changed_plan_number__c}" onchange="saveRecord();"/></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </table>
+                                                            <table id="termEffective" class="formtable" style="width:100%">
+                                                                <tr>
+                                                                    <td class="fieldLabel">Termination Effective Date<c:cHelp helpText="{!hMap[LOWER('Termination_Effective_Date__c')]}"/></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td ><apex:inputField value="{!Section_125_Plan_Summary__c.Termination_Effective_Date__c}" onchange="saveRecord();"/></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </table>
+                                                            <table id="planYears" class="formtable" style="width:100%">
+                                                                <tr>
+                                                                    <td class="fieldLabel">Short Plan Year<c:cHelp helpText="{!hMap[LOWER('Short_Plan_Year__c')]}"/></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td ><apex:inputField value="{!Section_125_Plan_Summary__c.Short_Plan_Year__c}" onchange="saveRecord();"/></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">New Plan Start Date<c:cHelp helpText="{!hMap[LOWER('New_Plan_Start_Date__c')]}"/></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td ><apex:inputField value="{!Section_125_Plan_Summary__c.New_Plan_Start_Date__c}" onchange="saveRecord();"/></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">New Plan End Date<c:cHelp helpText="{!hMap[LOWER('New_Plan_End_Date__c')]}"/></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td ><apex:inputField value="{!Section_125_Plan_Summary__c.New_Plan_End_Date__c}" onchange="saveRecord();"/></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Related Employers Changes<c:cHelp helpText="{!hMap[LOWER('Related_Employers_Changes__c')]}"/></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td colspan="2"><apex:inputField value="{!Section_125_Plan_Summary__c.Related_Employers_Changes__c}" style="width:75%" onchange="saveRecord();"/></td>
+                                                                </tr>
+                                                            </table>
+                                                            <div class="sectionHeader" id="contactChangesHeader">
+                                                                <apex:outputText styleclass="sectionLabel" value="Contact Changes"/>
+                                                            </div>
+                                                            <table id="contactChangesTable" class="formtable" style="width:100%;">
+                                                                <tr>
+                                                                    <td class="fieldLabel"><b>Section 125 Contact</b></td>
+                                                                    <td class="fieldLabel"><b>Flex Contact</b></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Contact Name<c:cHelp helpText="{!hMap[LOWER('Section_125_Contact__c')]}"/></td>
+                                                                    <td class="fieldLabel">Contact Name<c:cHelp helpText="{!hMap[LOWER('Flex_Contact_Name__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Section_125_Contact__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Contact_Name__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Phone<c:cHelp helpText="{!hMap[LOWER('Section_125_Contact_Phone__c')]}"/></td>
+                                                                    <td class="fieldLabel">Phone<c:cHelp helpText="{!hMap[LOWER('Flex_Contact_Phone__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Section_125_Contact_Phone__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Contact_Phone__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Email<c:cHelp helpText="{!hMap[LOWER('Section_125_Contact_Email__c')]}"/></td>
+                                                                    <td class="fieldLabel">Email<c:cHelp helpText="{!hMap[LOWER('Flex_Contact_Email__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Section_125_Contact_Email__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Contact_Email__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                            </table>
+                                                            <div class="sectionHeader" id="planInfoHeader">
+                                                                <apex:outputText styleclass="sectionLabel" value="Plan Information Changes"/>
+                                                            </div>
+                                                            <table id="planInfoTable" class="formtable" style="width:100%">
+                                                                <tr>
+                                                                    <td class="fieldLabel">Eligibility<c:cHelp helpText="{!hMap[LOWER('Plan_Information__c')]}"/></td>
+                                                                    <td class="fieldLabel">Elective Contributions<c:cHelp helpText="{!hMap[LOWER('Plan_Information_Elective_Contributions__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Plan_Information__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Plan_Information_Elective_Contributions__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Non-Elective Contributions<c:cHelp helpText="{!hMap[LOWER('Plan_Info_Non_Elective_Contributions__c')]}"/></td>
+                                                                    <td class="fieldLabel">Minimum Hours<c:cHelp helpText="{!hMap[LOWER('Plan_Information_Minimum_Hours__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Plan_Info_Non_Elective_Contributions__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Plan_Information_Minimum_Hours__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Unused Taxable<c:cHelp helpText="{!hMap[LOWER('Plan_Information_Unused__c')]}"/></td>
+                                                                    <td class="fieldLabel">Minimum Age<c:cHelp helpText="{!hMap[LOWER('Plan_Information_Minimum_Age__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Plan_Information_Unused__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Plan_Information_Minimum_Age__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Opt Out Option<c:cHelp helpText="{!hMap[LOWER('Plan_Information_Opt_Out_Option__c')]}"/></td>
+                                                                    <td class="fieldLabel">Retires Eligible<c:cHelp helpText="{!hMap[LOWER('Plan_Information_Retirees_Eligible__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Plan_Information_Opt_Out_Option__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Plan_Information_Retirees_Eligible__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                            </table>
+                                                            <div class="sectionHeader" id="flexInfoHeader">
+                                                                <apex:outputText styleclass="sectionLabel" value="Flex Information Changes"/>
+                                                            </div>
+                                                            <table id="flexInfoTable" class="formtable" style="width:100%">
+                                                                <tr>
+                                                                    <td class="fieldLabel">Dependent Daycare FSA<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info__c')]}"/></td>
+                                                                    <td class="fieldLabel">Carryover Provision<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Carryover_Provisions__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Carryover_Provisions__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Health FSA Recordkeeper<c:cHelp helpText="{!hMap[LOWER('Flex_Acct_Info_Health_FSA_Record_keeper__c')]}"/></td>
+                                                                    <td class="fieldLabel">Minimum Carryover<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Min_Carryover__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Acct_Info_Health_FSA_Record_keeper__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Min_Carryover__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Minimum Election<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Min_Election__c')]}"/></td>
+                                                                    <td class="fieldLabel">Maximum Carryover<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Max_Carryover__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Min_Election__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Max_Carryover__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Maximum Election<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Max_Election__c')]}"/></td>
+                                                                    <td class="fieldLabel">Flex Admin Fee<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Admin_Fee__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Max_Election__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Admin_Fee__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Employer Paid Max<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Employer_Paid_Max__c')]}"/></td>
+                                                                    <td class="fieldLabel">Flex Card<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Debit_Card__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Employer_Paid_Max__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Debit_Card__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Health FSA Premium<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Health_FSA_Premium__c')]}"/></td>
+                                                                    <td class="fieldLabel">Flex Card Fee<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Debit_Card_Fee__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Health_FSA_Premium__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Debit_Card_Fee__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">FSA Eligibility<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Eligibility__c')]}"/></td>
+                                                                    <td class="fieldLabel">Deposit Required<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Deposit_Required__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Eligibility__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Deposit_Required__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Heart Act<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Heart_Act__c')]}"/></td>
+                                                                    <td class="fieldLabel">Eligible Expenses<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Eligible_Expenses__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Heart_Act__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Eligible_Expenses__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Grace Period<c:cHelp helpText="{!hMap[LOWER('Flex_Account_Info_Grace_Period__c')]}"/></td>
+                                                                    <td class="fieldLabel"></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Flex_Account_Info_Grace_Period__c}" onchange="saveRecord();" /></td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </table>
+                                                            <div class="sectionHeader" id="qualifiedBenefitsHeader">
+                                                                <apex:outputText styleclass="sectionLabel" value="Qualified Benefit Changes"/>
+                                                            </div>
+                                                            <table id="qualifiedBenefitsTable" class="formtable" style="width:100%;">
+                                                                <tr>
+                                                                    <td class="fieldLabel"><b>Medical</b></td>
+                                                                    <td class="fieldLabel"><b>Disability</b></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Medical Carrier<c:cHelp helpText="{!hMap[LOWER('Medical_Carrier__c')]}"/></td>
+                                                                    <td class="fieldLabel">Disability Carrier<c:cHelp helpText="{!hMap[LOWER('Disability_Carrier__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Medical_Carrier__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Disability_Carrier__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Medical Description<c:cHelp helpText="{!hMap[LOWER('Medical_Description__c')]}"/></td>
+                                                                    <td class="fieldLabel">Disability Description<c:cHelp helpText="{!hMap[LOWER('Disability_Description__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Medical_Description__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Disability_Description__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Medical Eligibility<c:cHelp helpText="{!hMap[LOWER('Medical_Eligibility__c')]}"/></td>
+                                                                    <td class="fieldLabel">Disability Eligibility<c:cHelp helpText="{!hMap[LOWER('Disability_Eligibility__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="border-bottom:.5pt solid lightgray;"><apex:inputField value="{!Section_125_Plan_Summary__c.Medical_Eligibility__c}" onchange="saveRecord();" /></td>
+                                                                    <td style="border-bottom:.5pt solid lightgray;"><apex:inputField value="{!Section_125_Plan_Summary__c.Disability_Eligibility__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel"><b>Accident</b></td>
+                                                                    <td class="fieldLabel"><b>Cancer</b></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Accident Carrier<c:cHelp helpText="{!hMap[LOWER('Accident_Carrier__c')]}"/></td>
+                                                                    <td class="fieldLabel">Cancer Carrier<c:cHelp helpText="{!hMap[LOWER('Cancer_Carrier__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Accident_Carrier__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Cancer_Carrier__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Accident Description<c:cHelp helpText="{!hMap[LOWER('Accident_Description__c')]}"/></td>
+                                                                    <td class="fieldLabel">Cancer Description<c:cHelp helpText="{!hMap[LOWER('Cancer_Description__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Accident_Description__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Cancer_Description__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Accident Eligibility<c:cHelp helpText="{!hMap[LOWER('Accident_Eligibility__c')]}"/></td>
+                                                                    <td class="fieldLabel">Cancer Eligibility<c:cHelp helpText="{!hMap[LOWER('Cancer_Eligibility__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="border-bottom:.5pt solid lightgray;"><apex:inputField value="{!Section_125_Plan_Summary__c.Accident_Eligibility__c}" onchange="saveRecord();" /></td>
+                                                                    <td style="border-bottom:.5pt solid lightgray;"><apex:inputField value="{!Section_125_Plan_Summary__c.Cancer_Eligibility__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel"><b>Dental</b></td>
+                                                                    <td class="fieldLabel"><b>Vision</b></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Dental Carrier<c:cHelp helpText="{!hMap[LOWER('Dental_Carrier__c')]}"/></td>
+                                                                    <td class="fieldLabel">Vision Carrier<c:cHelp helpText="{!hMap[LOWER('Vision_Carrier__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Dental_Carrier__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Vision_Carrier__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Dental Description<c:cHelp helpText="{!hMap[LOWER('Dental_Description__c')]}"/></td>
+                                                                    <td class="fieldLabel">Vision Description<c:cHelp helpText="{!hMap[LOWER('Vision_Description__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Dental_Description__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Vision_Description__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Dental Eligibility<c:cHelp helpText="{!hMap[LOWER('Dental_Eligibility__c')]}"/></td>
+                                                                    <td class="fieldLabel">Vision Eligibility<c:cHelp helpText="{!hMap[LOWER('Vision_Eligibility__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="border-bottom:.5pt solid lightgray;"><apex:inputField value="{!Section_125_Plan_Summary__c.Dental_Eligibility__c}" onchange="saveRecord();" /></td>
+                                                                    <td style="border-bottom:.5pt solid lightgray;"><apex:inputField value="{!Section_125_Plan_Summary__c.Vision_Eligibility__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel"><b>Group Life</b></td>
+                                                                    <td class="fieldLabel"><b>Other</b></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Group Life Carrier<c:cHelp helpText="{!hMap[LOWER('Group_Life_Carrier__c')]}"/></td>
+                                                                    <td class="fieldLabel">Other Carrier<c:cHelp helpText="{!hMap[LOWER('Other_Carrier__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Group_Life_Carrier__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Other_Carrier__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Group Life Description<c:cHelp helpText="{!hMap[LOWER('Group_Life_Description__c')]}"/></td>
+                                                                    <td class="fieldLabel">Other Description<c:cHelp helpText="{!hMap[LOWER('Other_Description__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Group_Life_Description__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Other_Description__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td class="fieldLabel">Group Life Eligibility<c:cHelp helpText="{!hMap[LOWER('Group_Life_Eligibility__c')]}"/></td>
+                                                                    <td class="fieldLabel">Other Eligibility<c:cHelp helpText="{!hMap[LOWER('Other_Eligibility__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Group_Life_Eligibility__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Other_Eligibility__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                            </table>
+                                                            <div class="sectionHeader" id="HSAHeader">
+                                                                <apex:outputText styleclass="sectionLabel" value="HSA Changes"/>
+                                                            </div>
+                                                            <table id="HSATable" class="formtable" style="width:100%">
+                                                                <tr>
+                                                                    <td class="fieldLabel">Trustee<c:cHelp helpText="{!hMap[LOWER('HSA_Trustee__c')]}"/></td>
+                                                                    <td class="fieldLabel">Health FSA Limited to Dental/Vision<c:cHelp helpText="{!hMap[LOWER('Health_FSA_Limited_to_Dental_Vision__c')]}"/></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.HSA_Trustee__c}" onchange="saveRecord();" /></td>
+                                                                    <td><apex:inputField value="{!Section_125_Plan_Summary__c.Health_FSA_Limited_to_Dental_Vision__c}" onchange="saveRecord();" /></td>
+                                                                </tr>
+                                                            </table>
+                                                            <script>
+                                                            if ("{!Section_125_Plan_Summary__c.Changes__c}" == "Yes")
+                                                            {
+                                                                showFields();
+                                                            }
+                                                            else
+                                                            {
+                                                                hideFields();
+                                                            }
+                                                            
+                                                            function showFields()
+                                                            {
+                                                                $('#multiPlanYears').show();
+                                                                $('#planYears').show();
+                                                                $('#contactChangesHeader').show();
+                                                                $('#contactChangesTable').show();
+                                                                $('#planInfoHeader').show();
+                                                                $('#planInfoTable').show();
+                                                                $('#flexInfoHeader').show();
+                                                                $('#flexInfoTable').show();
+                                                                $('#qualifiedBenefitsHeader').show();
+                                                                $('#qualifiedBenefitsTable').show();
+                                                                $('#HSAHeader').show();
+                                                                $('#HSATable').show();
+                                                            }
+                                                            
+                                                            function hideFields()
+                                                            {
+                                                                $('#multiPlanYears').hide();
+                                                                $('#planYears').hide();
+                                                                $('#contactChangesHeader').hide();
+                                                                $('#contactChangesTable').hide();
+                                                                $('#planInfoHeader').hide();
+                                                                $('#planInfoTable').hide();
+                                                                $('#flexInfoHeader').hide();
+                                                                $('#flexInfoTable').hide();
+                                                                $('#qualifiedBenefitsHeader').hide();
+                                                                $('#qualifiedBenefitsTable').hide();
+                                                                $('#HSAHeader').hide();
+                                                                $('#HSATable').hide();
+                                                            }
+                                                            
+                                                            /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+                                                            //Save record if form is not submitted
+                                                            var saveRecord = function()
+                                                            {
+                                                                saveRecord2();
+                                                            } 
+                                                            
+                                                            /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+                                                            // setup required field handlers
+                                                            
+                                                            $('[Id$=page]').click(function() {
+                                                                $('#submitmessage').empty();
+                                                                $('#submitmessage').hide();
+                                                            });                        
+                                                            
+                                                            setFormColor("color", "#54698D");  //dk blue 
+                                                            
+                                                            //When form has been submitted, lock down form - allow no changes
+                                                            if ('{!statusMsg}' != 'In Progress'  && '{!statusMsg}' != 'Not Started')
+                                                            { 
+                                                                $("#status").attr("style", "color:#0B0;");
+                                                                
+                                                                setFormColor("background-color","#EAECEC");
+                                                                $('.header-cont').css('background-color', '#EAECEC');
+                                                                $('.header-tabs').css('background-color', '#EAECEC');
+                                                                $('html').css('background-color', '#EAECEC');
+                                                                
+                                                                $('input[type=button]').each(function() {
+                                                                    $(this).attr({
+                                                                        'disabled': 'disabled'
+                                                                    });
+                                                                });
+                                                                
+                                                                $('select').each(function() {
+                                                                    $(this).attr({
+                                                                        'disabled': 'disabled'
+                                                                    });
+                                                                });
+                                                                
+                                                                $('textarea').each(function() {
+                                                                    $(this).attr({
+                                                                        'disabled': 'disabled'
+                                                                    });
+                                                                });
+                                                                
+                                                                $('input').each(function() {
+                                                                    $(this).attr({
+                                                                        'disabled': 'disabled'
+                                                                    });
+                                                                });
+                                                                
+                                                                $('.requiredLabel').toggleClass('noshow');  
+                                                                $('#confirmButton').hide();
+                                                                
+                                                                if ({!!Section_125_Plan_Summary__c.Request_Edit__c}){        
+                                                                    $('#requestEdit').show();
+                                                                    $('#requestEdit').prop('disabled',false);
+                                                                }
+                                                                
+                                                                $('td.multiSelectPicklistCell').find('img').css('display','none');
+                                                                $('.removeProduct').css('display','none');
+                                                            }  
+                                                            else {
+                                                                $("#status").attr("style", "color:red;");
+                                                                $('.requiredLabel').css('visibility' , 'visible');
+                                                                $('#confirmButton').show();
+                                                                $('#confirmButton').prop('disabled',false);
+                                                                setFormColor("background-color","white");
+                                                                $('.header-cont').css('background-color', 'white');
+                                                                $('.header-tabs').css('background-color', 'white');
+                                                                $('html').css('background-color', 'white');
+                                                            }
+                                                            
+                                                            $('.messageText').css('font-size','12px');
+                                                            
+                                                            function setFormColor(attr,color) {
+                                                                $("body .bPageBlock, body #bodyCell .bResource .secondaryPalette, body .secondaryPalette.bPageBlock, body .individualPalette .secondaryPalette.bPageBlock," +
+                                                                    "body .bodyDiv .genericTable, body .genericPageBlockTable, body .bodyDiv .bSubBlock, body .bComponentBlock .bPageBlock, body .bMyDashboard .bPageBlock," + 
+                                                                    " body.rlHoverFrame .bPageBlock, body.subjectSelectionPopup div.choicesBox, body.lookupTab .secondaryPalette.bPageBlock, body.popupTab .secondaryPalette.bPageBlock, body.UserTagStatsPage .secondaryPalette.bPageBlock")
+                                                                .css(attr, color);
+                                                            }
+                                                            
+                                                            function showSubmitMessage(msg) {
+                                                                var submitMsgEle = document.getElementById("submitmessage");
+                                                            
+                                                                submitMsgEle.innerHTML = msg;
+                                                                submitMsgEle.style.display = '';
+                                                            }
+                                                            
+                                                            function submitForm() {
+                                                                console.log('**** reached js submitForm');
+                                                                if ({!!summaryTabComplete}) {
+                                                                    $('#summaryTabLink').click();
+                                                                    showSubmitMessage("Submit Failed. Check all required fields.");
+                                                                }
+                                                                else if('{!enrollmentForm.Status__c}' != 'Confirmed') {
+                                                                    showSubmitMessage('The General Information form must be confirmed before this form can be submitted.');   
+                                                                }
+                                                                    else {
+                                                                        console.log('**** calling Controller to submitForm');
+                                                                        submitFormCTRL();
+                                                                    }     
+                                                            }
+                                                            </script>
+                                                        </apex:outputPanel> <!-- end Plan Summary Panel -->
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                        </div> <!-- end Plan Summary Tab -->
+                                    </div> <!-- end tab content -->
+                                </apex:outputPanel> <!-- end allTabs panel -->
+                            </div> <!-- end "content" -->
+                        </div>  <!--  end container -->
+                </apex:outputPanel> <!-- end "page" -->
+                
+                <!---------------------------------------------------------------------------- Page Actions --------------------------------------------------- -->
+                <!---------------------------------------------------------------------------- Page Actions --------------------------------------------------- -->
+                <!---------------------------------------------------------------------------- Page Actions --------------------------------------------------- -->
+                <!---------------------------------------------------------------------------- Page Actions --------------------------------------------------- -->
+                <!---------------------------------------------------------------------------- Page Actions --------------------------------------------------- -->
+                <apex:actionstatus id="sts">
+                    <apex:facet name="start">
+                        <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; height:150%;opacity:0.65;width:100%;">
+                            <div class="waitingHolder" style="top: 130px; width: 91px;">
+                                <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                                <span class="waitingDescription">Please Wait...</span>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionstatus> 
+                
+                <apex:ActionFunction name="updateEnrollmentForm" action="{!updateEnrollmentForm}" rerender="thePage, navBarOutputPanel" oncomplete="$('#onePage').removeClass('formSubmitted'); $('#onePage').addClass('formNotSubmitted');" status="sts">
+                    <apex:param name="name" assignTo="{!fieldName}" value="" />
+                    <apex:param name="value" assignTo="{!fieldValue}" value="" />
+                </apex:ActionFunction>
+                
+                <apex:actionFunction name="saveRecord2" action="{!save}" rerender="messages, tabPanel" />
+                <apex:ActionFunction name="checkRequiredFieldsAndDisplay"  action="{!checkRequiredFieldsAndDisplay}" oncomplete="submitForm();" rerender="allTabs, tabPanel"  status="sts"/>
+                <apex:ActionFunction name="submitFormCTRL" action="{!submitForm}" rerender="thePage, navBarOutputPanel" oncomplete="$('#onePage').addClass('formSubmitted');" status="sts" />
+            </apex:form>
+        </apex:pageBlock>
+    </body>
+</apex:page>

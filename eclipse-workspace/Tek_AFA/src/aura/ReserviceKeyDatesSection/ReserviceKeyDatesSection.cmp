@@ -1,0 +1,33 @@
+<aura:component extends="c:ReserviceComponentContainer" controller="ReserviceSetupController">    
+    <aura:attribute name="opportunity" type="Opportunity"/>
+    <aura:attribute name="PlatformSetup" type="Platform_Setup__c"/>
+    <aura:attribute name="disableFormFields" type="Boolean" default="false" />
+    
+    <aura:method name="validateForm" />
+    <aura:method name="disableForm" >
+        <aura:attribute name="disabled" type="Boolean" />
+    </aura:method>
+	
+    <div class="slds-grid slds-wrap">
+        <div class="slds-size_1-of-3 slds-p-horizontal_large">
+            
+            <c:FieldSetForm aura:Id="opportunityKeyDates"
+                            objectName="Opportunity" 
+                            fieldSetName="Quick_Setup_Key_Dates"
+                            record="{!v.opportunity}"
+                            disableInputFields="{! v.disableFormFields }"/>
+        </div>
+        
+        <div class="slds-size_1-of-3 slds-p-horizontal_large">
+            
+            <c:FieldSetForm aura:Id="platformSetupKeyDates"
+                            objectName="Platform_Setup__c" 
+                            fieldSetName="Quick_Setup_Key_Dates"
+                            record="{!v.PlatformSetup}"
+                            disableInputFields="{! v.disableFormFields }"/>
+            
+        </div>
+        
+    </div>
+    
+</aura:component>

@@ -1,0 +1,12 @@
+.THIS {
+	background-color: token(colorBackgroundAlt);
+}
+
+.THIS .slds-card {
+	box-shadow: none;
+	background-color: token(colorBackground);
+}
+
+.THIS .af-setup-form-name {
+	font-weight: 600;
+}

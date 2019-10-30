@@ -1,0 +1,10 @@
+<aura:component controller="OpportunityProductsListController" implements="force:hasRecordId" access="global" >
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="OpportunityProducts" type="Marketed_Product__c" access="private" />
+    
+    <aura:iteration items="{!v.OpportunityProducts}" var="product">
+    	<div>
+        	{!product.Name}
+        </div>
+    </aura:iteration>
+</aura:component>

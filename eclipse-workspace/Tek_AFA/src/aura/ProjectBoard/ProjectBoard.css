@@ -1,0 +1,195 @@
+.THIS .af-project-board-body-container{
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 100%;
+    height: 100%;
+    background-color: token(colorBackgroundAlt);
+}
+
+.THIS .slds-template_default {
+	padding: 0px;
+}
+
+.THIS .af-project-board-navigation-container {
+	width: 250px;
+	overflow: auto;
+	padding-right: 19px;
+}
+
+.THIS .af-project-board-selected-projects-container {
+	overflow-x: hidden;
+	overflow: auto;
+}
+
+.THIS .af-search-box input::placeholder {
+    color: #D3D3D3;
+}
+
+.THIS .af-filter-menu-container,
+.THIS .af-filter-menuitem > a,
+.THIS .af-sort-by-menu-item-container,
+.THIS .af-sortby-menuitem > a {
+    color: token(colorTextDefault) !important;
+    font-size: 1.25rem !important;
+    text-align: left;
+}
+
+.THIS .af-project-not-pinned svg {
+	fill-opacity: 0;
+	stroke: rgb(84, 105, 141);
+	cursor: pointer;
+}
+
+.THIS .af-project-pinned,
+.THIS .af-clear-search {
+	cursor: pointer;
+}
+
+.THIS .af-remove-project-action {
+	cursor: pointer;
+	padding-left: 0.7rem;
+}
+
+.THIS .af-project-body-header {
+    position: sticky;
+	top: 0px;
+	background-color: token(colorBackgroundButtonBrand);
+	z-index: 5000;
+}
+
+.THIS .af-project-sort-by-menu .uiPopupTrigger {
+	margin-right: 150px;
+}
+
+.THIS .af-project-body-header,
+.THIS .af-project-body-header > a {
+    color: white !important;
+}
+
+
+.THIS a.af-project-board-navigation-menu,
+.THIS a.af-project-board-navigation-menu:hover,
+.THIS a.af-project-board-navigation-menu:link,
+.THIS a.af-project-board-navigation-menu:visited,
+.THIS a.af-project-board-navigation-menu:active,
+.THIS .af-project-nav-item a,
+.THIS .af-project-nav-item a:hover,
+.THIS .af-project-nav-item a:link,
+.THIS .af-project-nav-item a:visited,
+.THIS .af-project-nav-item a:active,
+.THIS .af-found-account a,
+.THIS .af-found-account a:hover,
+.THIS .af-found-account a:link,
+.THIS .af-found-account a:visited,
+.THIS .af-found-account a:active {
+    color: token(colorTextDefault) !important;
+    text-decoration: none;
+}
+
+.THIS a.af-project-board-sort-menu-trigger,
+.THIS a.af-project-board-sort-menu-trigger:hover,
+.THIS a.af-project-board-sort-menu-trigger:link,
+.THIS a.af-project-board-sort-menu-trigger:visited,
+.THIS a.af-project-board-sort-menu-trigger:active,
+.THIS a.af-project-board-filter-menu,
+.THIS a.af-project-board-filter-menu:hover,
+.THIS a.af-project-board-filter-menu:link,
+.THIS a.af-project-board-filter-menu:visited,
+.THIS a.af-project-board-filter-menu:active {
+	color: white !important;
+    text-decoration: none;
+}
+
+.THIS .af-project-board-filter-menu button,
+.THIS .af-project-board-sort-menu-trigger button {
+	background-color: white;
+}
+
+.THIS .af-separator {
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+.THIS .af-project-board-filter-menu-container {
+	float: right;
+	text-align: right;
+    margin-right: 1.75rem;
+}
+
+.THIS .af-project-board-filter-menu-container,
+.THIS .af-project-board-filter-menu-container .uiPopupTrigger,
+.THIS .af-project-board-filter-menu-container .uiPopupTrigger div,
+.THIS .af-project-sort-by-menu,
+.THIS .af-project-sort-by-menu .uiPopupTrigger,
+.THIS .af-project-sort-by-menu .uiPopupTrigger div {
+	display: inline;
+}
+
+.THIS .af-collapsible-sidebar-container {
+	position:absolute;
+	width: 9px;
+	right: 0px;
+	top: 10px;
+	bottom: 10px;
+	height: auto;
+	cursor: url(/img/cursors/col-collapse.cur),pointer;
+	overflow-y: hidden;
+	text-decoration: none;
+}
+
+.THIS .af-collapsible-sidebar-container:hover {
+	background-color: #def5fc;
+}
+
+.THIS .af-collapsible-sidebar-container .af-indicator {
+	position: absolute;
+	z-index: 6;
+	height: 31px;
+	width: 9px;
+	right: 0;
+	background: url(/img/alohaSkin/sidebar_sprite.png) 0 0 no-repeat;
+}
+
+
+
+.THIS #af-pinIndicator {
+	top: 0;
+}
+
+.THIS #af-pinIndicator2 {
+	bottom: 0;
+}
+
+.THIS .af-collapsible-sidebar-container #af-handle {
+	background: transparent;
+	width: 5px;
+	position: absolute;
+	top: 5px;
+	bottom: 5px;
+	right: 2px;
+}
+
+.THIS .af-pinBox {
+	display: block;
+	height: 100%;
+	z-index: 5;
+}
+
+.THIS .af-project-board-navigation-container.af-project-board-navigation-container-collapsed {
+	width: 10px;
+	padding-right: 0px;
+}
+
+.THIS .af-project-board-navigation-container-collapsed .af-project-board_navigation-subcontainer {
+	display: none;
+}
+
+.THIS .af-project-board-navigation-container-collapsed .af-collapsible-sidebar-container {
+	left: 0px;
+	bottom: 5px;
+	cursor: url(/img/cursors/col-expand.cur),pointer;
+}
+
+.THIS .af-project-board-navigation-container-collapsed .af-collapsible-sidebar-container .af-indicator {
+	background: url(/img/alohaSkin/sidebar_sprite.png) 0 -62px no-repeat;
+}

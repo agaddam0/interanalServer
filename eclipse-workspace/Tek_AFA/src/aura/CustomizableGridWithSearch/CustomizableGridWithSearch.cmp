@@ -1,0 +1,218 @@
+<aura:component controller="CustomizableGridCTRL" implements="flexipage:availableForAllPageTypes,force:hasRecordId">
+    <aura:attribute name="objectName" 				type="String" />
+    <aura:attribute name="fieldSetColumns" 			type="String" />
+    <aura:attribute name="fieldSetFilter" 			type="String" />
+    <aura:attribute name="whereClause" 				type="String" />
+    <aura:attribute name="additionalWhereClause" 	type="String" />
+    <aura:attribute name="searchObject" 			type="sObject" default="{}" />
+    <aura:attribute name="useOwnerId" 				type="boolean" default="false" />
+    <aura:attribute name="ProTraxUser"				type="boolean" default="false" />
+    <aura:attribute name="OwnerId" 					type="String" />
+    <aura:attribute name="numItemsToShow"			type="Integer" default="10"/>
+    <aura:attribute name="header"                   type="Aura.Component[]"/>
+    <aura:attribute name="showRowActionsLast"       type="Boolean" default="false" />
+    <aura:attribute name="rowActions"               type="Object[]" default="[]" />
+    <aura:attribute name="goToRecordAction"         type="Aura.Action" />
+    <aura:attribute name="loadOnInit"               type="Boolean" default="true" />
+    <aura:attribute name="class"                    type="String" />
+    <aura:attribute name="allowGoToRecord"          type="Boolean" default="true" />
+    <aura:attribute name="searchText"               type="String" />
+    <aura:attribute name="additionalColumns"        type="String[]" />
+    <aura:attribute name="sortField"                type="String" />
+    <aura:attribute name="sortDirection"            type="String" default="ASC" />
+    <aura:attribute name="sortingEnabled"           type="Boolean" default="false" />
+    <aura:attribute name="orderBy"                  type="String" />
+    <aura:attribute name="showAlternatingStripes"   type="Boolean" default="false" />
+    <aura:attribute name="showBox"					type="Boolean" default="true" />
+    <aura:attribute name="useUppercaseCaseHeaders"	type="Boolean" default="true" />
+    <aura:attribute name="removeHoverHighlight"		type="Boolean" default="false" />
+    <aura:attribute name="alignCurrencyHeaderRight" type="Boolean" default="true" />
+    <aura:attribute name="showNoRecordsMessage" 	type="Boolean" default="false" />
+    <aura:attribute name="noRecordsMessage"			type="String" default="No records to show" />
+    <aura:attribute name="useNextPagination"   		type="Boolean" default="false" />
+    <aura:attribute name="pageNumber" 				type="Integer" default="1" />
+    <aura:attribute name="maxPage" 					type="Integer" default="1" />
+    
+    <aura:attribute name="records" 					type="CustomizableGridCTRL.Record[]" />
+    <aura:attribute name="slicedRecords"			type="CustomizableGridCTRL.Record[]" />
+    <aura:attribute name="columnNames" 				type="String[]" />
+    <aura:attribute name="columnAPINames" 			type="String[]" />
+    <aura:attribute name="showSpinner"              type="Boolean" default="false" access="private" />
+    <aura:attribute name="originalRecords"          type="CustomizableGridCTRL.Record[]" access="private" />
+    <aura:attribute name="columns"                  type="Field[]" access="private" />
+    <aura:attribute name="tableClass"				type="String" access="private" />
+    
+    <aura:registerEvent name="onRowAction" type="c:CustomizableGridRowAction"/>
+    <aura:registerEvent name="scrollToTop" type="c:ScrollToTopEvent" />
+    
+    <aura:handler name="valueChange" event="c:SelectChange" action="{!c.handleEvent}" />
+    <aura:handler name="change" value="{!v.pageNumber}" action="{!c.renderPage}" />
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    
+    <aura:method name="reloadRecords" />
+    <aura:method name="filterRecordsUsingSearchText">
+        <aura:attribute name="searchParam" type="String" />
+    </aura:method>
+                 
+    
+    <div class="{! v.class ? 'slds slds-is-relative ' + v.class : 'slds slds-is-relative'}">
+        <div class="{! v.showBox ? 'slds-box' : ''}" aura:id="main">
+            
+            {! v.header }
+            
+            <!-- Display the search field set if there is one present -->
+            <aura:if isTrue="{!v.fieldSetFilter}">
+                <div class="slds-size_1-of-2"> 
+                    <c:FieldSetForm fieldSetName="{!v.fieldSetFilter}" objectName="{!v.objectName}" record="{!v.searchObject}"/>
+                </div>
+                <lightning:button class="slds-float_right slds-m-left_small" label="Filter" variant="brand" onclick="{!c.searchFields}" />
+                <lightning:button class="slds-float_right" label="Clear" variant="neutral" onclick="{!c.clear}" />
+                
+                <br/> <br/>
+            </aura:if>
+            
+            
+            <div class="{! v.records.length == 0 &amp;&amp; v.showNoRecordsMessage ? 'slds-hide' : 'slds-show slds-scrollable'}">
+                <table class="{! v.tableClass }">
+                    <thead>
+                        <tr class="{! v.useUppercaseCaseHeaders ? 'slds-text-title_caps' : ''}">
+                            
+                            <aura:if isTrue="{! and(and(v.rowActions, v.rowActions.length > 0), v.showRowActionsLast == false) }">
+                                <th></th>
+                            </aura:if>
+                            
+                            <aura:iteration items="{!v.columns}" var="column">
+                                <th scope="col" class="{! column.Type == 'CURRENCY' &amp;&amp; v.alignCurrencyHeaderRight ? 'slds-text-align_right' : '' }">
+                                    <div class="slds-truncate" title="{! v.sortingEnabled ? and(v.sortField == column.APIName, v.sortDirection == 'ASC') ? 'Sort Descending' : 'Sort Ascending'  : column.Label }">
+                                        <aura:if isTrue="{! v.sortingEnabled }">
+                                            <a data-column="{! column.APIName }" onclick="{! c.onSortColumn }">{! column.Label }
+                                                
+                                                <aura:if isTrue="{! and(column, and(v.sortField, v.sortField == column.APIName)) }">
+                                                    <lightning:icon iconName="{! v.sortDirection == 'ASC' ? 'utility:arrowup' : 'utility:arrowdown' }" 
+                                                                    size="x-small" />
+                                                </aura:if>
+                                            </a>
+                                            
+                                            <aura:set attribute="else">
+                                                {! column.Label }
+                                            </aura:set>
+                                            
+                                        </aura:if>
+                                    </div>
+                                </th>
+                            </aura:iteration>
+                            
+                            <aura:if isTrue="{! and(and(v.rowActions, v.rowActions.length > 0), v.showRowActionsLast) }">
+                                <th></th>
+                            </aura:if>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.slicedRecords}" var="record" indexVar="recordIndex">
+                            <tr>
+                                <aura:if isTrue="{! and(and(v.rowActions, v.rowActions.length > 0), v.showRowActionsLast == false) }">
+                                    <td>
+                                        <aura:iteration items="{! v.rowActions }" var="rowAction">
+                                            <aura:if isTrue="{! !rowAction.Type || rowAction.Type == 'Link'}">
+                                                <a data-action-name="{! rowAction.ActionName }"
+                                                   onclick="{! c.onRowActionClick }"
+                                                   data-row-id="{! record.Record.Id }"
+                                                   data-row-data="{! record.Record }"
+                                                   class="{! rowAction.Class ? rowAction.Class : '' }">{! rowAction.Label }</a>
+                                            </aura:if>
+                                            
+                                            <aura:if isTrue="{!rowAction.Type == 'Select'}">
+                                                <div class="{! rowAction.Class ? 'slds-checkbox_add-button ' + rowAction.Class : 'slds-checkbox_add-button' }">
+                                                    <input type="checkbox" class="slds-assistive-text"  
+                                                           data-row-id="{! record.Record.Id }"
+                                                           data-action-name="{! rowAction.ActionName }"
+                                                           value="on"
+                                                           onclick="{!c.onRowActionClick}"
+                                                           id="{!'select-checkbox-'+record.Record.Id}" />
+                                                    <label for="{!'select-checkbox-'+record.Record.Id}" class="slds-checkbox_faux"/>
+                                                </div>
+                                            </aura:if>
+                                            
+                                            <aura:if isTrue="{!rowAction.Type == 'Button'}">
+                                                <lightning:button variant="brand"
+                                                                  label="{!rowAction.Label }"
+                                                                  class="{! rowAction.Class ? rowAction.Class : '' }"
+                                                                  onclick="{! c.onRowActionClick }"
+                                                                  value="{! record.Record.Id + '_' + rowAction.ActionName }" />
+                                            </aura:if>
+                                        </aura:iteration>
+                                    </td>
+                                    
+                                </aura:if>
+                                
+                                <aura:iteration items="{!record.fields}" var="field">
+                                    <td class="{! field.Type == 'CURRENCY' ? 'slds-text-align_right' : field.Type == 'BOOLEAN' ? 'slds-align_absolute-center' : '' }">
+                                        <aura:if isTrue="{! and(v.allowGoToRecord, field.FirstField) }">
+                                            <a href="" data-recId="{!record.Record.Id}" onclick="{! v.goToRecordAction ? v.goToRecordAction : c.goToRecord}">
+                                                <c:TableField field="{!field}"/>
+                                            </a>
+                                            <aura:set attribute="else">
+                                                <c:TableField field="{!field}"/>
+                                            </aura:set>
+                                        </aura:if>
+                                    </td>
+                                </aura:iteration>
+                                
+                                <aura:if isTrue="{! and(and(v.rowActions, v.rowActions.length > 0), v.showRowActionsLast == true) }">
+                                    <td>
+                                        <aura:iteration items="{! v.rowActions }" var="rowAction">
+                                            <aura:if isTrue="{! !rowAction.Type || rowAction.Type == 'Link'}">
+                                                <a data-action-name="{! rowAction.ActionName }"
+                                                   onclick="{! c.onRowActionClick }"
+                                                   data-row-id="{! record.Record.Id }"
+                                                   data-row-data="{! record.Record }"
+                                                   class="{! rowAction.Class ? rowAction.Class : '' }">{! rowAction.Label }</a>
+                                            </aura:if>
+                                            
+                                            <aura:if isTrue="{!rowAction.Type == 'Select'}">
+                                                <div class="{! rowAction.Class ? 'slds-checkbox_add-button ' + rowAction.Class : 'slds-checkbox_add-button' }">
+                                                    <input type="checkbox" class="slds-assistive-text"  
+                                                           data-row-id="{! record.Record.Id }"
+                                                           data-action-name="{! rowAction.ActionName }"
+                                                           value="on"
+                                                           onclick="{!c.onRowActionClick}"
+                                                           id="{!'select-checkbox-'+record.Record.Id}" />
+                                                    <label for="{!'select-checkbox-'+record.Record.Id}" class="slds-checkbox_faux"/>
+                                                </div>
+                                            </aura:if>
+                                            
+                                            <aura:if isTrue="{!rowAction.Type == 'Button'}">
+                                                <lightning:button variant="brand"
+                                                                  label="{!rowAction.Label }"
+                                                                  class="{! rowAction.Class ? rowAction.Class : '' }"
+                                                                  onclick="{! c.onRowActionClick }"
+                                                                  value="{! record.Record.Id + '_' + rowAction.ActionName }" />
+                                            </aura:if>
+                                        </aura:iteration>
+                                    </td>
+                                    
+                                </aura:if>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                
+                <aura:if isTrue="{!v.useNextPagination}">
+                    <!-- using Pagination Component -->
+                    <div class="slds-text-align_center slds-p-top_large">
+                        <c:Pagination currentPageNumber="{!v.pageNumber}" maxPageNumber="{!v.maxPage}" />
+                    </div>
+                    <aura:set attribute="else">
+                        <!-- use Show More Paginator component -->
+                        <c:Paginator aura:id="paginator" PageSize="{! v.numItemsToShow }" AllItems="{! v.records }" 
+                                     DisplayedItems="{! v.slicedRecords }" />
+                    </aura:set>
+                </aura:if>
+            </div>
+            <div class="{! v.records.length == 0 &amp;&amp; v.showNoRecordsMessage ? 'slds-show' : 'slds-hide'}">
+                <span>{!v.noRecordsMessage}</span>
+            </div>
+        </div>
+        <lightning:spinner aura:id="mySpinner" variant="brand" class="{! v.showSpinner ? 'slds-show' : 'slds-hide' }" />
+    </div>
+</aura:component>

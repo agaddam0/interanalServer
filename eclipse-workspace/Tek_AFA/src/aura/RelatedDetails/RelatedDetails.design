@@ -1,0 +1,8 @@
+<design:component label="Related Details Component">
+	<design:attribute name="ObjectName" label="API Object Name" dataSource="Historic_Production__c, Standing__c, YTD_Production__c"
+                      description="The API name of the object you would like to return data for that is related to the main record" />
+    <design:attribute name="LatestRecord" label="Latest Record" dataSource="True, False"
+                      description="Optional: Indicate if you want to use the flag Latest_Record__c" />
+    <design:attribute name="RecordType" label="Record Type"
+                      description="Optional: the record type of the object you would like to refine data to" />
+</design:component>

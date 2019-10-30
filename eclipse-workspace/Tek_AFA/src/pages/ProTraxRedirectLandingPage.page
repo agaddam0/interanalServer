@@ -1,0 +1,2 @@
+<apex:page showheader="true" standardController="Colleague__c" extensions="ProTraxRedirectLandingPage" action="{!redirect}" tabStyle="ProTrax__tab" >
+</apex:page>

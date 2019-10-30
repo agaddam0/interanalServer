@@ -1,0 +1,39 @@
+<aura:component >
+    <aura:attribute name="cartOrderLinesItemsCount" type="Integer" />
+    
+    <aura:registerEvent name="navigate" type="c:ShoppingCartNavigationEvent" />
+    
+    <div class="slds-clearfix">
+        <!-- right nav -->
+        <div class="slds-float_right slds-p-right_small" width="50%">
+            <button class="slds-button slds-button_icon slds-button_icon-bare slds-p-right_medium" onclick="{!c.navigateToOrderHistory}">
+                <img src="{!$Resource.ShoppingCartIcons + '/Icons/Icons_150_History.png'}" class="slds-p-right_x-small af-icon" />
+                Order History
+            </button>
+
+            <button class="slds-button slds-button_icon slds-button_icon-bare slds-p-left_medium" onclick="{!c.navigateToFavorites}">
+                <img src="{!$Resource.ShoppingCartIcons + '/Icons/05_heart.png'}" class="fav-icon slds-p-right_x-small" />
+                Favorites
+            </button>
+            
+            <button class="slds-button slds-button_icon slds-button_icon-bare cart-count slds-p-left_medium" onclick="{!c.navigateToCartReview}" title="View Cart">
+                <img src="{!$Resource.ShoppingCartIcons + '/Icons/Icons_150__Cart.png'}" class="slds-p-right_x-small af-icon"/>
+                <b>{! v.cartOrderLinesItemsCount }</b>
+            </button>
+        </div>
+        
+        <!-- left nav -->
+        
+        <div width="50%">
+            <button class="slds-button slds-button_icon slds-button_icon-bare slds-p-right_medium" onclick="{!c.navigateToHome}">
+                <lightning:icon iconName="utility:home" class="slds-p-right_x-small" />
+                Catalog Home
+            </button>
+            
+            <button class="slds-button slds-button_icon slds-button_icon-bare slds-p-right_medium slds-hide">
+                <lightning:icon iconName="utility:puzzle" class="slds-p-right_x-small" />
+                Build
+            </button>
+        </div>
+    </div>
+</aura:component>

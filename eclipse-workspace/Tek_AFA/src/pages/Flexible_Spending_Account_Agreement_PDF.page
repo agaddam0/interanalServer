@@ -1,0 +1,151 @@
+<apex:page standardController="Enrollment_Form__c" extensions="SignatureFormPDFext"  standardStylesheets="false" docType="html-5.0" sidebar="false" showHeader="false" renderAs="pdf" applyHtmlTag="false">
+    <head>
+        <style type="text/css" media="print">
+            @page :first {
+                padding-top: 50px;
+                padding-bottom: 0px;
+                @top-center {
+                    content: element(header);
+                }
+            }
+            @page {
+                padding-top: 25px;
+                padding-bottom: 0px;
+                @top-center {
+                    content: element(header2);
+                }
+                @bottom-center {
+                    content: element(footer);
+                }
+            }
+            body {
+                font-family: sans-serif;
+            }
+            .logo {
+                width: 300px;
+                padding-left: 300px;
+                padding-top: 0px;
+            }
+            div.header {
+                padding: 25px 10px 10px;
+                position: running(header);
+                text-align: center;
+                font-size: x-small;
+                color: gray;
+            }
+            div.header2 {
+                padding: 25px 10px 10px;
+                position: running(header2);
+                text-align: center;
+                font-size: x-small;
+                color: gray;
+            }
+            div.footer {
+                display: block;
+                padding-bottom: 20px;
+                position: running(footer);
+                font-size: small;
+                color: gray;
+            }
+            .pagenumber:before 
+            {
+                content: counter(page);
+            }
+            .pagecount:before 
+            {
+                content: counter(pages);
+            }
+            
+        </style>
+    </head>
+   <div class="header">
+        <div>
+            <apex:image styleClass="logo" url="{!$Resource.AFALogo}"/>
+        </div>
+    </div>
+    
+    <div class="footer">   
+        
+        <div style="float:left;"><apex:outputText value="{!IF(eForm.Enrollment_Opportunity__r.Division__c == 'AFES', '', 'AWD-FSAA 04/01')}"/></div>
+        <div style="text-align:right; float:right;">Page <span class="pagenumber"/> of <span class="pagecount"/></div>
+    </div>
+    
+    <div class="content">
+        <div>
+            <div class="col-md-12 title">
+            <center>
+                <h3>FLEXIBLE SPENDING ACCOUNT AGREEMENT</h3>
+            </center>
+            </div>
+        </div>
+        <div>
+            <p>
+                The Employer shown below is including a Medical Expense Flexible Spending Account as a
+                Benefit option under a Section 125 Flexible Benefit Plan ("Plan"). The Employer understands that 
+                certain Internal Revenue Service guidelines must be followed to maintain the account's tax-qualified 
+                status. The proposed regulation issued by the Internal Revenue Service in 1989 state that a 
+                Medical Expense Reimbursement Account will not qualify for the tax-favored treatment unless 
+                there is a risk of loss to the Employer maintaining the plan or another insurer.
+            </p>
+            <p>
+                The Employer has declined the opportunity to insure the medical expense account risk as offered
+                by American Fidelity Assurance Company. ("AFA"), but desires to have the medical expense reimbursement 
+                vouchers submitted by participating employees processed on a daily basis by the recordkeeper. 
+                The Employer understands that AFA will provide this service if, and only if, the Employer agrees 
+                to the following:
+            </p>
+        </div>
+        <div> 
+            <ol>                   
+                <li><span>AFA is the flexible spending account recordkeeper;</span><br/>
+                </li>
+                <li>
+                    <span>
+                        The Employer will reimburse AFA for any amounts paid to participating employees 
+                        in excess of the payments received by AFA for the Employer's medical expense reimbursement 
+                        portion of the Plan; and,
+                    </span><br/>
+                </li>
+                <li>
+                    <span>
+                        The Employer will provide the reimbursement to AFA within 30 days of the Employer's 
+                        receipt of the notification of the amount due. This notification will be sent following 
+                        the run-off period at the end of the plan year. 
+                    </span><br/>
+                </li>
+            </ol>     
+        </div>
+        <div>
+            <p>
+                Dated this
+                <u>&nbsp;&nbsp;<apex:outputText id="numberDate" value="{!eForm.Day__c}"/>&nbsp;&nbsp;</u>
+                day of&nbsp;
+                <u>&nbsp;&nbsp;<apex:outputText id="month" value="{!eForm.Month__c}"/>&nbsp;&nbsp;</u>
+                , 20 
+                <u>&nbsp;&nbsp;<apex:outputText id="year" value="{!eForm.Year__c}"/>&nbsp;&nbsp;</u>
+            </p>
+        </div>        
+        <table style="width:100%; margin-top: -20px;">
+            <tr>
+                <td style="width:40%; border-bottom:solid; vertical-align:bottom; height:100px;">{!eForm.Enrollment_Opportunity__r.Account.Name}</td>
+                <td style="width:10%"></td>
+                <td style="width:40%; border-bottom:solid;"><apex:image url="/servlet/servlet.FileDownload?file={!signature.Id}" width="200px" rendered="{!IF(NOT(ISBLANK(signature.Id)),true,false)}"/></td>
+            </tr>
+            <tr>
+                <td style="color:gray; font-size: 12px; height: 50px; vertical-align:top;">Employer</td>
+                <td style="width:10%"></td>
+                <td style="color:gray; font-size: 12px; height: 50px; vertical-align:top;">Signature</td>
+            </tr>
+            <tr>
+                <td style="border-bottom:solid;">{!eForm.Title__c}</td>
+                <td></td>
+                <td style="border-bottom:solid;">{!eForm.Printed_Signature__c}</td>
+            </tr>
+            <tr>
+                <td style="color:gray; font-size: 12px;">Title</td>
+                <td></td>
+                <td style="color:gray; font-size: 12px;">Printed Signature</td>
+            </tr>
+        </table> 
+    </div>
+</apex:page>

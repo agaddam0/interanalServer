@@ -1,0 +1,177 @@
+<aura:component controller="ShoppingCartController">
+    <aura:attribute name="orderId" type="Id" />
+    <aura:attribute name="backAction" type="Aura.Action" />
+    
+    <aura:attribute name="order" type="Order__c" access="private" />
+    <aura:attribute name="lineItems" type="Object[]" access="private" />
+    <aura:attribute name="salesOffice" type="Branch_Office__c" access="private" />
+    <aura:attribute name="exception" type="Exception" access="private" />
+    
+    <aura:registerEvent name="reloadCart" type="c:ReloadCart" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    
+    <lightning:navigation aura:id="navService"/>
+    
+    <div class="slds-p-around_large">
+        
+        <div class="slds-text-heading_large">
+            Order Detail
+        </div>
+        
+        <div class="slds-p-top_large">
+            <a class="backLink" onclick="{! v.backAction }">&lt; Order History</a>
+        </div>
+        
+        <div class="slds-grid slds-wrap slds-form slds-form_horizontal slds-m-top_large">
+            
+            <div class="slds-col">
+                <div class="slds-text-align_left">
+                    Order Name: &nbsp; <b><ui:outputText aura:id="Order_Name__c" value="{!v.order.Order_Name__c}" /></b>
+                </div>
+            </div>
+            
+            <div class="slds-col">
+                <div class="colleague-element slds-text-align_center">
+                    On Behalf Of: &nbsp; <b>{! v.order.Colleague__r.Name }</b>
+                </div>
+            </div>
+            
+            <div class="slds-col slds-text-align_center">
+                Order #: &nbsp; <b>{!v.order.Name}</b>
+            </div>
+        </div>
+        
+        <div class="slds-size_8-of-8 slds-p-top_large slds-m-bottom_small dividerLine" />
+        
+        <table class="slds-text-heading_small">
+            <tr class="order-details-header-row">
+                <!-- Shipping Fields only necessary if there are shippable items. -->
+                <th>In Hands Date</th>
+                <th>Submitted Date</th>
+                <aura:if isTrue="{! v.order.Number_of_Shippable_Items__c > 0 }">
+                    <th>Shipping Method</th>
+                    <th>Ship To</th>
+                    <th>Shipping Information</th>
+                </aura:if>
+                <th>Charge Center</th>
+                <th>Sales Office</th>
+            </tr>
+            
+            <tr class="{! v.order.Rush_Order__c ? 'order-details-row-data rush-order-header' : 'order-details-row-data' }">
+                <td><ui:outputDate format="MM/dd/yyyy"
+                                   value="{!v.order.Requested_Delivery_Date__c}" />
+                </td>
+                <td>
+                    <ui:outputDate format="MM/dd/yyyy" 
+                                   value="{!v.order.Date_Submitted__c}" />
+                </td>
+                <aura:if isTrue="{! v.order.Number_of_Shippable_Items__c > 0 }">
+                    <td>
+                        {! v.order.Shipping_Method__c }
+                        <div class="{! v.order.Rush_Order__c ? 'slds-p-top_medium' : 'slds-hide'}">
+                            {! v.order.Rush_Reason__c }
+                        </div>                        
+                    </td>
+                    <td>{! v.order.Ship_To__c }</td>
+                    <td>
+                        <div class="af-bolded-item">
+                            <aura:if isTrue="{! v.order.Shipping_Location__c }">
+                                {! v.order.Shipping_Location__c } <br/>
+                            </aura:if>
+                            
+                            {! v.order.Shipping_Street__c } <br/>
+                            {! v.order.Shipping_City__c }, {! v.order.Shipping_State__c }&nbsp;{! v.order.Shipping_Zip__c }
+                        </div>
+                    </td>
+                </aura:if>
+                <td class="af-bolded-item">{! v.salesOffice.Charge_Code__c }</td>
+                <td class="af-bolded-item">{! v.salesOffice.Name }</td>
+            </tr>
+        </table>
+        
+        <div class="slds-size_8-of-8 slds-p-top_large slds-m-bottom_small dividerLine" />
+        
+        <div class="slds-grid slds-wrap">
+            <aura:iteration items="{!v.lineItems}" var="lineItem" indexVar="lineItemIndex">
+                <aura:if isTrue="{! lineItemIndex > 0 }">
+                    <div class="slds-size_8-of-8 slds-p-top_large slds-m-bottom_large dividerLine" />
+                </aura:if>
+                
+                <div class="slds-size_1-of-12 image-min-height">
+                    <img src='{!lineItem.Record.Marketing_Material__r.Thumbnail_URL__c}' />                
+                </div>
+                <div class="slds-grid slds-wrap slds-size_11-of-12">
+                    
+                    <div class="slds-size_5-of-12 slds-p-left_small">
+                        <div class="slds-truncate form-name" data-recId="{!lineItem.Record.Marketing_Material__c}" onclick="{!c.goToDetails}">
+                            <a class="form-name">{!lineItem.Record.Material_Title__c}</a>
+                        </div>
+
+                        <aura:if isTrue="{! lineItem.Record.Marketing_Material__r.Material_Type__c == 'Build Your Own Email' }">
+                        <div class="slds-m-top_small">
+	                        <lightning:button variant="brand"
+	                                          label="Build Your Email"
+	                                          onclick="{! c.onOpenEmailBuilderClick }"
+	                                          value="{! lineItem.Record }" />
+                        </div>
+                        </aura:if>
+                        
+                        <aura:if isTrue="{! and(lineItem.Record.Marketing_Material__r.Material_Type__c == 'Website', lineItem.Record.Marketing_Material__r.Website_Type__c == 'Appointment Scheduler' ) }">
+                        <div class="slds-m-top_small">
+                            <lightning:button variant="brand"
+                                              label="View Appointment Scheduler"
+                                              onclick="{! c.onOpenAppointmentSchedulerClick }"
+                                              value="{! lineItem.Record }" />
+                        </div>
+                        </aura:if>
+                    </div>
+                    
+                    <div class="slds-size_2-of-12">
+                        <b>{!lineItem.Record.Material_Number__c}</b>
+                    </div>
+                    
+                    <div class="slds-size_2-of-12">
+                        <b><ui:outputCurrency value="{!lineItem.Record.Unit_Price__c}" /></b> &nbsp; Each Unit
+                    </div>
+                    
+                    <div class="slds-size_1-of-12">
+                        Qty &nbsp; <ui:outputNumber value="{!lineItem.Record.Quantity__c}" />
+                    </div>
+                    
+                    <div class="slds-size_1-of-12" />
+                    
+                    <div class="slds-size_1-of-12">
+                        Total <div class="slds-show_inline-block slds-float_right"><ui:outputCurrency value="{!lineItem.Record.Total_Price__c}" /></div>
+                    </div>
+                    
+                    <aura:if isTrue="{! lineItem.CustomFields.length }">
+                        <div class="slds-size_4-of-8 slds-m-top_small slds-p-left_small">
+                            <c:FieldSetRecordDisplay fieldsToUse="{! lineItem.CustomFields }"
+                                                     record="{! lineItem.Record }" />
+                        </div>
+                    </aura:if>
+                </div>
+            </aura:iteration>
+            
+          <div class="slds-size_8-of-8 slds-p-top_small dividerLine" />
+        
+            <!-- Price Line -->
+            <div class="slds-size_8-of-8 price-line slds-text-align_right af-bolded-item slds-text-heading_small slds-m-vertical_medium">
+                Order Total <ui:outputCurrency value="{!v.order.Total_Price__c}" />
+            </div>
+            
+            <div class="slds-size_8-of-8 slds-text-align_right">
+                <lightning:button variant="brand" label="Reorder" class="reorder-button" onclick="{!c.reorderLineItems}"/>
+            </div>  
+            
+        </div>
+        
+        
+    </div>
+    
+    <c:ExceptionModal title="Error"
+                      exception="{! v.exception }"
+                      show="{! or (v.exception.message, v.exception[0].pageErrors.length > 0) }" />
+    
+</aura:component>

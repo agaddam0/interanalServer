@@ -1,0 +1,102 @@
+<aura:component controller="ShoppingCartController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler event="c:ShoppingCartSearchTermsEvent" action="{!c.showSearchTerms}"/>
+    <aura:handler name="change" value="{!v.pageNumber}" action="{!c.renderPage}" />
+    <aura:handler event="c:ShoppingCartUpdateFavoritesList" action="{!c.updateFavoriteInMasterList}" />
+    
+    <aura:attribute name="searchTerms" type="String[]" />
+    <aura:attribute name="keyword" type="String" />
+    <aura:attribute name="selectedTags" type="String[]" />
+    <aura:attribute name="MarketingMaterials" type="Object[]" />
+    <aura:attribute name="filteredMaterials" type="Object[]" />
+    <aura:attribute name="filteredMaterialsPage" type="Object[]" />
+    <aura:attribute name="pageNumber" type="Integer" default="1" />
+    <aura:attribute name="maxPage" type="Integer" default="1" />
+    <aura:attribute name="preenrollmentMarketingFormId" type="Id" />
+    
+    <aura:registerEvent name="navigate" type="c:ShoppingCartNavigationEvent" />
+    <aura:registerEvent name="sendOrderDetails" type="c:ShoppingCartOrderDetailsEvent" />
+    <aura:registerEvent name="sendClickedTagName" type="c:ShoppingCartTagClickedEvent" />
+    <aura:registerEvent name="PageLoaded" type="c:TaskCompleteEvent" />
+    
+    <div class="slds-box">
+        <div class="slds-p-left_large">
+            
+            <div class="slds-p-bottom_large slds-text-color_weak">
+                Results for:&nbsp; 
+                <aura:iteration items="{!v.searchTerms}" var="term" indexVar="index">
+                    <i>{!term}</i><aura:If isTrue="{! index &lt; v.searchTerms.length - 1}">,&nbsp;</aura:If> 
+                </aura:iteration>
+            </div>
+            
+            <!-- Repeat for search results -->
+            <aura:iteration items="{!v.filteredMaterialsPage}" var="material">
+                
+                <div class="slds-grid slds-wrap slds-is-relative slds-p-top_large">
+                    
+                    <div class="slds-size_1-of-6 af-thumbnail-img-container" data-recId="{!material.Record.Id}" onclick="{!c.goToDetails}">
+                        <div class="image-container">
+                            <img src='{!material.Record.Thumbnail_URL__c}' title="{! 'View ' + material.Record.Title__c }" />
+                            <aura:renderIf isTrue="{!material.Record.New__c == true}">
+                                <div class="corner-triangle"><span class="triangle-text">New!</span></div>
+                            </aura:renderIf>
+                        </div>                        
+                    </div>
+                    
+                    <div class="slds-size_3-of-6 slds-p-horizontal_large">
+                        
+                        <div class="slds-text-heading_medium form-name" data-recId="{!material.Record.Id}" style="display:inline-block;" onclick="{!c.goToDetails}">
+                            <a class="form-name">{!material.Record.Title__c}</a>
+                        </div>
+                        
+                        <div class="slds-grid slds-p-bottom_xx-small slds-p-top_xx-small">
+                            <div class="slds-size_1-of-12 favorite">
+                                <button class="slds-button slds-button_icon slds-button_icon-bare" 
+                                        data-favorite="{! material.IsFavorite}" data-recId="{! material.Record.Id}"
+                                        onclick="{!c.toggleFavorite}">
+                                    <img src="{!$Resource.ShoppingCartIcons + '/Icons/05_heart.png'}" class="{! material.IsFavorite ? 'slds-show' : 'slds-hide'}" />
+                                    <img src="{!$Resource.ShoppingCartIcons + '/Icons/05_heart_gray.png'}" class="{! material.IsFavorite ? 'slds-hide' : 'slds-show'}" />
+                                </button>
+                            </div> 
+                            <div class="slds-size_4-of-8 slds-p-top_xx-small slds-text-color_weak">
+                                <b>{!material.Record.Material_Number__c}</b>
+                            </div>
+                        </div>
+                        <p>
+                            {!material.Record.Description__c}
+                        </p>
+                        
+                        <c:ShoppingCartAvailableFormats record="{! material.Record }" />                        
+                        
+                        <div class="tag-bottom">
+                            <aura:iteration items="{!material.Record.Marketing_Material_Tags__r}" var="tag" >
+                                <span class="slds-pill pill-tag" data-name="{!tag.Tag__r.Name}" onclick="{!c.searchByTagName}">
+                                    <span class="slds-pill__label">{!tag.Tag__r.Name}</span>
+                                </span>
+                            </aura:iteration>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="slds-size_2-of-6 slds-text-align_center">
+                        <aura:if isTrue="{! material.Record.Not_Available_For_Order__c == False }">
+                        <div>
+                            <lightning:button variant="brand" label="Add to Cart" name="{!material.Record.Id}" class="button-add-to-cart" onclick="{!c.addToCart}"/>
+                        </div>
+                        </aura:if>
+                    </div>
+                    
+                    <div class="slds-size_6-of-6 dividerLine slds-p-top_large" />
+                    
+                </div>
+            
+            </aura:iteration>
+            
+            <div class="slds-align_absolute-center slds-p-around_large">
+                <c:Pagination currentPageNumber="{!v.pageNumber}" maxPageNumber="{!v.maxPage}" />
+            </div>
+            
+        </div>
+    </div>
+    
+</aura:component>

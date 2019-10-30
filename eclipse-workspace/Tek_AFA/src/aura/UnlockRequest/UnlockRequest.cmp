@@ -1,0 +1,102 @@
+<aura:component controller="UnlockRequestController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="enrollmentFormId" type="String" required="true" />
+    <aura:attribute name="class" type="String" />
+    <aura:attribute name="activeUnlockRequests" type="Unlock_Request__c[]" access="private" />
+    <aura:attribute name="currentUnlockRequest" type="Unlock_Request__c" access="private" />
+    <aura:attribute name="showActiveUnlockRequests" type="Boolean" default="false" access="private" />
+    <aura:attribute name="hasUnlockPermission" type="Boolean" default="false" access="private" />
+    <aura:attribute name="showUnlockedButton" type="Boolean" default="false" access="private" />
+    <aura:attribute name="showNewUnlockRequest" type="Boolean" default="false" access="private" />
+    <aura:attribute name="newUnlockRequest" type="Unlock_Request__c" default="{ 'sobjectType' : 'Unlock_Request__c'}" access="private" />
+    <aura:attribute name="OtherRequestColumns" type="List" access="private" />
+
+    <aura:registerEvent name="unlockTheForm" type="c:UnlockFormEvent" />
+    
+    <aura:method name="setEnrollmentFormId">
+        <aura:attribute name="enrollmentId" type="String"/>
+    </aura:method>
+
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+
+    <div class="{!v.class + ' slds-p-left_large'}">
+        <aura:if isTrue="{!v.hasUnlockPermission}">
+            <lightning:buttonIcon aura:id="lockedButton" 
+                                    class="{! v.showUnlockedButton ? 'slds-hide' : 'slds-show'}" 
+                                    iconName="utility:lock" 
+                                    size="large" 
+                                    variant="bare" 
+                                    onclick="{! c.openUnlockRequestModal }"/>
+
+            <lightning:buttonIcon aura:id="unlockedButton" 
+                                    class="{!v.showUnlockedButton ? 'slds-show' : 'slds-hide'}" 
+                                    iconName="utility:unlock" 
+                                    size="large" 
+                                    variant="bare" 
+                                    onclick="{! c.closeUnlockRequest }"/>
+        </aura:if>
+    </div>
+    
+
+    <div class="{! v.showActiveUnlockRequests ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeActiveUnlockRequests }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Other Unlock Requests</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <table class="slds-table slds-table_cell-buffer slds-table_header-hidden slds-table_bordered">
+                        <thead class="slds-assistive-text">
+                            <tr class="slds-line-height_reset">
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Name">Name</div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Unlock Reason">Unlock Reason</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{! v.activeUnlockRequests }" var="request">
+                                <tr class="slds-hint-parent">
+                                    <th data-label="Name" scope="row">
+                                        <div class="slds-truncate" title="{! request.CreatedBy.Name }">{! request.CreatedBy.Name }</div>
+                                    </th>
+                                    <td data-label="Unlock Reason">
+                                        <div class="" title="{! request.Unlock_Reason__c}">{! request.Unlock_Reason__c}</div>
+                                    </td>  
+                                </tr>                      
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeActiveUnlockRequests }">Close</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+
+    <div class="{! v.showNewUnlockRequest ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeNewUnlockRequest }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Unlock Request </h2>
+                </header>
+                <div class="modal-body">
+                    <lightning:textarea name="requestReason" label="Unlock Reason" value="{!v.newUnlockRequest.Unlock_Reason__c}" required="true" />
+                </div>
+                    
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_brand" onclick="{! c.createUnlockRequest }">Unlock</button>
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeNewUnlockRequest }">Close</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+</aura:component>

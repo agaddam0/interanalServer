@@ -1,0 +1,342 @@
+<apex:page sidebar="false" standardStylesheets="true" showHeader="false" 
+        standardController="Platform_Setup__c" extensions="PlatformSetupFormPDFExt" docType="html-5.0"
+        renderAs="PDF" applyBodyTag="false">
+
+<apex:composition template="SetupFormPDFTemplate">
+<apex:define name="body">
+    
+    <c:GeneralInformationPDFInfo efId="{! p.Enrollment_Form__c }" title="Platform Setup" />
+    
+    <h3 class="title">Platform Setup Information</h3>
+    
+    <h4 class="title">Texas Life</h4>
+    
+    <apex:variable var="showTexasLife" value="display:{!IF(Platform_Setup__c.Tx_Life_Will_Tx_Life_be_set_up__c == 'Yes'  , '', 'none')} "/>
+
+    <apex:outputPanel id="texasLifePanel">
+              
+	    <table id="texasLifeTable" class="formtable" style="width:100%">
+	        <tr>
+	            <td  class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Will_Tx_Life_be_set_up__c.Label }</td>
+	        </tr>
+	        <tr>
+	            <td style="padding-left:25px;padding-top:6px"><apex:outputField value="{!Platform_Setup__c.Tx_Life_Will_Tx_Life_be_set_up__c}"/></td>
+	        </tr>
+	    </table>
+	
+	    <table class="formtable" style="width:100%;{!showTexasLife}" >
+			<tr>
+			    <td style="width:50%" class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Is_new_case_of_a_re_enrol__c.Label }</div></td>
+			    <td style="width:50%" class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.TXLifeFirstDedDate__c.Label }</div></td>
+			</tr>
+	        <tr>
+	            <td style="width:50%" ><apex:outputField value="{!Platform_Setup__c.Tx_Life_Is_new_case_of_a_re_enrol__c}"  /></td>
+	            <td  style="width:50%" ><apex:outputField value="{!Platform_Setup__c.TXLifeFirstDedDate__c}" /></td>
+	        </tr>
+	
+	        <tr>
+	            <td  style="width:50%"  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Bill_Type__c.Label }</div></td>
+	            <td  style="width:50%" class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Texas_Life_Risk_States__c.Label }</td>
+	        </tr>
+	        <tr>
+	            <td  style="width:50%" ><apex:outputField value="{!Platform_Setup__c.Tx_Life_Bill_Type__c}" /></td>
+	            <td  style="width:50%" ><apex:outputField value="{!Platform_Setup__c.Tx_Life_Texas_Life_Risk_States__c}" /></td>
+	        </tr>
+	
+	        <tr>
+	            <td   style="width:50%" class="fieldLabel mgrApproved">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_District_Manager_Approved__c.Label }</td>
+	            <td/>
+	        </tr>
+	        <tr>
+	            <td  style="width:50%" class=" mgrApproved" ><apex:outputField value="{!Platform_Setup__c.Tx_Life_District_Manager_Approved__c}" /></td>
+	            <td/>
+	        </tr>
+	    </table>
+	
+	    <table class="formtable" style="width:100%;{!showTexasLife}">
+	       <tr>
+	           <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_SSR_Comments__c.Label }</td>
+	       </tr>
+	       <tr>
+	           <td ><apex:outputField value="{!Platform_Setup__c.Tx_Life_SSR_Comments__c}"  style="width:800px" /></td>
+	       </tr>
+	    </table>
+	
+	    <div class="sectionHeader texasLife" style="{!showTexasLife}" >
+	        <apex:outputText styleclass="sectionLabel" value="Additional Details"/>
+	    </div>
+	
+	    <apex:variable var="brokerInvolved" value="display:{!IF(Platform_Setup__c.TXLifeBrokerInvolved__c  , '', 'none')} "/>
+	    <table class="texasLife" style="width:100%;{!showTexasLife}" >
+	        <tr>
+	            <td  class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.TXLifeBrokerInvolved__c.Label }</div></td>
+	        </tr>
+	        <tr>
+	            <td><apex:outputField id="brokerinvolved" value="{!Platform_Setup__c.TXLifeBrokerInvolved__c}" /></td>
+	        </tr>
+	
+	        <tr class="broker" style="{!brokerInvolved}">
+	            <td class="fieldLabel" ><div >{! $ObjectType.Platform_Setup__c.Fields.TXLifeBrokerName__c.Label }</div></td>
+	        </tr>
+	        <tr class="broker" style="{!brokerInvolved}">
+	            <td><apex:outputField value="{!Platform_Setup__c.TXLifeBrokerName__c}"  /></td>
+	        </tr>
+	
+	        <tr class="broker" style="{!brokerInvolved}">
+	            <td class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.TXLifeBrokerEmail__c.Label }</div></td>
+	        </tr>
+	         <tr class="broker" style="{!brokerInvolved}">
+	            <td><apex:outputField value="{!Platform_Setup__c.TXLifeBrokerEmail__c}"/></td>
+	        </tr>
+	
+	        <tr class="broker" style="{!brokerInvolved}">
+	            <td class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.TXLifeBrokerPhone__c.Label }</div></td>
+	        </tr>
+	        <tr class="broker" style="{!brokerInvolved}">
+	            <td><apex:outputField value="{!Platform_Setup__c.TXLifeBrokerPhone__c}" /></td>
+	        </tr>
+	    </table>
+	            
+	    <div class="sectionHeader texasLife" style="{!showTexasLife}" >
+	        <apex:outputText styleclass="sectionLabel" value="Supplies"/>
+	    </div>
+	                
+	    <table class="formtable texasLife" style="width:100%;{!showTexasLife}" >
+		    <tr>
+		        <td style="width:50%" class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_Brochure_Quantity__c.Label }</div></td>
+		        <td style="width:50%" class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_City__c.Label }</div></td>
+		    </tr>
+		    <tr>
+		        <td><apex:outputField value="{!Platform_Setup__c.Tx_Life_Supplies_Brochure_Quantity__c}" /></td>
+		        <td><apex:outputField value="{!Platform_Setup__c.Tx_Life_Supplies_City__c}" /></td>
+		    </tr>
+		    <tr>
+		        <td class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_Name__c.Label }</div></td>
+		        <td class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_State__c.Label }</div></td>
+		    </tr>
+		    <tr>
+		        <td><apex:outputField value="{!Platform_Setup__c.Tx_Life_Supplies_Name__c}" /></td>
+		        <td><apex:outputField value="{!Platform_Setup__c.Tx_Life_Supplies_State__c}" /></td>
+		    </tr>
+		    <tr>
+		        <td class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_Address__c.Label }</div></td>
+		        <td class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_Zip__c.Label }</div></td>
+		    </tr>
+		    <tr>
+		        <td><apex:outputField value="{!Platform_Setup__c.Tx_Life_Supplies_Address__c}" /></td>
+		        <td><apex:outputField value="{!Platform_Setup__c.Tx_Life_Supplies_Zip__c}" /></td>
+		    </tr>
+		    <tr>
+		        <td class="fieldLabel"><div ></div></td>
+		    </tr>
+	    </table>
+        
+    </apex:outputPanel>  <!--  end texasLifePanel -->
+              
+    <apex:outputPanel id="dvrInfoPanel">
+        <h3 class="title">DVR Info</h3>
+        
+        <table class="formtable" style="width:100%">
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.DVR_Info_WillThereBeDependent_Verif__c.Label }</td>
+            </tr>
+            <tr>
+                <td style="padding-left:25px"><apex:outputField value="{!Platform_Setup__c.DVR_Info_WillThereBeDependent_Verif__c}" /></td>
+            </tr>
+            
+            <apex:outputPanel layout="none" rendered="{! Platform_Setup__c.DVR_Info_WillThereBeDependent_Verif__c == 'Yes' }">
+                <tr class="dvrInfo">
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.DVR_Info_dependent_SSNs_required__c.Label }</div></td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top" ><apex:outputField value="{!Platform_Setup__c.DVR_Info_dependent_SSNs_required__c}" /></td>
+                </tr>
+                <tr class="dvrInfo">
+                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.DVR_Info_Include__c.Label }</div></td>
+                </tr>
+                <tr class="dvrInfo">
+                    <td style="vertical-align:top"><apex:outputField id="dvrInclude" value="{!Platform_Setup__c.DVR_Info_Include__c}"  /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">DVR Notes</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField id="DVR_Notes" style="width:900px"  value="{!Platform_Setup__c.DVR_Notes__c}" /></td>
+                </tr>
+            </apex:outputPanel>
+        </table>
+    </apex:outputPanel>  <!--  end DVR Tab -->
+
+    <apex:variable var="s125"  value="{!IF(Platform_Setup__c.S125OtherSvcHaveAFASection125__c  == 'Yes', '', 'display:none')}"/>
+    <apex:variable var="s125No"  value="{!IF(Platform_Setup__c.S125OtherSvcHaveAFASection125__c  == 'Yes' ,'display:none', '')}"/>
+    <apex:variable var="hasFSA"  value="{!IF(Platform_Setup__c.S125OtherSvcIsThereFSA__c  == 'Yes' && Platform_Setup__c.S125OtherSvcHaveAFASection125__c  == 'Yes'   , '', 'display:none')}"/>
+
+    <h3 class="title">Services Info</h3>
+    
+    <div class="sectionHeader">
+        <div class="sectionLabel">Section 125 Plan Information</div>       
+    </div>
+
+    <table class="formtable" style="width:100%">
+	    <tr>
+	        <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcHaveAFASection125__c.Label }</td>
+	        <td class="fieldLabel s125"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcPlanStartDate__c.Label }</div></td>
+	    </tr>
+	    <tr style="{!s125}">
+	        <td><apex:outputField value="{!Platform_Setup__c.S125OtherSvcHaveAFASection125__c}" /></td>
+	        <td><apex:outputField value="{!Platform_Setup__c.S125OtherSvcPlanStartDate__c}" /></td>
+	    </tr>
+	
+	
+	    <tr style="{!s125}">
+	        <td class="fieldLabel s125"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcPlanYearDesc__c.Label }</div></td>
+	        <td class="fieldLabel s125" ><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcPlanEndDate__c.Label }</div></td>
+	    </tr>
+	    <tr  style="{!s125}">
+	        <td class="s125"><apex:outputField value="{!Platform_Setup__c.S125OtherSvcPlanYearDesc__c}" /></td>
+	        <td class="s125" ><apex:outputField value="{!Platform_Setup__c.S125OtherSvcPlanEndDate__c}" /></td>
+	    </tr>
+	    <tr style="{!s125No}">
+	       <td class="fieldLabel s125No"><div class="requiredLabel" >{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcHaveSection125WithAnotherCo__c.Label }</div></td>
+	    </tr>
+	    <tr style="{!s125No}">
+	        <td><apex:outputField value="{!Platform_Setup__c.S125OtherSvcHaveSection125WithAnotherCo__c}" /></td>
+	    </tr>
+    </table>
+    
+    <div class="sectionHeader s125" style="{!s125}">
+        <apex:outputText styleclass="sectionLabel" value="FSA Details"/>
+    </div>
+
+    <table class="formtable" style="width:100%">
+        <tr>
+            <td style="{!s125}" class="fieldLabel s125"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcIsThereFSA__c.Label } </div></td>
+            <td style="{!hasFSA}" class="fieldLabel hasFSA"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcFlexEffDate__c.Label } </div></td>
+        </tr>
+        <tr>
+            <td class="s125"><span style="{!s125}"><apex:outputField id="isFSA" value="{!Platform_Setup__c.S125OtherSvcIsThereFSA__c}" /> {!s125}</span></td>
+            <td class="hasFSA"><span style="{!s125}"><apex:outputField value="{!Platform_Setup__c.S125OtherSvcFlexEffDate__c}" /></span></td>
+        </tr>
+
+        <tr style="{!hasFSA}">
+            <td class="fieldLabel hasFSA"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcHealthFSAMin__c.Label } </div></td>
+            <td class="fieldLabel hasFSA">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcDDCMin__c.Label } </td>
+        </tr>
+        <tr style="{!hasFSA}">
+            <td class="hasFSA"><apex:outputField value="{!Platform_Setup__c.S125OtherSvcHealthFSAMin__c}" /></td>
+            <td class="hasFSA"><apex:outputField value="{!Platform_Setup__c.S125OtherSvcDDCMin__c}" /></td>
+        </tr>
+
+
+        <tr  style="{!hasFSA}" >
+            <td class="fieldLabel hasFSA"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcHealthFSAMax__c.Label }</div></td>
+            <td class="fieldLabel hasFSA">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcDDCMax__c.Label }</td>
+        </tr>
+        <tr style="{!hasFSA}">
+            <td class="hasFSA"><apex:outputField value="{!Platform_Setup__c.S125OtherSvcHealthFSAMax__c}"  /></td>
+            <td class="hasFSA"><apex:outputField value="{!Platform_Setup__c.S125OtherSvcDDCMax__c}" /></td>
+        </tr>
+    </table>      
+         
+    <table class="formtable" style="width:100%">
+        <tr style="{!hasFSA}">
+            <td class="fieldLabel hasFSA"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcAdminFee__c.Label }</div></td>
+        </tr>
+        <tr style="{!hasFSA}">
+            <td class="hasFSA"><apex:outputField id="hasAdminFee"  value="{!Platform_Setup__c.S125OtherSvcAdminFee__c}" /></td>
+        </tr>
+        <apex:outputPanel layout="none" rendered="{! Platform_Setup__c.S125OtherSvcAdminFee__c == 'Employer' || Platform_Setup__c.S125OtherSvcAdminFee__c == 'Employee' }">
+        <tr style="{!hasFSA}">
+            <td class="fieldLabel hasFSA"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcAmount__c.Label }</div></td>
+        </tr>
+        <tr style="{!hasFSA}">
+            <td class="hasFSA"><apex:outputField value="{!Platform_Setup__c.S125OtherSvcAmount__c}" /></td>
+        </tr>
+        </apex:outputPanel>
+        <tr style="{!hasFSA}">
+            <td class="fieldLabel hasFSA"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcDebitCard__c.Label }</div></td>
+        </tr>
+        <tr style="{!hasFSA}">
+            <td class="hasFSA"><apex:outputField value="{!Platform_Setup__c.S125OtherSvcDebitCard__c}" /></td>
+        </tr>
+        <tr style="{!hasFSA}">
+            <td class="fieldLabel hasFSA" ><div >{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcDebitCardFee__c.Label } </div></td>
+        </tr>
+        <tr style="{!hasFSA}">
+            <td class="hasFSA"><apex:outputField value="{!Platform_Setup__c.S125OtherSvcDebitCardFee__c}" /></td>
+            <td/>
+        </tr>
+    </table>
+
+    <div class="sectionHeader s125" style="{!s125}">
+        <apex:outputText styleclass="sectionLabel" value="Other Services"/>
+    </div>      
+                  
+    <table class="formtable" style="width:50%;{!s125}">
+        <tr>
+            <td class="fieldLabel s125"><div>{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcHSA__c.Label }</div></td>
+        </tr>
+        <tr>
+            <td class="s125"><apex:outputField value="{!Platform_Setup__c.S125OtherSvcHSA__c}" /></td>
+        </tr>
+        <tr>
+            <td class="fieldLabel s125"><div>{! $ObjectType.Platform_Setup__c.Fields.X125_HRA_Plan__c.Label }</div></td>
+        </tr>
+        <tr>
+            <td class="s125"><apex:outputField value="{!Platform_Setup__c.X125_HRA_Plan__c}" /></td>
+        </tr>
+    </table>
+
+    <apex:outputPanel id="coreBenefitsPanel"> 
+
+        <h3 class="title">Core Benefits Information</h3>
+
+        <table class="formtable" style="width:50%;">
+            <tr>
+                <td class="fieldLabel s125"><div>{! $ObjectType.Platform_Setup__c.Fields.What_Core_Benefits_will_show_in_the_case__c.Label }</div></td>
+                   
+                <apex:outputPanel layout="none" rendered="{! Platform_Setup__c.What_Core_Benefits_will_show_in_the_case__c = 'Generic Folders' }">
+                <td class="fieldLabel s125"><div>{! $ObjectType.Platform_Setup__c.Fields.List_Generic_Folder_Names__c.Label }</div></td>
+                </apex:outputPanel>
+            </tr>
+            <tr>
+                <td class="s125"><apex:outputField value="{!Platform_Setup__c.What_Core_Benefits_will_show_in_the_case__c}" /></td>
+                
+                <apex:outputPanel layout="none" rendered="{! Platform_Setup__c.What_Core_Benefits_will_show_in_the_case__c = 'Generic Folders' }">
+                <td class="s125"><apex:outputField value="{!Platform_Setup__c.List_Generic_Folder_Names__c}" /></td>
+                </apex:outputPanel>
+            </tr>
+        </table>
+        
+        <apex:outputPanel layout="none" rendered="{! Platform_Setup__c.What_Core_Benefits_will_show_in_the_case__c = 'Detailed Core Benefits' }">
+            <table style="margin-top:15px; width:95%" class="table table-bordered">
+                <thead style="background-color:#2989d8; color:#FFF">
+	                <tr>
+	                    <th>{! $ObjectType.Core_Benefit_Form__c.Fields.Plan_Name__c.Label }</th>
+	                    <th>{! $ObjectType.Core_Benefit_Form__c.Fields.Carrier__c.Label }</th>
+	                    <th>{! $ObjectType.Core_Benefit_Form__c.Fields.Product_Description__c.Label }</th>
+	                    <th>{! $ObjectType.Core_Benefit_Form__c.Fields.Rates__c.Label }</th>
+	                    <th>{! $ObjectType.Core_Benefit_Form__c.Fields.OtherInformation__c.Label }</th>
+	                </tr>
+                </thead>
+                <tbody> 
+
+                <apex:repeat value="{!coreBenefits}" var="b">
+
+	                <tr>
+	                    <td><apex:outputField value="{!b.Plan_Name__c}" /></td>
+	                    <td><apex:outputField value="{!b.Carrier__c}" /></td>
+	                    <td><apex:outputField value="{!b.Product_Description__c}" /></td>
+	                    <td><apex:outputField value="{!b.Rates__c}"  /></td>
+	                    <td><apex:outputField value="{!b.OtherInformation__c}" /></td>
+	                </tr>
+
+                </apex:repeat>
+                </tbody>
+            </table>
+        </apex:outputPanel>      
+    </apex:outputPanel>  <!-- end coreBenefitsPanel -->
+ 
+</apex:define>       
+</apex:composition>
+</apex:page>

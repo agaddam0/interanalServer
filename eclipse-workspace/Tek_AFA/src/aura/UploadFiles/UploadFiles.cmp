@@ -1,0 +1,47 @@
+<aura:component controller="UploadFileCTRL">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="relatedTo" type="String" required="true"/>
+    <aura:attribute name="additionalRelatedRecords" type="String[]" />
+    <aura:attribute name="uploadMultiple" type="Boolean" default="true" />
+    <aura:attribute name="label" type="String" default="Upload Files" />
+    <aura:attribute name="showDocuments" type="Boolean" default="true" />
+    <aura:attribute name="accept" type="String" description="The comma separated list of file types accepted. For example, '.png, .jpg'" />
+    <aura:attribute name="fileDescription" type="String" />
+    <aura:attribute name="filterByDescription" type="String" />
+    <aura:attribute name="sectionHeader" type="String" />
+    <aura:attribute name="sectionDescription" type="String" />
+    
+    <aura:attribute name="FileList" type="ContentDocumentLink[]" access="private" />
+    
+    <aura:registerEvent name="fileUploadFinished" type="c.UploadFilesFinished" />
+    
+    <aura:method name="reloadFiles" />
+
+    <div>
+        <aura:if isTrue="{! v.sectionHeader }">
+        <div class="slds-text-heading_small">{! v.sectionHeader }</div>
+        </aura:if>
+        
+        <aura:if isTrue="{! v.sectionDescription }">
+        <div class="slds-m-top_small"><aura:unescapedHtml value="{! v.sectionDescription }" /></div>
+        </aura:if>
+    
+        <lightning:fileUpload label="{! v.label }"
+                              name="fileUploader" 
+                              multiple="{! v.uploadMultiple }"
+                              recordId="{!v.relatedTo}" 
+                              onuploadfinished="{! c.handleUploadFinished }"
+                              accept="{! v.accept }" />
+        
+        <aura:if isTrue="{! v.showDocuments }">
+            <br/>
+            <dl class="slds-dl_inline">
+                <aura:iteration items="{!v.FileList}" var="file">
+                    <dt class="slds-dl_inline__label"><a href="" data-recId="{!file.ContentDocumentId}" onclick="{!c.deleteFile}">Del</a></dt>
+                    <dd class="slds-dl_inline__detail">&nbsp;&nbsp;&nbsp;{!file.ContentDocument.Title}</dd>
+                    <br/>
+                </aura:iteration>
+            </dl>
+        </aura:if>
+    </div>
+</aura:component>

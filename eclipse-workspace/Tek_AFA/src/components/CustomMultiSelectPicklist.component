@@ -1,0 +1,352 @@
+<apex:component >
+
+<apex:attribute name="fieldsToReplace" description="The comma separated names of the field to replace" type="String" required="true" />
+
+<style>
+    .af-multiselect-container {
+        position: relative;
+    }
+
+    .af-multiselect-options-menu-container label:before {
+        display: none;
+    }
+
+    .af-multiselect-options-menu-container {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        max-height: 200px;
+        overflow: auto;
+        
+        position: absolute;
+        background-color: white;
+        z-index: 9999;
+    }
+    
+    .af-multiselect-option-container {
+        display: block;
+        font-size: 1rem;
+        margin: 0.5rem 0rem;
+        cursor: pointer;
+        text-decoration: none;
+        color: initial !important;
+    }
+    
+    .af-multiselect-option-container:hover {
+        text-decoration: none;
+        background-color: #f3f2f2;
+    }
+    
+    .af-multiselect-option-check {
+        font-size: 1rem;
+        margin-left: 0.75rem;
+        margin-right: 0.75rem;
+    }
+            
+    .af-multiselect-selected-value {
+        box-sizing: border-box;
+        border: 1px solid rgb(217, 219, 221);
+        border-radius: 0.25rem;
+        padding: 0.125rem;
+        font-size: 1rem;
+        display: inline-block;
+        margin-right: 0.125rem;
+    }
+    
+    .af-multiselect-remove-btn {
+        cursor: pointer;
+        color: #eaecec;
+    }
+            
+    .af-multiselect-selected-value:hover {
+        background-color: #78b5de;
+    }
+    
+    .af-multiselect-no-results-found-container {
+        font-size: 1rem;
+    }
+</style>
+
+<script>
+    function replacePicklists(isFormLocked) {
+        var fieldsToReplaceString = "{! fieldsToReplace }";
+        var fieldsToReplace = fieldsToReplaceString.split(',');
+
+        $('tr.multiSelectPicklistRow').each(function(i) {
+            var msTR = $(this);
+            
+            var unselectedSelect = msTR.find('select[id*="_unselected"]');
+            var isReplaceableField = fieldsToReplace.some(function(currentField) {
+                return unselectedSelect[0].id.includes(currentField);
+            });
+            
+            if (!isReplaceableField) {
+                return;
+            }
+            
+            var selectedSelect = msTR.find('select[id*="_selected"]');
+            var optionsMenuId = selectedSelect[0].id + 'OptionsMenu';
+            
+            var existingOptionsMenu = $(document.getElementById(optionsMenuId));
+            
+            if (existingOptionsMenu.length > 0) {
+                return;
+            }
+            
+            msTR.hide();
+            
+            var addBtn = msTR.find('a[title="Add"]');
+            var removeBtn = msTR.find('a[title="Remove"]');
+            
+            var containerHTML = "<div class='af-multiselect-container'></div>";
+            var container = $($.parseHTML( containerHTML ));
+            
+            var textboxHTML = "<input type='text' placeholder='Options...' />";
+            var textbox = $($.parseHTML( textboxHTML ));
+            
+            container.append(textbox);
+            
+            
+            var hiddenSelectId;
+            var hiddenSelect;
+            var optionsMenu;
+            var noResultsFound;
+            
+            buildOptionsMenu();
+            showSelectedPicklistValues();
+            
+            function buildOptionsMenu() {
+	            optionsMenuId = selectedSelect[0].id + 'OptionsMenu';
+	            
+	            textbox.on('focus', function() {
+	                $(document.getElementById(optionsMenuId)).show();
+	            });
+	            
+	            textbox.on('blur', function() {
+	                hideOptionsMenuIfPossible();
+	            });
+	            
+	            textbox.on('keyup', onTextBoxKeyUp);
+	            
+	            var optionsMenuHTML = "<div id='" + optionsMenuId + "' class='af-multiselect-options-menu-container'>";
+	            
+	            hiddenSelectId = unselectedSelect[0].id.replace('_unselected', '');
+	            hiddenSelect = document.getElementById(hiddenSelectId);
+	            var hiddenSelectJQ = $(hiddenSelect);
+	            hiddenSelectJQ.before(container);
+	            
+	            for (var i = 0; i < hiddenSelect.options.length; ++i) {
+	                var opt = hiddenSelect.options[i];
+	                var optionMenuItemId = getOptionMenuItemId(opt.label);
+	                optionsMenuHTML += "<a class='af-multiselect-option-container' id='" + optionMenuItemId + "'>";
+	
+	                var displayAttribute = !opt.selected ? " style='visibility: hidden;'" : "";
+	
+	                optionsMenuHTML += "<i class='fa fa-check af-multiselect-option-check' value='" + i + "'" + displayAttribute + "' />";
+	                optionsMenuHTML += "<span>" + opt.label + "</span>";
+	
+	                optionsMenuHTML += "</a>";
+	            }
+	
+	            optionsMenuHTML += "</div>";
+	
+	            optionsMenu = $($.parseHTML( optionsMenuHTML ));
+	
+	            var noResultsFoundId = selectedSelect[0].id + 'NoResultsFound';
+	            var noResultsFoundHTML = '<div id="' + noResultsFoundId + '" class="af-multiselect-no-results-found-container" style="display: none;"></div>';
+	            noResultsFound = $($.parseHTML( noResultsFoundHTML ));
+	            noResultsFound.hide();
+	            optionsMenu.append(noResultsFound);
+	            
+	            optionsMenu.hide();
+	            optionsMenu.on('mouseleave', function() {
+	                hideOptionsMenuIfPossible();
+	            });
+	            
+	            textbox.after(optionsMenu);
+	            
+	            var optionMenuItems = optionsMenu.find('a.af-multiselect-option-container');
+	            
+	            optionMenuItems.on('click', onOptionMenuItemClick);
+	            
+	            optionsMenu.css({ "width": textbox.css('width'),
+	                              "padding-left": textbox.css('padding-left'),
+	                              "padding-right": textbox.css('padding-right'),
+	                              "margin-left": textbox.css('margin-left'),
+	                              "margin-right": textbox.css('margin-right')});
+            }
+            
+            
+            function getOptionMenuItemId(optionLabel) {
+                return hiddenSelectId + optionLabel;
+            }
+            
+            function showCheck(optionCheck) {
+                optionCheck.css('visibility', 'visible');
+            }
+            
+            function hideCheck(optionCheck) {
+                optionCheck.css('visibility', 'hidden');
+            }
+            
+            function selectOption(optionIndex) {
+                toggleOption(hiddenSelect.options, addBtn[0], optionIndex, true);
+                showSelectedPicklistValues();
+            }
+            
+            function deselectOption(optionIndex) {
+                toggleOption(hiddenSelect.options, removeBtn[0], optionIndex, false);
+                showSelectedPicklistValues();
+            }
+            
+            function uncheckOptionInOptionMenu(selectOptionLabel) {
+                var optionMenuItemId = getOptionMenuItemId(selectOptionLabel);
+                var optionMenuItem = document.getElementById(optionMenuItemId);
+                optionMenuItem.click();
+            }
+            
+            function hideOptionsMenuIfPossible() {
+                var optionsMenuEle = document.getElementById(optionsMenuId);
+                var optionsMenu = $(optionsMenuEle);
+                
+                var isOptionsMenuHovered = optionsMenu.is(":hover");
+                var isSearchTextBoxFocused = textbox.is(":focus");
+                
+                if (!isOptionsMenuHovered && !isSearchTextBoxFocused) {
+                    optionsMenu.hide();
+                }
+            }
+            
+            function toggleOption(selectOptions, buttonToClick, optionIndex, selected) {
+                for (opt of selectOptions) {
+                    if (opt.index == optionIndex) {
+                        opt.selected = selected;
+                        buttonToClick.click();
+                        return;
+                    }
+                }
+            }
+            
+            function showSelectedPicklistValues() {
+                // show selected Options
+                var selectedOptsContainerId = hiddenSelectId + 'SelectedOptsContainer';
+                
+                var existingSelectedOpts = $(document.getElementById(selectedOptsContainerId));
+                
+                if (existingSelectedOpts && existingSelectedOpts.length > 0) {
+                    existingSelectedOpts.remove();
+                }
+                
+                var selectedOptsHTML = '<div id="' + selectedOptsContainerId + '">';
+                
+                for (var i = 0; i < hiddenSelect.options.length; ++i) {
+                    var opt = hiddenSelect.options[i];
+                    
+                    if (!opt.selected) {
+                        continue;
+                    }
+
+                    selectedOptsHTML += '<span class="af-multiselect-selected-value">' + opt.label;
+
+                    if (!isFormLocked) {
+                        selectedOptsHTML += ' <span title="Remove" data-option-label="' + opt.label + '"><i class="fa fa-times af-multiselect-remove-btn" aria-hidden="true"></i></span>';
+                    }
+                    
+                    selectedOptsHTML += '</span>';
+                }
+                
+                selectedOptsHTML += '</div>';
+                var selectedOpts = $($.parseHTML( selectedOptsHTML ));
+                
+                textbox.after(selectedOpts);
+                
+                selectedOpts.find('span[title="Remove"]').click(function() {
+                    var optLabel = this.attributes["data-option-label"];
+                    uncheckOptionInOptionMenu(optLabel.value);
+                });
+            }
+            
+            function onTextBoxKeyUp(evt) {
+                var KEYCODE_ENTER = 13;
+                var KEYCODE_UP = 38;
+                var KEYCODE_DOWN = 40;
+                
+                var unsearchableKeyCodes = [
+                    KEYCODE_ENTER,
+                    KEYCODE_UP,
+                    KEYCODE_DOWN
+                ];
+                
+                var keyCode = evt.which || evt.keyCode || 0;
+                
+                if (unsearchableKeyCodes.includes(keyCode)) {
+                    return;
+                }
+                
+                var textBoxValue = this.value;
+                
+                if (!textBoxValue) {
+                    showAllMenuOptions();
+                }
+                else {
+                    filterOptionsBySearchTerm(this.value);
+                }
+            }
+            
+            function filterOptionsBySearchTerm(searchTerm) {
+                var numFound = 0;
+            
+                $(optionsMenu).find('.af-multiselect-option-container').each(function(){
+                    var optionContainer = $(this);
+                    var label = optionContainer.find('span');
+                    var labelValue = label.html();
+                
+                    if (labelValue.toLowerCase().indexOf(searchTerm.toLowerCase())>=0) {
+                        optionContainer.show();
+                        ++numFound;
+                    }
+                    else {
+                        optionContainer.hide();
+                    }
+                });
+                
+                if (numFound == 0) {
+                    showNoResultsFound(searchTerm);
+                }
+                else {
+                    noResultsFound.hide();
+                }
+            }
+            
+            function showNoResultsFound(searchTerm) {
+                noResultsFound.html('No Results Found For "' + searchTerm + '"');
+                noResultsFound.show();
+            }
+            
+            function showAllMenuOptions() {
+                $(optionsMenu).find('.af-multiselect-option-container').each(function(){
+                    $(this).show();
+                });
+                
+                noResultsFound.hide();
+            }
+            
+            function onOptionMenuItemClick() {
+                var optionMenuItem = $(this);
+                var optionCheck = optionMenuItem.find('i.af-multiselect-option-check');
+                var optionIndex = optionCheck[0].attributes['value'].value;
+                var isChecked = optionCheck.css('visibility') != 'hidden';
+            
+                if (!isChecked) {
+                    selectOption(optionIndex);
+                    showCheck(optionCheck);
+                }
+                else {
+                    deselectOption(optionIndex);
+                    hideCheck(optionCheck);
+                }
+            }
+        });
+    }
+</script>
+
+</apex:component>

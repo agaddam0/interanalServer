@@ -1,0 +1,146 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,lightning:isUrlAddressable" access="global" controller="ShoppingCartController">
+
+    <aura:attribute name="ShowOrderHistory" type="Boolean" default="false" access="private" />
+    <aura:attribute name="ShowDetailPage" type="Boolean" default="false" access="private" />
+    <aura:attribute name="ShowSearchResults" type="Boolean" default="false" access="private" />
+    <aura:attribute name="ShowFeaturePage" type="Boolean" default="true" access="private" />
+    <aura:attribute name="ShowSideSearch" type="Boolean" default="true" access="private" />
+    <aura:attribute name="ShowOrderConfirmation" type="Boolean" default="false" access="private" />
+    <aura:attribute name="ShowPreenrollment" type="Boolean" default="false" access="private" />
+    <aura:attribute name="ConfirmationOrderId" type="Id" access="private" />
+    <aura:attribute name="ShowCartReview" type="Boolean" default="false" access="private" />
+    <aura:attribute name="ShowCheckoutPage" type="Boolean" default="false" access="private" />
+    <aura:attribute name="Cart" type="Order__c" access="private" />
+    <aura:attribute name="CartOrderLineItems" type="Object[]" access="private" />
+    <aura:attribute name="SalesOffice" type="Branch_Office__c" access="private" />
+    <aura:attribute name="firstLoad" type="Boolean" default="true" access="private" />
+    <aura:attribute name="flowModalIssOpen" type="Boolean" default="false" access="private" />
+    <aura:attribute name="preenrollmentMarketingFormId" type="Id" default="" access="private" />
+    <aura:attribute name="enrollmentOpportunityId" type="Id" default="" access="private" />
+    <aura:attribute name="allowPreenrollmentOrder" type="Boolean" default="true" access="private" />
+    <aura:attribute name="MarketingMaterialsLoaded" type="Boolean" default="false" access="private" />
+    <aura:attribute name="AnnouncementsLoaded" type="Boolean" default="false" access="private" />
+    <aura:attribute name="FeaturedItemsLoaded" type="Boolean" default="false" access="private" />
+    <aura:attribute name="ShowSpinner" type="Boolean" default="true" access="private" />
+    <aura:attribute name="showMarketplace" type="Boolean" default="true" access="private" />
+    <aura:attribute name="ReturnLocation" type="String" access="private" />
+    
+    <aura:handler event="c:ShoppingCartNavigationEvent" action="{!c.showPages}" />
+    <aura:handler event="c:ShoppingCartOrderDetailsEvent" action="{!c.updateLineItems}" />
+    <aura:handler name="reloadCart" event="c:ReloadCart" action="{! c.reloadCart }" />
+    <aura:handler event="aura:locationChange" action="{! c.destroyComponent }" />
+    <aura:handler event="c:TaskCompleteEvent" action="{! c.hideLoadingSpinner }" />
+    <aura:handler name="change" value="{!v.pageReference}" action="{! c.reInit}" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:registerEvent name="searchEvent" type="c:ShoppingCartSearchTermsEvent" />
+    <aura:if isTrue="{! v.showMarketplace}">
+        
+        <div class="slds-is-relative">
+            
+            <!-- Header component -->
+            <div class="slds-scrollable_none header-container">
+                <lightning:layout horizontalAlign="start" class="header-nav">
+                    <lightning:layoutItem flexibility="auto" padding="around-small">
+                        <c:ShoppingCartNav cartOrderLinesItemsCount="{! v.CartOrderLineItems ? v.CartOrderLineItems.length : 0 }" />
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+            
+            <!-- Body Components -->
+            <div class="body-container" width="100%">
+                <lightning:layout horizontalAlign="start">
+                    <lightning:layoutItem aura:Id="sideSearch" flexibility="auto" size="2" padding="around-small" class="{! v.ShowSideSearch ? 'slds-show side-search' : 'slds-hide' }">
+                        <!-- create a div here to load parts dynamically -->
+                        <div class="slds-p-bottom_large">
+                            <c:ShoppingCartSideSearch />
+                        </div>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem aura:Id="splitPane" flexibility="auto" class="{! or(v.ShowFeaturePage, v.ShowSearchResults) ? 'slds-show' : 'slds-hide' }" padding="around-small">
+                        <!-- create a div here to load parts dynamically -->
+                        <div aura:Id="featurePage" class="{! v.ShowFeaturePage ? 'slds-show' : 'slds-hide' }">
+                            <div class="af-home-header-container">
+                                <div>
+                                    <c:Announcements RecordTypeName="Marketing Material"/>
+                                </div>
+
+                                <div>
+                                    <c:ShoppingCartContactMarketing />
+                                </div>
+                            </div>
+
+                            <div class="slds-m-vertical_small">
+                                <c:ShoppingCartPreenrollmentMarketingWizard />
+                            </div>
+
+                            <div class="slds-m-vertical_small">
+                                <c:ShoppingCartGroupVideoWizard />
+                            </div>
+                            
+                            <c:ShoppingCartFeaturePage />
+                        </div>
+                        <div aura:Id="searchResults" class="{! v.ShowSearchResults ? 'slds-show' : 'slds-hide' }">
+                            <c:ShoppingCartSearchResults preenrollmentMarketingFormId="{! v.preenrollmentMarketingFormId }" />
+                        </div>
+                    </lightning:layoutItem>
+                    
+                    <lightning:layoutItem aura:Id="singlePane" flexibility="auto" padding="around-small" class="{! or(or(or(or(or(v.ShowDetailPage, v.ShowOrderHistory), v.ShowOrderConfirmation), v.ShowCartReview), v.ShowCheckoutPage), v.ShowPreenrollment) ? 'slds-show' : 'slds-hide' }" size="12">
+                        <div aura:Id="detailPage" class="{! v.ShowDetailPage ? 'slds-show' : 'slds-hide' }">
+                            <c:ShoppingCartMaterialDetail />
+                        </div>
+                        <div class="{! v.ShowOrderHistory ? 'slds-show' : 'slds-hide' }">
+                            <c:ShoppingCartOrderHistory aura:id="orderHistory" />
+                        </div>
+                        <div class="{! v.ShowOrderConfirmation ? 'slds-show' : 'slds-hide' }">
+                            <c:ShoppingCartConfirmation aura:id="orderConfirmation" orderId="{! v.ConfirmationOrderId }" />
+                        </div>
+                        <div class="{! v.ShowCartReview ? 'slds-show' : 'slds-hide' }" >
+                            <c:ShoppingCartReviewCart Order="{!v.Cart}" LineItems="{!v.CartOrderLineItems}" ReturnLocation="{! v.ReturnLocation }" />
+                        </div>
+                        <div class="{! v.ShowCheckoutPage ? 'slds-show' : 'slds-hide' }" >
+                            <aura:if isTrue="{! and(v.ShowCheckoutPage, v.Cart) }">
+                                <c:ShoppingCartCheckout cart="{! v.Cart }" lineItems="{!v.CartOrderLineItems}" salesOffice="{! v.SalesOffice }" />
+                            </aura:if>
+                        </div>
+                        <div class="{! v.ShowPreenrollment ? 'slds-show' : 'slds-hide' }" >
+                            <aura:if isTrue="{! v.ShowPreenrollment }">
+                                <c:ShoppingCartPreenrollment cart="{! v.Cart }" lineItems="{!v.CartOrderLineItems}" enrollmentOpportunityId="{! v.enrollmentOpportunityId }" preenrollmentMarketingFormId="{! v.preenrollmentMarketingFormId }" requestedStep="{! v.ReturnLocation }" />
+                            </aura:if>
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </div>
+            
+            <!-- Modals -->
+            
+            <aura:if isTrue="{!v.flowModalIssOpen}">
+                <div style="height: 640px;">
+                    <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                        <div class="slds-modal__container">
+                            <header class="slds-modal__header slds-modal__header_empty">
+                                <lightning:buttonIcon iconName="utility:close" class="slds-modal__close" size="large"
+                                                      variant="bare-inverse" onclick="{!c.closeFlowModal}"/>
+                            </header>
+                            <div class="slds-modal__content slds-p-around_medium slds-is-relative">
+                                <lightning:flow aura:id="flowModal" onstatuschange="{!c.closeModalOnFinish}" />
+                            </div>
+                        </div>
+                    </section>
+                    <div class="slds-backdrop slds-backdrop_open"></div>
+                </div> 
+            </aura:if>
+            
+            <!-- End Modals -->
+            
+            
+            <aura:if isTrue="{! v.ShowSpinner }">
+                <div class="spinner-container">
+                    <img src="{!$Resource.ShoppingCartIcons + '/Icons/Marketplace.png'}" class="marketplace-loading" />
+                    <lightning:spinner variant="brand" size="large" />
+                </div>
+                
+            </aura:if>
+        </div>
+    </aura:if>
+    
+</aura:component>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AuraDefinitionBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>40.0</apiVersion>
+    <description>Queries for all the Colleague records a logged in user has access to via their sharing rules.  This is filterable by name.</description>
+</AuraDefinitionBundle>

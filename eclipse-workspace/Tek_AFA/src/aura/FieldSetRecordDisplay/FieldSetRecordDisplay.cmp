@@ -1,0 +1,51 @@
+<aura:component controller="FieldSetComponentController" >
+    <aura:attribute name="record" type="SObject" description="The record being edited"/>
+    <aura:attribute name="recordId" type="Id" description="Id of the record to query"/>
+    <aura:attribute name="fieldSetName" type="String"/>
+    <aura:attribute name="objectName" type="String"/>
+    <aura:attribute name="loadOnInit" type="Boolean" default="true" />
+    <aura:attribute name="customAttributes" type="Object" default="{}" />
+    <aura:attribute name="loadRecordFromServer" type="Boolean" default="false" />
+    <aura:attribute name="fieldsToUse" type="Field[]" />
+    
+    <aura:attribute name="class" type="String" default="slds-tile__detail" />
+    <aura:attribute name="dlClass" type="String" default="slds-list_horizontal"/>
+    <aura:attribute name="dtClass" type="String" default="slds-item_label"/>
+    <aura:attribute name="ddClass" type="String" default="slds-item_detail"/>
+    
+    <aura:attribute name="fields" type="Field[]" access="private" />
+    <aura:attribute name="recordSetInQuery" type="Boolean" default="false" access="private" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    <aura:handler name="change" value="{!v.record}" action="{!c.handleRecordChange}"/>
+    <aura:handler name="change" value="{!v.fieldSetName}" action="{!c.handleFieldSetNameChange}"/>
+    <aura:handler name="change" value="{!v.recordId}" action="{!c.handleRecordIdChange}"/>
+    
+    <aura:method name="reload" />
+    
+    <div class="{! v.class + ' af-task-detail-fields-container af-field-set-record-display-container'}">
+        <dl class="{! v.dlClass + ' slds-wrap' }">
+            <aura:iteration items="{! v.fields }" var="field">
+                <dt class="{! v.dtClass + ' slds-text-color_weak'}">{! field.Label }:</dt>
+                <dd class="{! v.ddClass + ' af-field-set-record-display-field-value'}" aura:id="{! field.APIName }">
+                    <aura:if isTrue="{! field.Type == 'DATE' }">
+                        <ui:outputDate format="MM/dd/yyyy" value="{! field.FieldValue }"/>
+                    </aura:if>
+                    
+                    <aura:if isTrue="{! field.Type == 'DATETIME' }">
+                        <ui:outputDateTime format="MM/dd/yyyy HH:mm a" value="{! field.FieldValue }"/>
+                    </aura:if>
+                    
+                    <aura:if isTrue="{! field.Type == 'CURRENCY' }">
+                        <ui:outputCurrency value="{! field.FieldValue }" />
+                    </aura:if>
+                    
+                    <aura:if isTrue="{! and(and(field.Type != 'DATE', field.Type != 'DATETIME'), field.Type != 'CURRENCY') }">
+                        {! field.FieldValue }
+                    </aura:if>
+                </dd>
+            </aura:iteration>
+    
+        </dl>
+    </div>
+</aura:component>

@@ -1,0 +1,12 @@
+.THIS a {
+    color: #6E6D71;
+    text-decoration: underline;
+}
+
+.THIS a:hover {
+    color: #A7A9AC;
+}
+
+.THIS .accordionIcon svg {
+    fill : token(AFAaccordionColor) !important;
+}

@@ -1,0 +1,1887 @@
+<apex:page sidebar="false" standardStylesheets="true" showHeader="false" 
+           standardController="Customer_Setup_Form__c" extensions="CustomerSetupFormCTRL_v2" docType="html-5.0"
+           action="{!performDefaultDMLActions}">
+    
+    <head> 
+        
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"/>
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"/>
+        
+        <apex:includeScript value="{!URLFOR($Resource.bootstrap3, 'js/bootstrap.min.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.bootstrapExtra, 'bootstrap-3.3.1/js/tab.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.datepicker, 'datepicker/js/bootstrap-datepicker.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.jQueryNumeric, 'js/jquery.numeric.min.js')}"/>
+        
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.css')}"/>
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.min.css')}"/>
+        <apex:stylesheet value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css"/>
+        
+        
+        
+        <!--------------- Include StyleSheet ---------------------------->     
+        <apex:include pageName="SetupFormsStyleSheet"/>
+        <style>
+            .nav {
+            margin-bottom: 0px;
+            }
+            
+            .separateBillsBasedOnInputContainer table {
+                width: 600px;
+            }
+            
+            .groupPlansSelectTakeOverProductsContainer table {
+                width: 475px;
+            }
+            
+            .billModesContainer .multiSelectPicklistTable {
+                border-collapse: collapse;
+            }
+            
+            .billModesContainer .multiSelectPicklistTable td {
+                border: none;
+                padding: 0px;
+            }
+            
+            .billModesContainer .multiSelectPicklistTable td:empty {
+                display: none;
+            }
+            
+            .addBillModeBtn {
+                margin-bottom: 1rem;
+            }
+            
+            .af-coverageEffectiveDate {
+                font-size: 1rem;
+            }
+        </style>
+        <apex:remoteObjects jsNamespace="RemoteObjectModel">
+	        <apex:remoteObjectModel name="User" fields="Id,Agent_ID__c"/>
+	    </apex:remoteObjects>
+        
+    </head>
+    <body>
+        <apex:pageBlock id="thePageBlock">
+            <apex:form id="theForm">
+                        
+                <apex:outputPanel id="page">
+                    
+                    
+                    
+                    <!---------------------------- TAB DEFINITIONS -------------------------------------->
+                    <div class="container af-container" >
+                        <div class="af-header">
+                        <c:SetupFormsNavBar formName="customerSetup" efId="{!enrollmentForm.Id}" submitLabel="Submit Customer Setup"/>
+                                            
+                        <div class="header-tabs">
+                            <apex:outputPanel id="tabPanel">
+                                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                                    <li><a href="#onboardingTab" data-toggle="tab" id="onboardingLink" style="{!if(onboardingTabComplete ,'color:black','color:red')};{!if(!onboardingTabDisplayed,'display:none','')}">Onboarding Details</a></li>
+                                    <li><a href="#productBillingTab" data-toggle="tab" id="productBillingLink" style="{!if(productBillingTabComplete ,'color:black','color:red')};{!if(!productBillingTabDisplayed,'display:none','')}">Product Billing</a></li>
+                                    <li><a href="#groupPlansTab" data-toggle="tab" id="groupPlansLink" style="{!if(groupPlansTabComplete ,'color:black','color:red')};{!if(!groupPlansTabDisplayed ,'display:none','')}">Group Plans</a></li>
+                                    <li><a href="#openEnrollmentTab" data-toggle="tab" id="openEnrollmentLink" style="{!if(openEnrollmentTabComplete ,'color:black','color:red')};{!if(!openEnrollmentTabDisplayed,'display:none','')}">Open Enrollment</a></li>
+                                    <li><a href="#annuitiesTab" data-toggle="tab" id="annuitiesLink" style="{!if(annuitiesTabComplete ,'color:black','color:red')};{!if(!AnnuitiesTabDisplayed,'display:none','')}">Annuities</a></li>
+                                </ul>
+                                
+                                <script>
+                                // tab event handler.  Use to enable/disable buttons. Needs to be here due to rerendering of tabPanel
+                                var currentTab;
+                                
+                                //need to delete hidden tabs
+                                $('#tabs > li').each(function(i, val) { 
+                                    var anchor = this.firstChild;
+                                    if ( !$(anchor).is(':visible')) {
+                                        console.log('**** removing '+ $(anchor).html());
+                                        $(val).remove();                     
+                                    }
+                                });
+                                
+                                $('.nav-tabs a').on('show.bs.tab', function(){
+                                    if ($(this).parent().is(':last-child')) {
+                                        $("#nextTabButton").hide();
+
+                                        if ({!formIsSubmitted == false}) {
+                                            $("#submitAndContinueButton").show();
+                                        }
+                                    }
+                                    else {
+                                        $("#nextTabButton").show();
+                                        $("#submitAndContinueButton").hide();
+                                    }
+                                    
+                                    if ($(this).parent().is(':first-child')){
+                                        console.log('**** tab handler: hiding prevTabButton');
+                                        $("#prevTabButton").hide();
+                                    }
+                                    else {
+                                        console.log('**** tab handler: showing prevTabButton');
+                                        $("#prevTabButton").show();
+                                    }
+                                    
+                                    currentTab='#'+$(this).attr('id');
+                                    
+                                    console.log('**** tab handler: '+currentTab);
+                                    console.log('**** isFirstChild: '+$(this).parent().is(':first-child'));
+                                    console.log('**** isLastChild: ' +$(this).parent().is(':last-child'));
+                                });
+                                
+                                function nextTab() {
+                                    $('#tabs > .active').next('li').find('a').click();
+                                } 
+                                
+                                function  prevTab() {
+                                    $('#tabs > .active').prev('li').find('a').click();
+                                }
+                                
+                                // Luke Freeland: Added this so Salesforce won't automatically set
+                                // focus to a date field.
+                                function setFocusOnLoad() {}
+                                
+                                </script>  
+                            </apex:outputPanel>
+                        </div>
+                        
+                        </div>
+                        
+                        <div class="content">
+                            <apex:outputPanel id="messages">
+                                <apex:pageMessages rendered="{!showErrorMessages==true}"/>
+                            </apex:outputPanel>
+                            
+                            <span id="submitMessage" style="margin-left:10px;font-size:16pt;color:red; display: none;"></span>
+                            
+                            <apex:outputPanel id="allTabs">
+                                
+                                
+                                <div id="my-tab-content" class="tab-content">
+                                    
+                                    <div class="tab-pane active" id="onboardingTab">
+                                        <apex:outputPanel id="onboardingPanel">
+                                            
+                                            <span style="display:inline-block; margin: 5px 10px; font-weight:bold; font-size:13px;">{! $Label.Onboarding_Details_Information }</span>
+                                            
+                                            <table  class="formtable" style="width:50%">
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.DetailsSICTypeofIndustry__c.Label }<c:cHelp helpText="{!hMap[LOWER('DetailsSICTypeofIndustry__c')]}"/></div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.DetailsSICTypeofIndustry__c}" style="width:300px" onchange="saveRecord();" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.DetailsIsGrpmemberofanassociation__c.Label }<c:cHelp helpText="{!hMap[LOWER('DetailsIsGrpmemberofanassociation__c')]}"/></div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.DetailsIsGrpmemberofanassociation__c}" onchange="showAssociationName(this.value); saveRecord();"/></td>
+                                                </tr>
+                                            </table>
+                                            <table class="formtable"  style="width:50%">
+                                                <tr>
+                                                    <td  class="fieldLabel assocName" ><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.DetailsNameofassociation__c.Label }<c:cHelp helpText="{!hMap[LOWER('DetailsNameofassociation__c')]}"/></div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="assocName"><apex:inputField value="{!Customer_Setup_Form__c.DetailsNameofassociation__c}" onchange="saveRecord();"/></td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <div class="sectionHeader">
+                                                <div class="sectionLabel">Agent Info</div>       
+                                            </div>
+                                            
+                                            <table  class="formtable" style="width:50%">
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoMainAgtName__c.Label }<c:cHelp helpText="{!hMap[LOWER('AgtInfoMainAgtName__c')]}"/></div> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td> <apex:inputField id="MainAgentName" value="{!Customer_Setup_Form__c.AgtInfoMainAgtName__c}" style="width:300px" onchange=" getAgentId(); saveRecord();" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="fieldLabel">Agent Number</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:outputField id="MainAgentId" value="{!mainAgent.Agent_ID__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoIsthereabrokerinvolved__c.Label }<c:cHelp helpText="{!hMap[LOWER('AgtInfoIsthereabrokerinvolved__c')]}"/></div> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AgtInfoIsthereabrokerinvolved__c}" onchange="showBrokerInvolved(this.value); saveRecord();" /></td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <table id="brokerTable" class="formtable" >
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoWhatisthebrokerlegalname__c.Label }<c:cHelp helpText="{!hMap[LOWER('AgtInfoWhatisthebrokerlegalname__c')]}"/></div> </td>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoAORBrokersameforAFAProd__c.Label }<c:cHelp helpText="{!hMap[LOWER('AgtInfoAORBrokersameforAFAProd__c')]}"/></div> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AgtInfoWhatisthebrokerlegalname__c}" onchange="saveRecord();" /></td>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AgtInfoAORBrokersameforAFAProd__c}"  onchange="saveRecord();" /></td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoBrokerNumber__c.Label }<c:cHelp helpText="{!hMap[LOWER('AgtInfoBrokerNumber__c')]}"/></td>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoBrokerstandardcontractapply__c.Label }<c:cHelp helpText="{!hMap[LOWER('AgtInfoBrokerstandardcontractapply__c')]}"/></div> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AgtInfoBrokerNumber__c}"  onchange="saveRecord();" /></td>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AgtInfoBrokerstandardcontractapply__c}" onchange="saveRecord();showSingleCase(this.value);" /></td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoBrokerAffiliatedWithAnAgency__c.Label }<c:cHelp helpText="{!hMap[LOWER('AgtInfoBrokerAffiliatedWithAnAgency__c')]}"/></div> </td>
+                                                    <td  class="fieldLabel singleCase">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoWilltherebeaSingleCase__c.Label }<c:cHelp helpText="{!hMap[LOWER('AgtInfoWilltherebeaSingleCase__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AgtInfoBrokerAffiliatedWithAnAgency__c}" onchange="saveRecord();showNameOfAgency(this.value);" /></td>
+                                                    <td class="singleCase"><apex:inputField value="{!Customer_Setup_Form__c.AgtInfoWilltherebeaSingleCase__c}" onchange="saveRecord();"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="fieldLabel nameOfAgency">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoNameofagency__c.Label }<c:cHelp helpText="{!hMap[LOWER('AgtInfoNameofagency__c')]}"/></td>
+                                                    <td  class="fieldLabel"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="nameOfAgency"><apex:inputField value="{!Customer_Setup_Form__c.AgtInfoNameofagency__c}"  onchange="saveRecord();" /></td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AgtInfoBrokerInvolvementNotes__c.Label }<c:cHelp helpText="{!hMap[LOWER('AgtInfoBrokerInvolvementNotes__c')]}"/></td>
+                                                    <td/>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2"><apex:inputField value="{!Customer_Setup_Form__c.AgtInfoBrokerInvolvementNotes__c}"  onchange="saveRecord();" style="width:800px" /></td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <table  class="formtable" >
+                                                <tr>
+                                                    <td  class="fieldLabel"><input type="button" id="addCommon" value="+ Add New Common Ownership"  class="gbtn gbtnSecondary"  onclick="insertCO();"/></td>
+                                                </tr>
+                                            </table>
+                                            <!--  Common Table -->
+                                            <!-- Luke Freeland 8/8/2017: Steph requested that the related employers between the Section 125 and Customer Setup form have the same fields
+                                                 and behave the same. If any changes need to be made below, it's likely it has to be done in the Section 125 Setup form too. Check with Steph
+                                                 or the project manager to confirm. 
+												 Changes 11/16/18 - Confirmed requested changes are to be made in the Customer Setup Form only per Steph
+											-->
+                                            <apex:outputPanel id="commonPanel">
+                                                <apex:outputPanel rendered="{!commons.size > 0}">
+                                                    <div class="sectionHeader">
+                                                        <div class="sectionLabel">Common Ownership</div>
+                                                    </div>      
+                                                    <apex:variable var="cnt" value="{!0}"/>
+                                                    <apex:repeat value="{!commons}" var="c">                                                         
+                                                        <hr style="height:1px;margin-top:15px;margin-bottom:15px;background-color:#54698D;{!if(cnt==0,'display:none','display:block')}"/>
+                                                        <table  class="formtable" >
+                                                            
+                                                            <tr> 
+                                                                <td  class="fieldLabel"><div class="requiredLabel" >New or Existing?
+                                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                                    <a href="#" onclick="deleteCommonOwnership('{!c.Id}');" >[Remove]</a> </div> 
+                                                                </td>
+                                                                <td  class="fieldLabel"><div class="requiredLabel" style="{!if(c.New_Or_Existing__c = 'New','display:none','')}">MCP#</div> </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField id="CommonNewOrExist" value="{!c.New_Or_Existing__c}" >
+                                                                    <apex:actionSupport event="onchange" action="{!saveCommons}"   rerender="commonPanel,tabPanel"
+                                                                                        oncomplete="$(currentTab).click();"/></apex:inputField> </td>
+                                                                <td><apex:inputField value="{!c.MCP_Number__c}"  onchange="saveCommons();" rendered="{!c.New_Or_Existing__c == 'Existing'}" /></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td  class="fieldLabel"><div class="requiredLabel"  style="{!if(c.New_Or_Existing__c = 'Existing','display:none','')}">Legal Name</div> </td>
+                                                                <td  class="fieldLabel">Will this common ownership be a related employer under the Section 125 Plan?</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!c.Legal_Name__c}" onchange="saveCommons();" rendered="{!c.New_Or_Existing__c != 'Existing'}" />
+                                                                </td>
+                                                                <td><apex:inputField value="{!c.Related_Employer_under_S125_Plan__c}" onchange="saveCommons();" /></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td  class="fieldLabel"> <div style="{!if(c.New_Or_Existing__c = 'Existing','display:none','')}">DBA Name</div> </td>
+                                                                <td  class="fieldLabel"> <div class="requiredLabel" style="{!if(c.New_Or_Existing__c = 'Existing', 'display:none', '')}">Is the broker the same as the parent account?</div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!c.DBA_Name__c}" onchange="saveCommons();" rendered="{!c.New_Or_Existing__c != 'Existing'}" /></td>
+                                                                <td>
+                                                                    <apex:inputField value="{!c.Is_the_broker_the_same_as_the_Parent_Acc__c}" rendered="{!c.New_Or_Existing__c != 'Existing'}">
+                                                                        <apex:actionSupport event="onchange" action="{!saveCommons}"   rerender="commonPanel,tabPanel"
+                                                                                            oncomplete="$(currentTab).click();"/>
+                                                                    </apex:inputField>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td  class="fieldLabel" ><div style="{!if(c.New_Or_Existing__c = 'Existing','display:none','')}">Employer Tax ID#</div></td>
+                                                                <td  class="fieldLabel">
+                                                                    <div style="{! IF(AND(c.New_Or_Existing__c = 'New', c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No'), '', 'display:none')}" class="requiredLabel">
+                                                                        Broker Involved
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!c.Employer_Tax_ID_Number__c}" onchange="saveCommons();" rendered="{!c.New_Or_Existing__c != 'Existing'}" /></td>
+                                                                <td>
+                                                                    <apex:inputField value="{!c.Broker_Involved__c}" rendered="{!c.New_Or_Existing__c != 'Existing' && c.Is_the_broker_the_same_as_the_Parent_Acc__c == 'No'}">
+                                                                        <apex:actionSupport event="onchange" action="{!saveCommons}"   rerender="commonPanel,tabPanel"
+                                                                                            oncomplete="$(currentTab).click();"/>
+                                                                    </apex:inputField>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td  class="fieldLabel"><div class="requiredLabel" style="{!if(c.New_Or_Existing__c = 'Existing','display:none','')}">Address Line 1</div> </td>
+                                                                <td  class="fieldLabel">
+                                                                    <div style="{! IF(AND(c.New_Or_Existing__c = 'New', c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', c.Broker_Involved__c = 'Yes'), '', 'display:none')}" class="requiredLabel">
+                                                                        Broker Legal Name
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!c.Address_Line_1__c}" onchange="saveCommons();"  rendered="{!c.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                <td><apex:inputField value="{!c.Broker_Legal_Name__c}" onchange="saveCommons();" rendered="{! c.New_Or_Existing__c = 'New' && c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && c.Broker_Involved__c = 'Yes'}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td  class="fieldLabel"><div style="{!if(c.New_Or_Existing__c = 'Existing','display:none','')}">Address Line 2</div> </td>
+                                                                <td  class="fieldLabel">
+                                                                    <div style="{! IF(AND(c.New_Or_Existing__c = 'New', c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', c.Broker_Involved__c = 'Yes'), '', 'display:none')}" class="requiredLabel">
+                                                                        Broker Number
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!c.Address_Line_2__c}" onchange="saveCommons();"  rendered="{!c.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                <td><apex:inputField value="{!c.Broker_Number__c}" onchange="saveCommons();" rendered="{! c.New_Or_Existing__c = 'New' && c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && c.Broker_Involved__c = 'Yes'}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td  class="fieldLabel"><div class="requiredLabel"  style="{!if(c.New_Or_Existing__c = 'Existing','display:none','')}">City</div> </td>
+                                                                <td  class="fieldLabel">
+                                                                    <div style="{! IF(AND(c.New_Or_Existing__c = 'New', c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', c.Broker_Involved__c = 'Yes'), '', 'display:none')}" class="requiredLabel">
+                                                                        Is the Broker Affiliated with an Agency
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!c.City__c}" onchange="saveCommons();"  rendered="{!c.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                <td>
+                                                                    <apex:inputField value="{!c.Is_the_Broker_Affiliated_with_an_Agency__c}" rendered="{! c.New_Or_Existing__c = 'New' && c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && c.Broker_Involved__c = 'Yes'}">
+                                                                        <apex:actionSupport event="onchange" action="{!saveCommons}"   rerender="commonPanel,tabPanel"
+                                                                                            oncomplete="$(currentTab).click();"/>
+                                                                    </apex:inputField>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td  class="fieldLabel"><div class="requiredLabel"  style="{!if(c.New_Or_Existing__c = 'Existing','display:none','')}">State</div> </td>
+                                                                <td  class="fieldLabel">
+                                                                    <div style="{! IF(AND(c.New_Or_Existing__c = 'New', c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', c.Broker_Involved__c = 'Yes', c.Is_the_Broker_Affiliated_with_an_Agency__c = 'Yes'), '', 'display:none')}" >
+                                                                        Name of Agency
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!c.State_Picklist__c}" onchange="saveCommons();" rendered="{!c.New_Or_Existing__c != 'Existing'}"/>    </td>
+                                                                <td><apex:inputField value="{!c.Name_of_Agency__c}" onchange="saveCommons();" rendered="{! c.New_Or_Existing__c = 'New' && c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && c.Broker_Involved__c = 'Yes' && c.Is_the_Broker_Affiliated_with_an_Agency__c = 'Yes'}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td  class="fieldLabel"><div class="requiredLabel" style="{!if(c.New_Or_Existing__c = 'Existing','display:none','')}">Zip</div> </td>
+                                                                <td  class="fieldLabel">
+                                                                    <div style="{! IF(AND(c.New_Or_Existing__c = 'New', c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', c.Broker_Involved__c = 'Yes'), '', 'display:none')}" class="requiredLabel">
+                                                                        Is the Broker AOR for AFA Products
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!c.ZipCode__c}"  onchange="saveCommons();" rendered="{!c.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                <td><apex:inputField value="{!c.Is_the_Broker_AOR_for_AFA_Products__c}" onchange="saveCommons();" rendered="{! c.New_Or_Existing__c = 'New' && c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && c.Broker_Involved__c = 'Yes'}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td  class="fieldLabel"><div style="{!if(c.New_Or_Existing__c = 'Existing','display:none','')}">Contact Name</div> </td>
+                                                                <td  class="fieldLabel">
+                                                                    <div style="{! IF(AND(c.New_Or_Existing__c = 'New', c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', c.Broker_Involved__c = 'Yes'), '', 'display:none')}" class="requiredLabel">
+                                                                        Does the Standard Broker Contract Apply
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!c.Contact_Name__c}" onchange="saveCommons();"  rendered="{!c.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                <td>
+                                                                    <apex:inputField value="{!c.Does_the_Standard_Broker_Contract_Apply__c}" rendered="{! c.New_Or_Existing__c = 'New' && c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && c.Broker_Involved__c = 'Yes'}">
+                                                                        <apex:actionSupport event="onchange" action="{!saveCommons}"   rerender="commonPanel,tabPanel"
+                                                                                            oncomplete="$(currentTab).click();"/>
+                                                                    </apex:inputField>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td  class="fieldLabel"><div style="{!if(c.New_Or_Existing__c = 'Existing','display:none','')}">Contact Phone</div> </td>
+                                                                <td  class="fieldLabel">
+                                                                    <div style="{! IF(AND(c.New_Or_Existing__c = 'New', c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No', c.Broker_Involved__c = 'Yes', c.Does_the_Standard_Broker_Contract_Apply__c = 'Yes'), '', 'display:none')}" >
+                                                                        Will there be a Single Case Agreement
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!c.Contact_Phone_Number__c}" onchange="saveCommons();" rendered="{!c.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                <td><apex:inputField value="{!c.Will_there_be_a_Single_Case_Agreement__c}" onchange="saveCommons();" rendered="{! c.New_Or_Existing__c = 'New' && c.Is_the_broker_the_same_as_the_Parent_Acc__c = 'No' && c.Broker_Involved__c = 'Yes' && c.Does_the_Standard_Broker_Contract_Apply__c = 'Yes'}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td  class="fieldLabel"><div style="{!if(c.New_Or_Existing__c = 'Existing','display:none','')}">Contact Email</div>  </td>
+                                                                <td  class="fieldLabel"><div></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!c.Contact_Phone_Number__c}" onchange="saveCommons();" rendered="{!c.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </table>    
+                                                        <apex:variable var="cnt" value="{!cnt+1}"/> 
+                                                    </apex:repeat> 
+                                                </apex:outputPanel> 
+                                            </apex:outputPanel>   <!--  End Related Employers (Common) Panel -->
+                                            
+                                            <script>
+                                            
+                                            //////// Onboarding Functions ///////
+                                            showAssociationName('{!Customer_Setup_Form__c.DetailsIsGrpmemberofanassociation__c}');
+                                            
+                                            function showAssociationName(value)
+                                            {
+                                                if(value == 'Yes')
+                                                    $('.assocName').show();
+                                                else
+                                                    $('.assocName').hide();
+                                            }
+                                            
+                                            //////// Agent Info Functions ///////
+                                            showBrokerInvolved('{!Customer_Setup_Form__c.AgtInfoIsthereabrokerinvolved__c}');
+                                            
+                                            function showBrokerInvolved(value)
+                                            {
+                                                if(value == 'Yes')
+                                                    $('#brokerTable').show();
+                                                else
+                                                    $('#brokerTable').hide();
+                                            }
+                                            
+                                            showSingleCase("{!Customer_Setup_Form__c.AgtInfoBrokerstandardcontractapply__c}");
+                                            function showSingleCase(value)
+                                            {
+                                                if(value == 'No')
+                                                    $('.singleCase').show();
+                                                else
+                                                    $('.singleCase').hide();
+                                            }
+                                            
+                                            showNameOfAgency("{!Customer_Setup_Form__c.AgtInfoBrokerAffiliatedWithAnAgency__c}");
+                                            function showNameOfAgency(value)
+                                            {
+                                                if(value == 'Yes')
+                                                    $('.nameOfAgency').show();
+                                                else
+                                                    $('.nameOfAgency').hide();
+                                            }
+                                            
+                                            </script> 
+                                        </apex:outputPanel>
+                                    </div>   <!--  END onboarding Tab -->
+                                    
+                                    
+                                    <!-- Product Billing Tab  -->
+                                    <div class="tab-pane" id="productBillingTab">
+                                        <apex:outputPanel id="billingInfoPanel">
+                                            
+                                            <table class="formtable" style="width:45%">
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $Label.What_date_does_the_employer_need_to_key_c }<c:cHelp helpText="{!hMap[LOWER('What_date_does_the_employer_need_to_key__c')]}"/></div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.What_date_does_the_employer_need_to_key__c}" onchange="saveRecord();"/></td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.Enroll_Info_First_Payroll_Deduction_Date__c.Label }<c:cHelp helpText="{!hMap[LOWER('Enroll_Info_First_Payroll_Deduction_Date__c')]}"/> </div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!ps.Enroll_Info_First_Payroll_Deduction_Date__c}" onchange="saveProductBilling();"/></td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td width="50%"  class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Enroll_Info_Payroll_Deduction_Begins__c.Label }<c:cHelp helpText="{!hMap[LOWER('BillInfoPayrollDeductions__c')]}"/></td>
+                                                    <td width="50%"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!ps.Enroll_Info_Payroll_Deduction_Begins__c}" onchange="saveProductBilling();" /></td>
+                                                </tr>
+                                                
+                                                
+                                                <tr>
+                                                    <td  class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Coverage_Effective_Date__c.Label }</td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td>
+                                                        <apex:outputPanel id="coverageEffDateOP">
+                                                            <apex:outputText value="{! CoverageEffectiveDate }" styleClass="af-coverageEffectiveDate" />
+                                                        </apex:outputPanel>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <div class="sectionHeader">
+                                                <div class="sectionLabel">Bill Modes</div>
+                                            </div>
+                                            <apex:outputPanel id="billModesPanel">
+                                            
+                                            <apex:outputPanel style="margin-top: 10px;" layout="block" rendered="{! IsBlank(billModesErrorMessage) = false && billModesErrorMessage != '' }">
+                                                <apex:pageMessage severity="Error" summary="{! billModesErrorMessage }"  />
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputText value="{! $Label.Billing_Modes_Disclaimer }" escape="false" styleClass="af-section-note" />
+                                            
+                                            
+                                            <table style="margin-top:15px; width:60%" class="table table-bordered billModesContainer">
+                                                <thead style="background-color:#2989d8; color:#FFF">
+                                                    <tr>
+                                                        <th />
+                                                        <apex:repeat value="{! $ObjectType.Bill_Mode__c.FieldSets.Product_Billing }" var="f">
+                                                        <th><div class="{! If(f.required, 'requiredLabel', '') }">{! f.Label }</div></th>
+                                                        </apex:repeat>
+	                                                </tr>
+	                                            </thead>
+	                                            <tbody>
+	                                                <apex:repeat value="{! BillModes }" var="billMode">
+	                                                    
+	                                                    <tr>
+	                                                        <td><a href="#" onclick="var deleteConfirmResult = confirm('Are you sure?'); if (deleteConfirmResult) { removeBillMode('{! billMode.Id }')}">[Remove]</a></td>
+	                                                    <apex:repeat value="{! $ObjectType.Bill_Mode__c.FieldSets.Product_Billing }" var="f">
+	                                                        <td><apex:inputField value="{! billMode[f] }"
+	                                                                             onchange="updateBillMode('{! billMode.Id }')" /></td>
+	                                                    </apex:repeat>
+	                                                    </tr>
+	                                                </apex:repeat>
+	                                            </tbody>
+	                                        </table>
+	                                        </apex:outputPanel>
+	                                        
+	                                        <input type="button" id="addCommon" value="+ Add Bill Mode"
+                                                   class="gbtn gbtnSecondary addBillModeBtn" onclick="insertBillMode();"/>
+                                                
+                                            <div class="sectionHeader">
+                                                <div class="sectionLabel">Bill Information</div>       
+                                            </div>
+
+                                                
+                                            <table class="formtable" style="width:45%">
+                                                <tr>
+                                                    <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoIfMultipleBills__c.Label }<c:cHelp helpText="{!hMap[LOWER('BillInfoIfMultipleBills__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.BillInfoIfMultipleBills__c}" onchange="showExplainMultiBills(this.checked); saveRecord();" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="fieldLabel explainMultipleBills">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoIfMultipleBillsPlsExpln__c.Label }<c:cHelp helpText="{!hMap[LOWER('BillInfoIfMultipleBillsPlsExpln__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="explainMultipleBills"><apex:inputField value="{!Customer_Setup_Form__c.BillInfoIfMultipleBillsPlsExpln__c}" onchange="saveRecord();" /></td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <table class="formtable" style="width:45%">
+
+                                                <tr>
+                                                    <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoEmployersPaidByAnotherEntity__c.Label }<c:cHelp helpText="{!hMap[LOWER('BillInfoEmployersPaidByAnotherEntity__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.BillInfoEmployersPaidByAnotherEntity__c}" onchange="saveRecord(); showTPAorExist(this.value);"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="fieldLabel TPAorExist">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoTPAorExistingMCPnumber__c.Label }<c:cHelp helpText="{!hMap[LOWER('BillInfoTPAorExistingMCPnumber__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="TPAorExist"><apex:inputField value="{!Customer_Setup_Form__c.BillInfoTPAorExistingMCPnumber__c}" onchange="saveRecord();" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoEmployerNeedSeparateBills__c.Label }:<c:cHelp helpText="{!hMap[LOWER('BillInfoEmployerNeedSeparateBills__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="separateBillsBasedOnInputContainer"><apex:inputField value="{!Customer_Setup_Form__c.BillInfoEmployerNeedSeparateBills__c}" styleClass="myMultiClass" onchange="saveRecord();showBillNames(this.value);"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="fieldLabel billNames">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoBillNames__c.Label }<c:cHelp helpText="{!hMap[LOWER('BillInfoBillNames__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="billNames"><apex:inputField value="{!Customer_Setup_Form__c.BillInfoBillNames__c}" style="width:60%;" html-placeholder="e.g. Classified Teachers; Union Employees;" onchange="saveRecord();"/></td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <table class="formtable">
+                                                <tr>
+                                                    <td class="fieldLabel" style="vertical-align:bottom">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoBillingNotes__c.Label }<c:cHelp helpText="{!hMap[LOWER('BillInfoBillingNotes__c')]}"/></td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <table class="formtable">
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.BillInfoBillingNotes__c}"  onchange="saveRecord();" style="width:1000px" /></td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <apex:variable var="showPayrollDeductionFileDueDate" value="{! Customer_Setup_Form__c.BillInfoPayrollDedFileDueDate__c != null }" />
+                                            <apex:variable var="showPayrollDeductionFrequency" value="{! ps.EnrollInfoPayrollDeductFrequenc__c != null && ps.EnrollInfoPayrollDeductFrequenc__c != '' }" />
+                                            <apex:variable var="showPayrollNumberOfPayPeriods" value="{! Customer_Setup_Form__c.BillInfoPayrollInfoNbrofPayPds__c != null && Customer_Setup_Form__c.BillInfoPayrollInfoNbrofPayPds__c != '' }" />
+                                            <apex:variable var="showPayrollSkipMonths" value="{! ps.PayrollInfo9MoCheck__c == true || ps.PayrollInfoSkipMonths9__c != null || ps.PayrollInfo10MoCheck__c == true || ps.PayrollInfoSkipMonths10__c != null || ps.PayrollInfo11MoCheck__c == true || ps.PayrollInfoSkipMonths11__c != null }" />
+                                            
+                                            <apex:outputPanel layout="none" rendered="{! showPayrollDeductionFileDueDate || showPayrollNumberOfPayPeriods || showPayrollDeductionFrequency || showPayrollSkipMonths}">
+                                            <table>
+	                                            <tr>
+	                                                <td class="af-previouslyEnteredValuesHeader fieldLabel">
+	                                                    <apex:outputText value="Previously Entered Values"/>
+	                                                    <hr />
+	                                                </td>
+	                                            </tr>
+                                            
+	                                            <apex:outputPanel layout="none" rendered="{! showPayrollDeductionFrequency }">
+	                                            <tr>
+	                                                <td  class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.EnrollInfoPayrollDeductFrequenc__c.Label }<c:cHelp helpText="{!hMap[LOWER('EnrollInfoPayrollDeductFrequenc__c')]}"/></td>
+	                                            </tr>
+	                                            <tr>
+	                                                <td><apex:outputField value="{!ps.EnrollInfoPayrollDeductFrequenc__c}"/></td>
+	                                            </tr>
+	                                            </apex:outputPanel>
+                                            
+	                                            <apex:outputPanel layout="none" rendered="{! showPayrollNumberOfPayPeriods }">
+	                                            <tr>
+	                                                <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoPayrollInfoNbrofPayPds__c.Label }</td>
+	                                            </tr>
+	                                            <tr>
+	                                                <td><apex:outputField value="{!Customer_Setup_Form__c.BillInfoPayrollInfoNbrofPayPds__c}"/></td>
+	                                            </tr>
+	                                            </apex:outputPanel>
+                                            
+	                                            <apex:outputPanel layout="none" rendered="{! showPayrollDeductionFileDueDate }">
+	                                            <tr>
+	                                                <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.BillInfoPayrollDedFileDueDate__c.Label }</td>
+	                                            </tr>
+	                                            <tr>
+	                                                <td><apex:outputField value="{!Customer_Setup_Form__c.BillInfoPayrollDedFileDueDate__c}"/></td>
+	                                            </tr>
+	                                            </apex:outputPanel>
+                                            </table>
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel layout="none" rendered="{! showPayrollSkipMonths }">
+                                            <table class="formtable" > 
+                                                <tr>
+                                                    <td class="fieldLabel" >Are there any skip months?</td>
+                                                    <td></td>
+                                                </tr>
+                                            </table>
+                                            <table class="formtable" style="width:350px" > 
+                                                <tr>
+                                                    <td style="width:100px" ><apex:outputField value="{!ps.PayrollInfo9MoCheck__c}" styleClass="skipMonths"/>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfo9MoCheck__c.Label }</td>
+                                                    <td>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfoSkipMonths9__c.Label } <br/><apex:outputField value="{!ps.PayrollInfoSkipMonths9__c}" styleClass="skipMonths" style="width:200px"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="width:100px" ><apex:outputField value="{!ps.PayrollInfo10MoCheck__c}" styleClass="skipMonths"/> {! $ObjectType.Platform_Setup__c.Fields.PayrollInfo10MoCheck__c.Label }</td>
+                                                    <td>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfoSkipMonths10__c.Label }<br/> <apex:outputField value="{!ps.PayrollInfoSkipMonths10__c}" styleClass="skipMonths" style="width:200px"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="width:100px"><apex:outputField value="{!ps.PayrollInfo11MoCheck__c}" styleClass="skipMonths"/>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfo11MoCheck__c.Label }</td>
+                                                    <td>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfoSkipMonths11__c.Label }<br/> <apex:outputField value="{!ps.PayrollInfoSkipMonths11__c}" styleClass="skipMonths" style="width:200px" /></td>
+                                                </tr>
+                                            </table>
+                                            </apex:outputPanel>
+                                            
+                                            
+                                            <script>
+                                            
+                                            showExplainMultiBills({!Customer_Setup_Form__c.BillInfoIfMultipleBills__c});
+                                            
+                                            function showExplainMultiBills(value)
+                                            {
+                                                if(value == true)
+                                                    $('.explainMultipleBills').show();
+                                                else
+                                                    $('.explainMultipleBills').hide();
+                                            }
+                                            
+                                            showTPAorExist("{!Customer_Setup_Form__c.BillInfoEmployersPaidByAnotherEntity__c}");
+                                            function showTPAorExist(elemValue)
+                                            {
+                                                if(elemValue == 'Yes')
+                                                    $('.TPAorExist').show();
+                                                else
+                                                    $('.TPAorExist').hide();
+                                            }
+                                            
+                                            showBillNames("{!Customer_Setup_Form__c.BillInfoEmployerNeedSeparateBills__c}");
+                                            function showBillNames(elemValue)
+                                            {
+                                                if(elemValue != 'No' && elemValue != '')
+                                                    $('.billNames').show();
+                                                else
+                                                    $('.billNames').hide();
+                                            }                                            
+                                            </script> 
+                                        </apex:outputPanel>  <!--  end Billing Info Panel -->
+                                    </div>  <!--  end Product Billing Tab -->
+                                    
+                                    <!-- Group Plans -->
+                                    
+                                    <apex:variable var="showSelectDisabilityPlans" value="{! hasLongTermDisabilityMarketedProduct || hasShortTermDisabilityMarketedProduct }" />
+                                    <apex:variable var="showSelectGroupCIPlans" value="{! hasGroupCriticalIllnessMarketedProduct }" />
+                                    <apex:variable var="showSelectGAPPlans" value="{! hasHospitalGapMarketedProduct }" />
+                                    
+                                    <div class="tab-pane " id="groupPlansTab">
+                                        <apex:outputPanel id="groupPlansPanel">
+                                            <div class="sectionHeader">
+                                                <div class="sectionLabel">General Information</div>
+                                            </div>
+                                            <table  class="formtable" >
+                                                <tr>
+                                                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdTakeoverOfGroupPlan__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdTakeoverOfGroupPlan__c')]}"/></div></td></tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.GrpProdTakeoverOfGroupPlan__c}" onchange="showTakeover(this.value); saveRecord();" /></td></tr>
+                                                <tr>
+                                                    <td class="fieldLabel takeover"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSelectProductsTakingOver__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdSelectProductsTakingOver__c')]}"/></div></td></tr>
+                                                <tr>
+                                                    <td class="takeover groupPlansSelectTakeOverProductsContainer"><apex:inputField value="{!Customer_Setup_Form__c.GrpProdSelectProductsTakingOver__c}" styleClass="myMultiClass" onchange="saveRecord();"/></td></tr>
+                                                <tr>
+                                                    <td  class="fieldLabel takeover" ><div class="requiredLabel" >{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdProvideCarriersofTakeoverProducts__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdProvideCarriersofTakeoverProducts__c')]}"/></div></td></tr>
+                                                <tr> 
+                                                    <td class="takeover"><apex:inputField value="{!Customer_Setup_Form__c.GrpProdProvideCarriersofTakeoverProducts__c}" onchange="saveRecord();" /></td></tr>
+                                                <tr>
+                                                    <td  class="fieldLabel takeover" style="font-weight:bold">Please upload a Bill that includes the Customer Names and Benefit Periods.</td></tr>
+                                                <tr>
+                                                    <td class="takeover"><apex:iframe id="uploadFrame" src="/apex/uploadFiles?id={!Customer_Setup_Form__c.Id}" height="60%" ></apex:iframe></td></tr>
+                                                <tr>
+                                                    <td  class="fieldLabel selectDis" style="display: {! If(showSelectDisabilityPlans, '', 'none') };"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdHowwouldyouliketoselectDisplans__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdHowwouldyouliketoselectDisplans__c')]}"/></div></td> </tr>
+                                                <tr>
+                                                    <td class="selectDis" style="display: {! If(showSelectDisabilityPlans, '', 'none') };"><apex:inputField value="{!Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c}" style="width:250px" html-plan-details-input="plan-details-input" onchange="saveRecord();showHideMCP('.disabilityMCP',this.value); showDisabilityFields(this.value); addNewProductIfNone(this.value);"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:outputText styleClass="disabilityMCP"
+                                                                         value="By selecting this option you are verifying the selected MCP has the exact plans you want added to this MCP.  If you are unsure, please select another plan selection option."/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fieldLabel selectCI" style="display: {! If(showSelectGroupCIPlans, '', 'none') };"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdHowwouldyouliketoselectGrpCIplans__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdHowwouldyouliketoselectGrpCIplans__c')]}"/></div></td></tr>
+                                                <tr>
+                                                    <td class="selectCI" style="display: {! If(showSelectGroupCIPlans, '', 'none') };"><apex:inputField value="{!Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGrpCIplans__c}"  style="width:250px" html-plan-details-input="plan-details-input" onchange="saveRecord();showHideMCP('.groupCiMCP',this.value); showCriticalFields(this.value); addNewProductIfNone(this.value);" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:outputText styleClass="groupCiMCP"
+                                                                         value="By selecting this option you are verifying the selected MCP has the exact plans you want added to this MCP.  If you are unsure, please select another plan selection option."/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="fieldLabel selectGAP" style="display: {! If(showSelectGAPPlans, '', 'none') };"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdHowwouldyouliketoselectGAPplans__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdHowwouldyouliketoselectGAPplans__c')]}"/></div></td></tr>
+                                                <tr>
+                                                    <td class="selectGAP" style="display: {! If(showSelectGAPPlans, '', 'none') };"><apex:inputField value="{!Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGAPplans__c}"  style="width:250px" html-plan-details-input="plan-details-input" onchange="saveRecord();showHideMCP('.gapMCP',this.value); showGAPFields(this.value); addNewProductIfNone(this.value);" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:outputText styleClass="gapMCP"
+                                                                         value="By selecting this option you are verifying the selected MCP has the exact plans you want added to this MCP.  If you are unsure, please select another plan selection option."/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpHospitalIndemnity__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpHospitalIndemnity__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:outputField value="{! Customer_Setup_Form__c.GrpHospitalIndemnity__c }" /></td>
+                                                </tr>
+                                                <tr style="display: {! if (hasGroupCancerMarketedProduct, '', 'none') };">
+                                                    <td class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.Adding_Group_Cancer__c.Label }<c:cHelp helpText="{!hMap[LOWER('Adding_Group_Cancer__c')]}"/></td>
+                                                </tr>
+                                                <tr style="display: {! if (hasGroupCancerMarketedProduct, '', 'none') };">
+                                                    <td><apex:outputField value="{! Customer_Setup_Form__c.Adding_Group_Cancer__c }" /></td>
+                                                </tr>
+                                            </table>
+                                            <script>
+                                            showTakeover('{!Customer_Setup_Form__c.GrpProdTakeoverOfGroupPlan__c}');
+                                            
+                                            function showTakeover(value)
+                                            {
+                                                if(value == 'Yes')
+                                                    $('.takeover').show();
+                                                else
+                                                    $('.takeover').hide();
+                                            }
+                                            </script>
+                                            
+                                            <apex:variable var="showLTDMatch" value="{! hasLongTermDisabilityMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c == 'Match plans to an existing MCP' }" />
+                                            <apex:variable var="showSTDMatch" value="{! hasShortTermDisabilityMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c == 'Match plans to an existing MCP' }" />
+                                            <apex:variable var="showCIMatch" value="{! hasGroupCriticalIllnessMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGrpCIplans__c == 'Match plans to an existing MCP' }" />
+                                            <apex:variable var="showGAPMatch" value="{! hasHospitalGapMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGAPplans__c == 'Match plans to an existing MCP' }" />
+                                            <apex:variable var="showMatchHeader" value="{! showLTDMatch || showSTDMatch || showCIMatch || showGAPMatch }" />
+                                            
+                                            <apex:outputPanel id="matchPanel">   
+                                                <div class="sectionHeader" id="matchHeader" style="display: {! if (showMatchHeader, '', 'none') };">
+                                                    <div class="sectionLabel">Match to MCP</div>    
+                                                </div>
+                                                
+                                                <table  class="formtable" >
+                                                    
+                                                    <tr class="LTDmatch" style="display: {! if (showLTDMatch, '', 'none') };">
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDplanstomatchAccount__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdLTDplanstomatchAccount__c')]}"/></div> </td>
+                                                        <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDplansmatchingMCP__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdLTDplansmatchingMCP__c')]}"/></td>
+                                                    </tr>
+                                                    
+                                                    <tr class="LTDmatch" style="display: {! if (showLTDMatch, '', 'none') };">
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.GrpProdLTDplanstomatchAccount__c}"   style="width:50%">
+                                                            <apex:actionSupport event="onchange" action="{!save}" rerender="matchPanel, messages,tabPanel,visibilityScript"  oncomplete="getMCPNo(); $(currentTab).click();"/></apex:inputField></td>
+                                                        <td><apex:outputField value="{!csfMatchingMCP.GrpProdLTDplansmatchingMCP__c}" /></td>
+                                                    </tr>
+                                                    
+                                                    <tr class="STDmatch" style="display: {! if (showSTDMatch, '', 'none') };">
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDplanstomatchAccount__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdSTDplanstomatchAccount__c')]}"/></div> </td>
+                                                        <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDplansmatchingMCP__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdSTDplansmatchingMCP__c')]}"/> </td>
+                                                    </tr>
+                                                    
+                                                    <tr class="STDmatch" style="display: {! if (showSTDMatch, '', 'none') };">
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.GrpProdSTDplanstomatchAccount__c}" style="width:50%" >
+                                                            <apex:actionSupport event="onchange" action="{!save}" rerender="matchPanel, messages,tabPanel" oncomplete="getMCPNo(); $(currentTab).click();"/></apex:inputField></td>
+                                                        <td><apex:outputField value="{!csfMatchingMCP.GrpProdSTDplansmatchingMCP__c}" /></td>
+                                                    </tr>
+                                                    
+                                                    <tr class="CImatch" style="display: {! if (showCIMatch, '', 'none') };">
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdGroupCIplanstomatchAccount__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdGroupCIplanstomatchAccount__c')]}"/></div> </td>
+                                                        <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdGroupCIplansmatchingMCP__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdGroupCIplansmatchingMCP__c')]}"/></td>
+                                                    </tr>
+                                                    
+                                                    <tr class="CImatch" style="display: {! if (showCIMatch, '', 'none') };">
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.GrpProdGroupCIplanstomatchAccount__c}" style="width:50%">
+                                                            <apex:actionSupport event="onchange" action="{!save}" rerender=" matchPanel, messages,tabPanel"  oncomplete="getMCPNo(); $(currentTab).click();"/></apex:inputField></td>
+                                                        <td>  <apex:outputField value="{!csfMatchingMCP.GrpProdGroupCIplansmatchingMCP__c}" /></td>
+                                                    </tr>
+                                                    
+                                                    <tr class="GAPmatch" style="display: {! if (showGAPMatch, '', 'none') };">
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdGAPplanstomatchAccount__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdGAPplanstomatchAccount__c')]}"/></div> </td>
+                                                        <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdGAPplansmatchingMCP__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdGAPplansmatchingMCP__c')]}"/> </td>
+                                                    </tr>
+                                                    
+                                                    <tr class="GAPmatch" style="display: {! if (showGAPMatch, '', 'none') };">
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.GrpProdGAPplanstomatchAccount__c}" style="width:50%" >
+                                                            <apex:actionSupport event="onchange" action="{!save}" rerender=" matchPanel, messages,tabPanel"  oncomplete="getMCPNo(); $(currentTab).click();"/></apex:inputField></td>
+                                                        <td>  <apex:outputField value="{!csfMatchingMCP.GrpProdGAPplansmatchingMCP__c}" /></td>
+                                                    </tr>
+                                                </table>
+                                                
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!formType == 'AFES'}">
+                                                <apex:variable var="IsDisabilityProductPlanCodes" value="{! Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c == 'Provide product plan codes' }" />
+                                                <apex:variable var="IsGAPProductPlanCodes" value="{! Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGAPplans__c == 'Provide product plan codes' }" />
+                                                <apex:variable var="IsGrpCIProductPlanCodes" value="{! Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGrpCIplans__c == 'Provide product plan codes' }" />
+                                            
+                                                <apex:variable var="showPlanCodesSection" value="{! IsDisabilityProductPlanCodes || IsGrpCIProductPlanCodes || IsGAPProductPlanCodes  }" />
+
+                                                <div id="showPlanCodes" style="display: {! If(showPlanCodesSection, '', 'none') };">
+                                                    <div class="sectionHeader"   style="margin-bottom:5px">             
+                                                        <div class="sectionLabel">Plan Codes</div>
+                                                    </div>          
+                                                    
+                                                    <input type="button" value="+ Add Product"  class="gbtn gbtnSecondary" onclick="newProduct();"/>
+                                                    
+                                                    <apex:outputPanel style="margin-top: 10px;" layout="block" rendered="{! IsBlank(numberRequiredGroupProductsMessage) = false && numberRequiredGroupProductsMessage != '' }">
+                                                        <apex:pageMessage severity="Error" summary="{! numberRequiredGroupProductsMessage }"  />
+                                                    </apex:outputPanel>
+                                                    
+                                                    <div style="margin-top:20px">
+                                                        
+                                                        <apex:outputPanel id="productPanel">
+                                                            <script>
+                                                            function addNewProductIfNone(value) {
+                                                                var productSize = {! products.size };
+                                                            
+			                                                    if ({! products.size == 0 } &&
+			                                                        value == 'Provide product plan codes') {
+			                                                        newProduct();
+			                                                    }
+			                                                }
+                                                            </script>
+                                                        
+                                                            <table style="margin-top:15px;width:80%" class="table table-bordered">
+                                                                <thead style="background-color:#2989d8; color:#FFF">
+                                                                    <tr>
+                                                                        
+                                                                        <th></th>
+                                                                        <th>New or Replace</th>
+                                                                        <th>Product</th>
+                                                                        <th>MCH/Company</th>
+                                                                        <th>Plan Codes/Benefits</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <apex:repeat value="{!products}"  var="p">
+                                                                        <tr >
+                                                                            <td class="removeProduct">
+                                                                                <a href="#"  onclick="deleteProduct('{!p.Id}');">[Remove]</a>
+                                                                            </td>
+                                                                            <td><div class="requiredLabel"><apex:inputField value="{!p.Group_Products__c}" onchange="updateProductField('{!p.Id}','Group_Products__c', this.value);" style="width:100px"/></div> </td>
+                                                                            <td><div class="requiredLabel"> <apex:inputField value="{!p.ProductName__c}" onchange="updateProductField('{!p.Id}','ProductName__c', this.value);"/></div></td>
+                                                                            <td><div class="requiredLabel"><apex:inputField value="{!p.MCH_Company__c}" onchange="updateProductField('{!p.Id}','MCH_Company__c', this.value);"/></div></td>
+                                                                            <td><div class="requiredLabel"> <apex:inputField value="{!p.Plan_Codes_Benefits__c}" onchange="updateProductField('{!p.Id}','Plan_Codes_Benefits__c', this.value);"  /></div> </td>
+                                                                        </tr>
+                                                                    </apex:repeat>
+                                                                </tbody>
+                                                            </table>
+                                                        </apex:outputPanel>
+                                                    </div> 
+                                                </div>
+                                            </apex:outputPanel>
+                                                                                     
+                                            <apex:outputPanel rendered="{!formType == 'AWD'}"> 
+                                                <apex:variable var="showLTDPlanInfo" value="{! hasLongTermDisabilityMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c == 'Provide plan information' }" />
+                                                <apex:variable var="showLTDPlanInfoCustom" value="{! hasLongTermDisabilityMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c == 'Provide plan information' && Contains(Customer_Setup_Form__c.GrpProdLTDBenefitPlan__c, 'Custom') }" />
+                                                <apex:variable var="showLTDplanInfoOther" value="{! hasLongTermDisabilityMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c == 'Provide plan information' && Contains(Customer_Setup_Form__c.GrpProdLTDEliminationPeriod__c, 'Other') }" />
+                                                <apex:variable var="showSTDPlanInfo" value="{! hasShortTermDisabilityMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c == 'Provide plan information' }" />
+                                                <apex:variable var="showSTDplanInfoOther" value="{! hasShortTermDisabilityMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c == 'Provide plan information' && Contains(Customer_Setup_Form__c.GrpProdSTDEliminationPeriod__c, 'Other') }" />
+                                                <apex:variable var="showSTDplanInfoCustom" value="{! hasShortTermDisabilityMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c == 'Provide plan information' && Contains(Customer_Setup_Form__c.GrpProdSTDBenefitPlan__c, 'Custom') }" />
+                                                
+                                                <apex:variable var="showGAPplanInfo" value="{! hasHospitalGapMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGAPplans__c == 'Provide plan information' }" />
+                                                <apex:variable var="showGAPplanInfoContrib" value="{! hasHospitalGapMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGAPplans__c == 'Provide plan information' && (Customer_Setup_Form__c.HospitalGAPInfoPlanOption__c == 'GAP Plan Choice - Voluntary' || Customer_Setup_Form__c.HospitalGAPInfoPlanOption__c == 'GAP Plan - Voluntary' ) }" />
+                                                
+                                                <apex:variable var="showCIplanInfo" value="{! hasGroupCriticalIllnessMarketedProduct && Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGrpCIplans__c == 'Provide plan information' }" />
+                                                
+                                                <apex:variable var="showPlanInfoSH" value="{! showLTDPlanInfo || showSTDPlanInfo || showCIplanInfo || showGAPplanInfo}" />
+                                                
+                                                <div class="sectionHeader" id="planInfoSH" style="display: {! if(showPlanInfoSH, '', 'none') };">
+                                                    <div class="sectionLabel">Plan Information</div>
+                                                </div>   
+                                                
+                                                <table  class="formtable" style="width:80%" >
+                                                    <tr>
+                                                        <td  class="fieldLabel LTDplanInfo" style="width:40%; display: {! if (showLTDPlanInfo, '', 'none') };">
+                                                            <div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDEliminationPeriod__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdLTDEliminationPeriod__c')]}"/></div> </td>
+                                                        <td  class="fieldLabel LTDplanInfoOther" style="display: {! If(showLTDplanInfoOther, '', 'none') };">
+                                                            <div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDOtherElimination__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdLTDOtherElimination__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="LTDplanInfo" style="display: {! if (showLTDPlanInfo, '', 'none') };"><div style="width:90%"><apex:inputField id="LTDelimination" value="{!Customer_Setup_Form__c.GrpProdLTDEliminationPeriod__c}" styleClass="myMultiClass" onchange="showLTDother(); saveRecord();"/></div></td>
+                                                        <td class="LTDplanInfoOther" style="vertical-align:top; display: {! If(showLTDplanInfoOther, '', 'none') };"><apex:inputField value="{!Customer_Setup_Form__c.GrpProdLTDOtherElimination__c}" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel LTDplanInfo" style="display: {! if (showLTDPlanInfo, '', 'none') };">
+                                                            <div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDBenefitPlan__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdLTDBenefitPlan__c')]}"/></div> </td>
+                                                        <td  class="fieldLabel LTDplanInfoCustom" style="display: {! if (showLTDPlanInfoCustom, '', 'none') };">
+                                                            <div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdLTDCustomBenefitPlan__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdLTDCustomBenefitPlan__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="LTDplanInfo" style="display: {! if (showLTDPlanInfo, '', 'none') };"><div style="width:90%"><apex:inputField id="LTDbenefit" value="{!Customer_Setup_Form__c.GrpProdLTDBenefitPlan__c}" styleClass="myMultiClass" onchange="showLTDcustom(); saveRecord();" /></div></td>
+                                                        <td class="LTDplanInfoCustom" style="vertical-align:top; display: {! if (showLTDPlanInfoCustom, '', 'none') };"><apex:inputField value="{!Customer_Setup_Form__c.GrpProdLTDCustomBenefitPlan__c}" onchange="saveRecord();"/></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel STDplanInfo" style="display: {! if (showSTDPlanInfo, '', 'none') };">
+                                                            <div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDEliminationPeriod__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdSTDEliminationPeriod__c')]}"/></div> </td>
+                                                        <td  class="fieldLabel STDplanInfoOther" style="display: {! If(showSTDplanInfoOther, '', 'none') };">
+                                                            <div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDOtherElimination__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdSTDOtherElimination__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="STDplanInfo" style="display: {! if (showSTDPlanInfo, '', 'none') };"><div style="width:90%"><apex:inputField id="STDelimination" value="{!Customer_Setup_Form__c.GrpProdSTDEliminationPeriod__c}" styleClass="myMultiClass" onchange="showSTDother(); saveRecord();"/></div></td>
+                                                        <td class="STDplanInfoOther" style="vertical-align:top; display: {! If(showSTDplanInfoOther, '', 'none') };"><apex:inputField value="{!Customer_Setup_Form__c.GrpProdSTDOtherElimination__c}" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel STDplanInfo" style="display: {! if (showSTDPlanInfo, '', 'none') };">
+                                                            <div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDBenefitPlan__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdSTDBenefitPlan__c')]}"/></div> </td>
+                                                        <td  class="fieldLabel STDplanInfoCustom" style="display: {! if(showSTDplanInfoCustom, '', 'none') };">
+                                                            <div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSTDCustomBenefitPlan__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdSTDCustomBenefitPlan__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="STDplanInfo" style="vertical-align:top; display: {! if (showSTDPlanInfo, '', 'none') };"><div style="width:90%"><apex:inputField id="STDbenefit" value="{!Customer_Setup_Form__c.GrpProdSTDBenefitPlan__c}" styleClass="myMultiClass" onchange="showSTDcustom(); saveRecord(); "/></div></td>
+                                                        <td class="STDplanInfoCustom" style="display: {! if(showSTDplanInfoCustom, '', 'none') };"><apex:inputField value="{!Customer_Setup_Form__c.GrpProdSTDCustomBenefitPlan__c}" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel CIplanInfo" style="display: {! if(showCIplanInfo, '', 'none') };"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpCIGrpCritIll_MCH_7268__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpCIGrpCritIll_MCH_7268__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="CIplanInfo" style="display: {! if(showCIplanInfo, '', 'none') };"><div style="width:90%;"><apex:inputField value="{!Customer_Setup_Form__c.GrpCIGrpCritIll_MCH_7268__c}" styleClass="myMultiClass" onchange="saveRecord();" /></div></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel CIplanInfo" style="display: {! if(showCIplanInfo, '', 'none') };"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdSpouseBenefitAmount__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdSpouseBenefitAmount__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="CIplanInfo" style="display: {! if(showCIplanInfo, '', 'none') };"><div style="width:90%"><apex:inputField value="{!Customer_Setup_Form__c.GrpProdSpouseBenefitAmount__c}" styleClass="myMultiClass" onchange="saveRecord();" /></div></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel CIplanInfo" style="display: {! if(showCIplanInfo, '', 'none') };"><div class="requiredLabel">Group CI Plan Codes<c:cHelp helpText="{!hMap[LOWER('GrpCIGrpCritIllMCH7268PlanCode__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="CIplanInfo" style="display: {! if(showCIplanInfo, '', 'none') };"><apex:inputField value="{!Customer_Setup_Form__c.GrpCIGrpCritIllMCH7268PlanCode__c}" styleClass="myMultiClass" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                </table>
+                                                
+                                                <table class="formtable" style="width:80%">
+                                                    <tr>
+                                                        <td  class="fieldLabel GAPplanInfo" style="width:40%; display: {! if(showGAPplanInfo, '', 'none') };">
+                                                            <div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.HospitalGAPInfoPlanOption__c.Label }<c:cHelp helpText="{!hMap[LOWER('HospitalGAPInfoPlanOption__c')]}"/></div> </td>
+                                                        
+                                                        <td  class="fieldLabel GAPplanInfoContrib" style="display: {! if(showGAPplanInfoContrib, '', 'none') };">{! $ObjectType.Customer_Setup_Form__c.Fields.HospitalGapInfoEmployerContribution__c.Label }<c:cHelp helpText="{!hMap[LOWER('HospitalGapInfoEmployerContribution__c')]}"/></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="GAPplanInfo" style="display: {! if(showGAPplanInfo, '', 'none') };"><apex:inputField id="GAPplanOption" value="{!Customer_Setup_Form__c.HospitalGAPInfoPlanOption__c}" onchange="showGAPcontribution(); saveRecord();"/></td>
+                                                        <td class="GAPplanInfoContrib" style="display: {! if(showGAPplanInfoContrib, '', 'none') };"><apex:inputField value="{!Customer_Setup_Form__c.HospitalGapInfoEmployerContribution__c}" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="fieldLabel GAPplanInfo" style="display: {! if(showGAPplanInfo, '', 'none') };">
+                                                            <div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.HospitalGapInfoHospGapPlanAmount__c.Label }<c:cHelp helpText="{!hMap[LOWER('HospitalGapInfoHospGapPlanAmount__c')]}"/></div> </td>
+                                                        <td/>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="GAPplanInfo" style="display: {! if(showGAPplanInfo, '', 'none') };"><apex:inputField value="{!Customer_Setup_Form__c.HospitalGapInfoHospGapPlanAmount__c}" onchange="saveRecord();"/></td>
+                                                        <td/>
+                                                    </tr>
+                                                </table>
+                                                
+                                                <script>
+                                                // Logic for AWD Plan Information Section
+                                                function showLTDother()
+                                                {
+                                                    var otherSelected = false;
+                                                    var options = document.getElementById('j_id0:thePageBlock:theForm:LTDelimination_selected').options;
+                                                    for(var i = 0; i < options.length; i++)
+                                                    {
+                                                        if(options[i].text == 'Other') {
+                                                            otherSelected = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                
+                                                    if(otherSelected)
+                                                        $('.LTDplanInfoOther').show();
+                                                    else
+                                                        $('.LTDplanInfoOther').hide();
+                                                }
+
+                                                function showLTDcustom()
+                                                {
+                                                    var options2 = document.getElementById('j_id0:thePageBlock:theForm:LTDbenefit_selected').options;
+                                                    var customSelected = false;
+                                                    for(var i = 0; i < options2.length; i++)
+                                                    {
+                                                        if(options2[i].text == 'Custom') {
+                                                            customSelected = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    
+                                                    if(customSelected)
+                                                        $('.LTDplanInfoCustom').show();
+                                                    else
+                                                        $('.LTDplanInfoCustom').hide();
+                                                }
+                                                
+                                                function showSTDother()
+                                                {
+                                                    var otherSTDSelected = false;
+                                                    var options = document.getElementById('j_id0:thePageBlock:theForm:STDelimination_selected').options;
+                                                    for(var i = 0; i < options.length; i++)
+                                                    {
+                                                        if(options[i].text == 'Other') {
+                                                            otherSTDSelected = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                
+                                                    if(otherSTDSelected)
+                                                        $('.STDplanInfoOther').show();
+                                                    else
+                                                        $('.STDplanInfoOther').hide();
+                                                }
+                                                
+                                                function showSTDcustom()
+                                                {
+                                                    var stdCustomSelected = false;
+                                                    var options2 = document.getElementById('j_id0:thePageBlock:theForm:STDbenefit_selected').options;
+                                                    for(var i = 0; i < options2.length; i++)
+                                                    {
+                                                        if(options2[i].text == 'Custom') {
+                                                            stdCustomSelected = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                
+                                                    if(stdCustomSelected)
+                                                        $('.STDplanInfoCustom').show();
+                                                    else
+                                                        $('.STDplanInfoCustom').hide();
+                                                }
+                                                
+                                                function showGAPcontribution()
+                                                {
+                                                    var gapPlanOptionInput = document.getElementById('{!$Component.GAPplanOption}'); //$('#{!$Component.GAPplanOption}');
+                                                    
+                                                    var currentGAPPlanOption = gapPlanOptionInput.value;
+                                                
+                                                    if(currentGAPPlanOption =='GAP Plan Choice - Voluntary' ||
+                                                       currentGAPPlanOption == 'GAP Plan - Voluntary')
+                                                        $('.GAPplanInfoContrib').show();
+                                                    else
+                                                        $('.GAPplanInfoContrib').hide();
+                                                }
+                                                
+                                                </script>
+                                            </apex:outputPanel>  <!-- end AWD fields -->
+                                            
+                                            <div class="sectionHeader"> 
+                                                <div class="sectionLabel">Comments</div>
+                                            </div>
+                                            <table  class="formtable" >
+                                                <tr>
+                                                    <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.GrpProdGroupSetupComments__c.Label }<c:cHelp helpText="{!hMap[LOWER('GrpProdGroupSetupComments__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.GrpProdGroupSetupComments__c}" style="width:750px" onchange="saveRecord();" /></td>
+                                                </tr>
+                                            </table>
+                                            <script>
+                                            
+                                            showHideMCP('.groupCiMCP','{!Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGrpCIplans__c}' );
+                                            showHideMCP('.disabilityMCP','{!Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectDisplans__c}' );
+                                            showHideMCP('.gapMCP','{!Customer_Setup_Form__c.GrpProdHowwouldyouliketoselectGAPplans__c}' );
+                                            
+                                            function showHideMCP(className, value) {
+                                                if(value=='Match plans to an existing MCP'){
+                                                    $(className).attr('style','color:red;font-style:italic');
+                                                    $(className).show();
+                                                }
+                                                else
+                                                    $(className).hide();
+                                            }    
+                                            </script>
+                                        </apex:outputPanel>   <!-- End Group Plans Panel -->
+                                    </div>  <!-- End groupPlans Tab -->
+                                    
+                                    <!-- Open Enrollment -->  
+                                    <div class="tab-pane " id="openEnrollmentTab">
+                                        
+                                        <table  class="formtable" style="width:60%">
+                                            <tr>
+                                                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.OpnEnrollReasonforRequest__c.Label }<c:cHelp helpText="{!hMap[LOWER('OpnEnrollReasonforRequest__c')]}"/></div></td>
+                                            </tr>
+                                            <tr>
+                                                <td><apex:inputField value="{!Customer_Setup_Form__c.OpnEnrollReasonforRequest__c}" style="width:60%" onchange="saveRecord();" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.OpnEnrollExpectationofOpenEnrollment__c.Label }<c:cHelp helpText="{!hMap[LOWER('OpnEnrollExpectationofOpenEnrollment__c')]}"/></div></td>
+                                            </tr>
+                                            <tr>
+                                                <td><apex:inputField value="{!Customer_Setup_Form__c.OpnEnrollExpectationofOpenEnrollment__c}" style="width:60%"  onchange="saveRecord();" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.OpnEnrollPlanCodes__c.Label }<c:cHelp helpText="{!hMap[LOWER('OpnEnrollPlanCodes__c')]}"/></div></td>
+                                            </tr>
+                                            <tr>
+                                                <td><apex:inputField value="{!Customer_Setup_Form__c.OpnEnrollPlanCodes__c}" onchange="saveRecord();"  style="width:60%" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.OpnEnrollMCH__c.Label }<c:cHelp helpText="{!hMap[LOWER('OpnEnrollMCH__c')]}"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><apex:inputField value="{!Customer_Setup_Form__c.OpnEnrollMCH__c}" onchange="saveRecord();" /></td>
+                                            </tr>
+                                        </table>        
+                                        
+                                    </div>    <!-- End openEnrollmentPanel Content -->  
+                                    
+                                    <!-- Annuities Tab -->        
+                                    <div class="tab-pane " id="annuitiesTab">
+                                        
+                                        <apex:outputPanel id="annuitiesPanel">
+                                            <table  class="formtable" >
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxAddressInfothesame__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxAddressInfothesame__c')]}"/></div> </td>
+                                                    <td/>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxAddressInfothesame__c}" onchange="saveRecord(); showAddressFields(this.value);" >
+                                                        <apex:actionSupport event="onchange" action="{!save}" rerender="annuitiesPanel, messages,tabPanel" oncomplete="$(currentTab).click();"/></apex:inputField></td>
+                                                    <td/>
+                                                </tr>
+                                            </table>
+                                            <table class="formtable" id="addressFields">
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxAddressLine1__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxAddressLine1__c')]}"/></div> </td>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxState__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxState__c')]}"/></div> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxAddressLine1__c}" onchange="saveRecord();" /></td>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxState__c}" onchange="saveRecord();" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxAddressLine2__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxAddressLine2__c')]}"/></td>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxZip__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxZip__c')]}"/></div> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxAddressLine2__c}" onchange="saveRecord();" /></td>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxZip__c}" onchange="saveRecord();" /></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxCity__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxCity__c')]}"/></div> </td>
+                                                    <td/>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxCity__c}" onchange="saveRecord();" /></td>
+                                                    <td/>
+                                                </tr>
+                                            </table>
+                                            <script>
+                                            
+                                            showAddressFields('{!Customer_Setup_Form__c.AnnBeforeTaxAddressInfothesame__c}');
+                                            
+                                            function showAddressFields(value)
+                                            {
+                                                if(value == 'No')
+                                                    $('#addressFields').show();
+                                                else
+                                                    $('#addressFields').hide();
+                                            }
+                                            
+                                            </script>
+                                            
+                                            <div class="sectionHeader">
+                                                <div class="sectionLabel">403(b) Annuity</div>  
+                                            </div>
+                                            <table  class="formtable" style="width:90%">
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAddaBeforeTaxAnnuity__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnAddaBeforeTaxAnnuity__c')]}"/></div> </td>
+                                                    <td/>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:outputField value="{!Customer_Setup_Form__c.AnnAddaBeforeTaxAnnuity__c}"/></td>
+                                                    <td/>
+                                                </tr>
+                                            </table>
+                                            
+                                            <apex:outputPanel rendered="{!Customer_Setup_Form__c.AnnAddaBeforeTaxAnnuity__c=='Yes'}">
+                                                <table class="formtable"  style="width:90%">
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxBillingModes__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxBillingModes__c')]}"/></div> </td>
+                                                        <td/>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxBillingModes__c}" styleClass="myMultiClass" onchange="saveRecord();" /></td>
+                                                        <td/>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxBillModesStatus__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxBillModesStatus__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxBillModesStatus__c}" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxBillModePayDed__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxBillModePayDed__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxBillModePayDed__c}" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxBillModeSkipMonths__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxBillModeSkipMonths__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxBillModeSkipMonths__c}" onchange="showHideSkipMonths('.beforeSkipMonths',this.value);saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel beforeSkipMonths"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxBillModeWhatMonths__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxBillModeWhatMonths__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="beforeSkipMonths"><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxBillModeWhatMonths__c}" style="width:400px" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxMethodofPayment__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxMethodofPayment__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="vertical-align:top"><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxMethodofPayment__c}" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxWhowillsubmitpremiums__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxWhowillsubmitpremiums__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxWhowillsubmitpremiums__c}" onchange="saveRecord();showHideTPA('.beforeTPA', this.value)" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel beforeTPA"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnBeforeTaxNameofTPA__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnBeforeTaxNameofTPA__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="beforeTPA"><apex:inputField value="{!Customer_Setup_Form__c.AnnBeforeTaxNameofTPA__c}"  style="width:400px" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                </table>         
+                                            </apex:outputPanel>
+                                            
+                                            <div class="sectionHeader">     
+                                                <div class="sectionLabel">457(b) Annuity</div> 
+                                            </div>      
+                                            <table  class="formtable" style="width:90%">
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAddanAfterTaxAnnuity__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnAddanAfterTaxAnnuity__c')]}"/></div> </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="vertical-align:top"><apex:outputField value="{!Customer_Setup_Form__c.AnnAddanAfterTaxAnnuity__c}"/></td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <apex:outputPanel rendered="{!Customer_Setup_Form__c.AnnAddanAfterTaxAnnuity__c=='Yes'}">
+                                                <table class="formtable" style="width:90%">
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBilllingMode__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnAfterTaxBilllingMode__c')]}"/></div> </td>
+                                                        <td/>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.AnnAfterTaxBilllingMode__c}" styleClass="myMultiClass" onchange="saveRecord();" /></td>
+                                                        <td/>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBillModesStatus__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnAfterTaxBillModesStatus__c')]}"/></div> </td>
+                                                        
+                                                    </tr>
+                                                    <tr>
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.AnnAfterTaxBillModesStatus__c}" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBillModePayrollDeds__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnAfterTaxBillModePayrollDeds__c')]}"/></div> </td>
+                                                        
+                                                    </tr>
+                                                    <tr>
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.AnnAfterTaxBillModePayrollDeds__c}" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBillModeSkipMonths__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnAfterTaxBillModeSkipMonths__c')]}"/></div> </td>
+                                                        <td/>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.AnnAfterTaxBillModeSkipMonths__c}" onchange="showHideSkipMonths('.afterSkipMonths',this.value); saveRecord();" /></td>
+                                                        <td/>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel afterSkipMonths"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBillModeMonths__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnAfterTaxBillModeMonths__c')]}"/></div> </td>
+                                                        <td/>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="afterSkipMonths"><apex:inputField value="{!Customer_Setup_Form__c.AnnAfterTaxBillModeMonths__c}" onchange="saveRecord();" /></td>
+                                                        <td/>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxMethodofPayment__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnAfterTaxMethodofPayment__c')]}"/></div></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="vertical-align:top"><apex:inputField value="{!Customer_Setup_Form__c.AnnAfterTaxMethodofPayment__c}" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxWhowillsubmitpremiums__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnAfterTaxWhowillsubmitpremiums__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><apex:inputField value="{!Customer_Setup_Form__c.AnnAfterTaxWhowillsubmitpremiums__c}" onchange="saveRecord();showHideTPA('.afterTPA', this.value);" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td  class="fieldLabel afterTPA"><div class="requiredLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxTPAName__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnAfterTaxTPAName__c')]}"/></div> </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="afterTPA"><apex:inputField value="{!Customer_Setup_Form__c.AnnAfterTaxTPAName__c}" onchange="saveRecord();" /></td>
+                                                    </tr>
+                                                </table>         
+                                            </apex:outputPanel>
+                                            
+                                            <div class="sectionHeader">  
+                                                <div class="sectionLabel">Comments</div>    
+                                            </div>
+                                            
+                                            <table  class="formtable" >
+                                                <tr>
+                                                    <td  class="fieldLabel">{! $ObjectType.Customer_Setup_Form__c.Fields.AnnAfterTaxBillModeSpecialInstr__c.Label }<c:cHelp helpText="{!hMap[LOWER('AnnAfterTaxBillModeSpecialInstr__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Customer_Setup_Form__c.AnnAfterTaxBillModeSpecialInstr__c}" style="width:850px" onchange="saveRecord();" /></td>
+                                                </tr>
+                                            </table>
+                                            <script>
+                                            showHideSkipMonths('.beforeSkipMonths','{!Customer_Setup_Form__c.AnnBeforeTaxBillModeSkipMonths__c}');
+                                            showHideSkipMonths('.afterSkipMonths','{!Customer_Setup_Form__c.AnnAfterTaxBillModeSkipMonths__c}');
+                                            
+                                            function showHideSkipMonths(className, value) {
+                                                if (value=='Yes')
+                                                    $(className).show();
+                                                else
+                                                    $(className).hide();    
+                                            }
+                                            
+                                            
+                                            showHideTPA('.beforeTPA', '{!Customer_Setup_Form__c.AnnBeforeTaxWhowillsubmitpremiums__c}');
+                                            showHideTPA('.afterTPA', '{!Customer_Setup_Form__c.AnnAfterTaxWhowillsubmitpremiums__c}');
+                                            
+                                            function showHideTPA(className, value) {
+                                                if(value=='TPA')
+                                                    $(className).show();
+                                                else
+                                                    $(className).hide();
+                                                
+                                            }           
+                                            
+                                            </script>
+                                            
+                                        </apex:outputPanel>  <!-- End annuities panel -->
+                                    </div>  <!-- End annuities Tab -->
+                                    
+                                </div>  <!-- End all Tab Content -->
+                                
+                                <c:UnlockRequest efId="{! If(enrollmentForm != null, enrollmentForm.Id, null) }" /> 
+                                
+                                <apex:ActionFunction name="saveProductBilling" action="{!updatePlatformSetup}" rerender="messages,tabPanel,coverageEffDateOP" oncomplete="$(currentTab).click();"/>
+                                
+                                <!-- Bill Mode Functions -->
+                                <apex:ActionFunction name="insertBillMode" action="{! insertBillMode }" rerender="messages,tabPanel,billModesPanel" oncomplete="$(currentTab).click();" status="sts" />
+                                <apex:ActionFunction name="removeBillMode" action="{! removeBillMode }" rerender="messages,tabPanel,billModesPanel" oncomplete="$(currentTab).click();" status="sts">
+                                    <apex:param name="billModeId" assignTo="{!BillModeIdToRemove}" value="" />
+                                </apex:ActionFunction>
+                                <apex:ActionFunction name="updateBillMode" action="{! updateBillMode }" rerender="messages,tabPanel" oncomplete="$(currentTab).click();">
+                                    <apex:param name="billModeId" assignTo="{!BillModeIdToUpdate}" value="" />
+                                </apex:ActionFunction>
+                                
+
+                                <apex:ActionFunction name="saveRecord" action="{!save}" rerender="messages,tabPanel" oncomplete="$(currentTab).click();"/>
+                                <apex:ActionFunction name="checkRequiredFieldsAndDisplay"  action="{!checkRequiredFieldsAndDisplay}" oncomplete="submitForm();" rerender="allTabs, tabPanel, messages"  status="sts"/>
+                                <apex:ActionFunction name="updateEnrollmentForm" action="{!updateEnrollmentForm}" rerender="page, navBarOutputPanel" oncomplete="$('#customerSetup').removeClass('formSubmitted'); $('#customerSetup').addClass('formNotSubmitted'); $(currentTab).click();" status="sts">
+                                    <apex:param name="name" assignTo="{!fieldName}" value="" />
+                                    <apex:param name="value" assignTo="{!fieldValue}" value="" />
+                                </apex:ActionFunction>
+                                
+                                <!-- Common Ownership Functions -->
+                                <apex:actionFunction name="insertCO" action="{!insertCO}" oncomplete="initCO();" status="sts"/>
+                                <apex:ActionFunction name="saveCommons" action="{!saveCommons}" rerender="tabPanel" onComplete="$(currentTab).click();" />
+                                <apex:ActionFunction action="{!deleteCommonOwnership}" name="deleteCommonOwnership" oncomplete="initCO();">
+                                    <apex:param name="value" assignTo="{!CommonOwnershipIdToDelete}" value="" />
+                                </apex:ActionFunction>
+                                <apex:actionFunction name="initCO" action="{!init}" rerender="commonPanel, messages, tabPanel" onComplete="$(currentTab).click();" status="sts"/>
+                                
+                                <!-- Group Product Form Functions -->                    
+                                <apex:ActionFunction name="newProduct" action="{!newProduct}"  immediate="true" rerender="productPanel,messages,tabPanel"  oncomplete="$(currentTab).click();"/>
+                                <apex:ActionFunction name="deleteProduct" action="{!deleteProduct}"  immediate="true" rerender="productPanel,messages,tabPanel"  oncomplete="$(currentTab).click();">
+                                    <apex:param name="value" assignTo="{!productId}" value="" />
+                                </apex:ActionFunction>
+                                <apex:ActionFunction name="updateProductField" action="{!updateProductField}" rerender="messages,tabPanel" immediate="true"  oncomplete="$(currentTab).click();">
+                                    <apex:param name="productId" assignTo="{!productId}" value="" />
+                                    <apex:param name="name" assignTo="{!fieldName}" value="" />
+                                    <apex:param name="value" assignTo="{!fieldValue}" value="" />
+                                </apex:ActionFunction>
+                                <apex:actionFunction name="getMCPNo" action="{!getMatchingMCP}" rerender="matchPanel,tabPanel"  oncomplete="$(currentTab).click();"/>
+                                
+                                <apex:ActionFunction name="submitFormCTRL" action="{!submitForm}" rerender="page, navBarOutputPanel" oncomplete="$('#customerSetup').addClass('formSubmitted'); $(currentTab).click(); onSuccessfulSubmit();" status="sts" />
+                                <apex:actionstatus id="sts">
+                                    <apex:facet name="start">
+                                        <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; height:150%;opacity:0.65;width:100%;">
+                                            <div class="waitingHolder" style="top: 130px; width: 91px;">
+                                                <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                                                <span class="waitingDescription">Please Wait...</span>
+                                            </div>
+                                        </div>
+                                    </apex:facet>
+                                </apex:actionstatus>
+                                
+                                <apex:ActionFunction name="reloadThePage" action="{!reloadPage}" />
+
+                                <apex:ActionFunction name="createUnlockRequest" action="{! createUnlockRequest }" rerender="page" status="sts" oncomplete="reloadThePage2();">
+                                    <apex:param name="unlockReason" assignTo="{! UnlockReason }" value="" />
+                                </apex:ActionFunction>
+
+                                <apex:ActionFunction name="lockSetupForms" action="{! completeUnlockRequest }" rerender="page" status="sts" oncomplete="reloadThePage2();" />
+                                
+                                
+                                
+                                <script>
+                                
+                                // page setup script
+                                // must run in area that is rerendered ("page")
+                                
+                                
+                                
+                                // setup numeric plugin - prevents alpha characters
+                                $("input.numeric3").numeric(",");      
+                                $("input.numeric").numeric();    
+                                
+                                // show required field indicators  
+                                $('.requiredLabel').css('visibility' , 'visible');
+                                
+                                // get rid of error messages
+                                $('[Id$=page]').click(function() {
+                                    var submitMsg = $('#submitMessage');
+                                    submitMsg.empty();
+                                    submitMsg.hide();
+                                }); 
+                                
+                                //Status Indicator
+                                if ({!!formIsSubmitted})
+                                    $("#status").attr("style", "color:red;");
+                                else
+                                    $("#status").attr("style", "color:#0B0;");
+                                
+                                setFormColor("color", "#54698D");  //dk blue 
+                                
+                                //set skip months fields to read-only
+                                $('.skipMonths').attr('disabled','disabled');
+                                
+                                $( ".helpButton" ).hover(
+                                    function() {
+                                        $(this).addClass("helpButtonOn");
+                                        $(this).removeClass("helpButton");
+                                        $(this).children('span.spanText').css("display", "inline");
+                                    }, function() {
+                                        $(this).removeClass("helpButtonOn");
+                                        $(this).addClass("helpButton");
+                                        $(this).children('span.spanText').css("display", "none");
+                                    }
+                                );
+                                
+                                //When form has been submitted, lock down form - allow no changes - 
+                                // Add to this code as necessary
+                                
+                                if ({!formIsSubmitted && IsUnlocked == false})
+                                {  
+                                    setFormColor("background-color","#EAECEC");
+                                    $('.af-header').addClass('af-header-submitted');
+                                    $('html').css('background-color', '#EAECEC');
+                                    
+                                    
+                                    $('input[type=button]').each(function() {
+                                        $(this).attr({
+                                            'disabled': 'disabled'
+                                        });
+                                    });
+                                    
+                                    
+                                    /* jhicks 10/2016 removed comment here */
+                                    $('select').each(function() {
+                                        $(this).attr({
+                                            'disabled': 'disabled'
+                                        });
+                                    });
+                                    
+                                    $('textarea').each(function() {
+                                        $(this).attr({
+                                            'disabled': 'disabled'
+                                        });
+                                    });
+                                    
+                                    $('input').each(function() {
+                                        $(this).attr({
+                                            'disabled': 'disabled'
+                                        });
+                                    });
+                                    
+                                    // $('.requiredLabel').css('visibility' , 'hidden');    
+                                    $('.requiredLabel').toggleClass('noshow');   
+                                    $('#confirmButton').hide();
+                                    
+                                    if ({!!CSF.Request_Edit__c}){        
+                                        $('#requestEdit').show();
+                                        $('#requestEdit').prop('disabled',false);
+                                    }
+                                    
+                                    $('td.multiSelectPicklistCell').find('img').css('display','none');
+                                    $('[Id$=uploadFrame]').css('pointer-events','none');
+
+                                    if ({! $Permission.Unlock_Setup_Forms }) {
+                                        $('#unlockBtn').show();
+                                        $('#unlockBtn').prop('disabled',false);
+                                    }
+                                }  
+                                
+                                else {
+                                    $('.requiredLabel').css('visibility' , 'visible');
+                                    
+                                    if ({! !formIsSubmitted}) {
+	                                    $('#confirmButton').show();
+	                                    $('#confirmButton').prop('disabled',false);
+                                    }
+                                    setFormColor("background-color","white");
+                                    $('.af-header').removeClass('af-header-submitted');
+                                    $('html').css('background-color', 'white');
+                                    
+                                }
+                                
+                                if ({! formIsSubmitted && IsUnlocked }) {
+                                    $('#lockBtn').show();
+                                }
+                                
+                                /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/      
+                                var goBackToOpp = function()
+                                {
+                                    //alert(typeof sforce);
+                                    if(typeof sforce !== "undefined" && sforce !== null) {
+                                        // Salesforce1 navigation
+                                        sforce.one.navigateToURL("/{!enrollmentOpp.Id}", true);
+                                    } else {
+                                        // Desktop navigation
+                                        window.open("/{!enrollmentOpp.Id}", '_self');
+                                    }
+                                }
+                                /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+                                function showSubmitMessage(msg) {
+                                    var submitMsgEle = document.getElementById("submitMessage");
+                                
+                                    submitMsgEle.innerHTML = msg;
+                                    submitMsgEle.style.display = '';
+                                }
+                                
+                                function submitForm() {
+                                    console.log('**** reached js submitForm');
+                                    
+                                    /**************************** jhicks - change this code as needed for page ******************************************/
+                                    
+                                    if ({!!onboardingTabComplete }) {
+                                        console.log(' onboarding tab not complete.');
+                                        $('#onboardingLink').click();
+                                        showSubmitMessage("Confirm Failed. Check all required fields.");
+                                    }
+                                    else if ({!!productBillingTabComplete}) {
+                                        console.log(' productBillingTabComplete not complete.');
+                                        $('#productBillingLink').click();
+                                        showSubmitMessage("Confirm Failed. Check all required fields.");
+                                    }
+                                        else if ({!!groupPlansTabComplete}) {
+                                            console.log(' groupPlansTabComplete not complete.');
+                                            $('#groupPlansLink').click();
+                                            showSubmitMessage("Confirm Failed. Check all required fields.");
+                                        }
+                                            else if ({!!openEnrollmentTabComplete}) {
+                                                console.log(' openEnrollmentTabComplete not complete.');
+                                                $('#openEnrollmentLink').click();
+                                                showSubmitMessage("Confirm Failed. Check all required fields.");
+                                            }
+                                                else if ({!!annuitiesTabComplete}) {
+                                                    console.log(' annuitiesTabComplete not complete.');
+                                                    $('#annuitiesLink').click();
+                                                    showSubmitMessage("Confirm Failed. Check all required fields.");
+                                                }
+                                                    else if('{!enrollmentForm.Status__c}' != 'Confirmed') {
+                                                        console.log(' enrollmentForm.Status__c not confirmed.');
+                                                        showSubmitMessage('The General Information form must be confirmed before this form can be submitted.');   
+                                                    }
+                                                        else {
+                                                            console.log('**** calling Controller to submitForm');
+                                                            submitFormCTRL();
+                                                        }  
+                                    
+                                }
+                                
+                                function onSuccessfulSubmit() {
+                                    var successMsg = 'The customer setup was submitted. ';
+                                    showSuccessMessageAndContinueToNextUnsubmittedForm(successMsg);
+                                }
+                                
+                                function reloadThePage2() {
+                                    // Don't reload the page if there are any errors.
+                                    if ({! HasErrorMessages == false }) {
+                                        reloadThePage();
+                                    }
+                                }
+                                
+                                /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+                                
+                                
+                                function setFormColor(attr,color) {
+                                    $("body .bPageBlock, body #bodyCell .bResource .secondaryPalette, body .secondaryPalette.bPageBlock, body .individualPalette .secondaryPalette.bPageBlock," +
+                                      "body .bodyDiv .genericTable, body .genericPageBlockTable, body .bodyDiv .bSubBlock, body .bComponentBlock .bPageBlock, body .bMyDashboard .bPageBlock," + 
+                                      " body.rlHoverFrame .bPageBlock, body.subjectSelectionPopup div.choicesBox, body.lookupTab .secondaryPalette.bPageBlock, body.popupTab .secondaryPalette.bPageBlock, body.UserTagStatsPage .secondaryPalette.bPageBlock")
+                                    .css(attr, color);
+                                }
+                                
+                                /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+                                $(document).ready(function() {
+                                    var submitAndContinueBtn = $("#submitAndContinueButton");
+                                    var confirmButton = $("#confirmButton");
+                                    
+                                    appendAndContinueToSubmitButtonIfAnotherUnsubmittedForm();
+
+				                    submitAndContinueBtn.hide();
+
+                                    // Do the same click as the confirm button click
+                                    submitAndContinueBtn.click(function() {
+                                        $('#confirmButton').click();
+                                    });
+
+                                    submitAndContinueBtn.html(confirmButton.val());
+
+                                    // set active tab  
+                                    //$('#tabs > li:first-child').addClass('active');
+                                    $('#tabs > li:first-child').find('a').click();
+                                    
+                                    currentTab = '#'+ $('#tabs > li:first-child > a').attr('id');
+                                    //$(".af-header").afStickIt();
+                                });
+                                
+                                
+                                </script>
+                            </apex:outputPanel>   <!--   end "allTabs" -->
+                        </div>  <!-- end content -->
+                        
+                        <!-- Prev/Next Tab Buttons -->
+                        <hr/>  
+                        
+                        <div style="margin-top:15px;width:550px;margin-left:125px">
+                            <a class="gbtn gbtnSecondary" href="#"   id="prevTabButton"  onclick="prevTab();" style="color:#FFF;width:66px;">❮ Previous</a>
+                            <a class="gbtn gbtnSecondary"   id="nextTabButton"  onclick="nextTab();" style="color:#FFF;width:66px;" href="#">Next ❯</a>
+                            <a class="gbtn gbtnSecondary" id="submitAndContinueButton" style="color:#FFF;" href="#"></a>
+                        </div>
+                        
+                    </div>     <!--    end "container" -->
+
+                    <script>
+                                                var longTerm = {!hasLongTermDisabilityMarketedProduct};
+                                                var shortTerm = {!hasShortTermDisabilityMarketedProduct};
+                                                
+                                                </script>
+                                                
+                                                <script>
+                                                function showDisabilityFields(value)
+                                                {
+                                                    if(value == 'Match plans to an existing MCP')
+                                                    {
+                                                        if(longTerm)
+                                                            $('.LTDmatch').show();
+                                                        if(shortTerm)
+                                                            $('.STDmatch').show();
+                                                    }
+                                                    else
+                                                    {
+                                                        $('.LTDmatch').hide();
+                                                        $('.STDmatch').hide();
+                                                    }
+                                                    
+                                                    showHideMatchHeader();
+                                                    showHidePlanCodes();
+                                                    showHidePlanInformationHeader();
+                                                    
+                                                    if(value == 'Provide plan information')
+                                                    {
+                                                        if(longTerm)
+                                                        {
+                                                            $('.LTDplanInfo').show();
+
+                                                            showLTDother()
+                                                            showLTDcustom();
+                                                        }
+                                                        if(shortTerm)
+                                                        {
+                                                            $('.STDplanInfo').show();
+
+                                                            showSTDother();
+                                                            showSTDcustom();
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        $('.LTDplanInfo').hide();
+                                                        $('.LTDplanInfoOther').hide();
+                                                        $('.LTDplanInfoCustom').hide();
+                                                        $('.STDplanInfo').hide();
+                                                        $('.STDplanInfoOther').hide();
+                                                        $('.STDplanInfoCustom').hide();
+                                                    }
+                                                }
+                                                
+                                                function showCriticalFields(value)
+                                                {
+                                                    if(value == 'Match plans to an existing MCP')
+                                                    {
+                                                        $('.CImatch').show();
+                                                    }
+                                                    else
+                                                    {
+                                                        $('.CImatch').hide();
+                                                    }
+                                                    
+                                                    showHideMatchHeader();
+                                                    showHidePlanCodes();
+                                                    showHidePlanInformationHeader();
+                                                    
+                                                    if(value == 'Provide plan information')
+                                                        $('.CIplanInfo').show();
+                                                    else
+                                                        $('.CIplanInfo').hide();
+                                                }
+                                                
+                                                function showGAPFields(value)
+                                                {
+                                                    if(value == 'Match plans to an existing MCP')
+                                                    {
+                                                        $('.GAPmatch').show();
+                                                    }
+                                                    else
+                                                    {
+                                                        $('.GAPmatch').hide();
+                                                    }
+                                                    
+                                                    showHideMatchHeader();
+                                                    showHidePlanCodes();
+                                                    showHidePlanInformationHeader();
+                                                    
+                                                    if(value == 'Provide plan information')
+                                                    {
+                                                        $('.GAPplanInfo').show();
+                                                        showGAPcontribution();
+                                                    }
+                                                    else
+                                                    {
+                                                        $('.GAPplanInfo').hide();
+                                                        $('.GAPplanInfoContrib').hide();
+                                                    }
+                                                }
+                                                
+                                                function showHidePlanCodes() {
+                                                    if(planDetailsInputsHasValue('Provide product plan codes'))
+                                                        $('#showPlanCodes').show();
+                                                    else
+                                                        $('#showPlanCodes').hide();
+                                                }
+                                                
+                                                function showHideMatchHeader() {
+                                                    if(planDetailsInputsHasValue('Match plans to an existing MCP'))
+                                                        $('#matchHeader').show();
+                                                    else
+                                                        $('#matchHeader').hide();
+                                                }
+                                                
+                                                function showHidePlanInformationHeader() {
+                                                    if(planDetailsInputsHasValue('Provide plan information'))
+                                                        $('#planInfoSH').show();
+                                                    else
+                                                        $('#planInfoSH').hide();
+                                                }
+                                                
+                                                function planDetailsInputsHasValue(expectedPlanDetailsValue) {
+                                                    var hasExpectedPlanDetailsValue = false;
+                                                
+                                                    $('[plan-details-input]').each(function() {
+                                                        hasExpectedPlanDetailsValue |= this.value == expectedPlanDetailsValue;
+                                                    });
+                                                    
+                                                    return hasExpectedPlanDetailsValue;
+                                                }
+                                                </script>
+                    
+                </apex:outputPanel> <!-------end "page" --------->
+                <script>
+                $(document).ready(function() {
+	                $('#tabs > li:first-child > a').click();   
+	                // hide previous button
+	                $("#prevTabButton").hide();
+                });
+                
+                function getAgentId()
+			    {
+			        var UserId = $('input[id$="MainAgentName_lkid"]').val();
+			        var usr = new RemoteObjectModel.User();
+			        usr.retrieve(
+			            {where:
+			             {Id: {eq: UserId}}},
+			            function(err, usrs){
+			                if(err){
+			                	$('span[id$="MainAgentId"]').html('');
+			                }else{
+			                    usrs.forEach(function(u){
+			                    	var agentId = u.get("Agent_ID__c");
+			                    	if(agentId != null)
+			                        	$('span[id$="MainAgentId"]').html(agentId);
+			                        else
+			                        	$('span[id$="MainAgentId"]').html('');
+			                    });
+			                }
+			            });
+			    }   
+                
+                </script>
+                
+                
+            </apex:form>
+        </apex:pageBlock>
+    </body>
+</apex:page>

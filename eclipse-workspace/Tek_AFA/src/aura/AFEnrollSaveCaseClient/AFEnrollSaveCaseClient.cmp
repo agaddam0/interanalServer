@@ -1,0 +1,47 @@
+<aura:component controller="AFEnrollSaveCaseClientController" implements="flexipage:availableForAllPageTypes">
+    <aura:attribute name="saveRequest" type="AFEnrollService.SaveEnrollmentCaseRequest" access="private" />
+    <aura:attribute name="showSpinner" type="Boolean" default="false" access="private" />
+    <aura:attribute name="saveResult" type="AFEnrollService.SaveEnrollmentCaseResponse" access="private" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+
+    <lightning:card title="AFEnroll Save Enrollment API Test Client">
+        <div class="slds-p-horizontal_medium">
+            <aura:if isTrue="{! and(v.saveResult, v.saveResult.Success) }">
+            <ui:message title="Success" severity="confirm">
+                <div class="slds-m-top_small">The new enrollment case id is {! v.saveResult.AFEnrollCaseId }</div>
+            </ui:message>
+            </aura:if>
+            
+            <aura:if isTrue="{! and(v.saveResult, !v.saveResult.Success) }">
+            <ui:message title="Error" severity="error">
+                <div class="slds-m-top_small">{! v.saveResult.Message }</div>
+            </ui:message>
+            </aura:if>
+        
+            <div class="row">
+                <lightning:input type="text" label="Name" value="{! v.saveRequest.AccountName }" />
+                <lightning:input type="text" label="MCP Number" value="{! v.saveRequest.MCPNumber }" class="slds-m-top_small"/>
+                <lightning:input type="text" label="Additional MCPs (Comma Separated)" value="{! v.saveRequest.AdditionalMCPsCommaSeparated }" class="slds-m-top_small"/>
+                <lightning:select label="Enrollment Path" value="{! v.saveRequest.EnrollmentPath }" class="slds-m-top_small">
+                    <option value="">Choose one...</option>
+                    <option value="Full">Full</option>
+                    <option value="Standard">Standard</option>
+                    <option value="Limited">Limited</option>
+                    <option value="Deluxe">Deluxe</option>
+                </lightning:select>
+                <c:DateInput label="Enrollment Start Date" value="{! v.saveRequest.EnrollmentStartDate }" class="slds-m-top_small"/>
+                <c:DateInput label="Enrollment End Date" value="{! v.saveRequest.EnrollmentEndDate }" class="slds-m-top_small"/>
+                <c:DateInput label="Effective Date" value="{! v.saveRequest.EffectiveDateOfAFAProducts }" class="slds-m-top_small"/>
+                <c:DateInput label="Plan Year Start Date" value="{! v.saveRequest.PlanStartDate }" class="slds-m-top_small"/>
+                <c:DateInput label="Plan Year End Date" value="{! v.saveRequest.PlanEndDate }" class="slds-m-top_small"/>
+                <lightning:input type="text" label="Agent Id" value="{! v.saveRequest.AgentId }" class="slds-m-top_small"/>
+                <lightning:input type="text" label="Owner Name" value="{! v.saveRequest.PlatformOwnerName }" class="slds-m-top_small"/>
+            </div>
+            
+            <lightning:button variant="brand" label="Submit" onclick="{! c.submitEnrollmentCase }" class="slds-m-top_small" />
+        </div>
+        
+        <lightning:spinner aura:id="mySpinner" class="{! v.showSpinner ? 'slds-show' : 'slds-hide' }" />
+    </lightning:card>
+</aura:component>

@@ -1,0 +1,41 @@
+<aura:component >
+    <aura:attribute name="value" type="Object" />
+    <aura:attribute name="label" type="String" />
+    <aura:attribute name="class" type="String" />
+    <aura:attribute name="helptext" type="String" />
+    <aura:attribute name="showLabelFirst" type="Boolean" default="false" />
+    <aura:attribute name="disabled" type="Boolean" default="false" />
+    
+    <aura:registerEvent name="fieldChange" type="c:InputChangeEvent" />
+    
+    <aura:method name="focus" />
+    
+	<aura:if isTrue="{! v.showLabelFirst }">
+        <div class="{! v.class ? 'slds-grid ' + v.class : 'slds-grid'}">
+            <lightning:input type="checkbox" checked="{! v.value }" label="{! v.label }" aura:id="myInput" disabled="{! v.disabled }" onchange="{!c.onValueChange}"/>
+            <aura:if isTrue="{! v.helptext }">
+                <lightning:helptext content="{! v.helptext }" class="helptext" />
+            </aura:if>
+        </div>
+        
+        
+        <aura:set attribute="else">
+            
+            <div class="{! v.class ? 'slds-form-element ' + v.class : 'slds-form-element' }">
+                <label class="slds-form-element__label">
+                    <span class="">{! v.label }</span>
+                    
+                    <aura:if isTrue="{! v.helptext }">
+                        <lightning:helptext content="{! v.helptext }" class="helptext" />
+                    </aura:if>
+                </label>
+                <div class="slds-form-element__control slds-grow">
+                    <lightning:input type="checkbox" checked="{! v.value }" label=" " aura:id="myInput" disabled="{! v.disabled }" onchange="{!c.onValueChange}"/>
+                </div>
+            </div>
+        
+        </aura:set>
+    
+    </aura:if>
+    
+</aura:component>

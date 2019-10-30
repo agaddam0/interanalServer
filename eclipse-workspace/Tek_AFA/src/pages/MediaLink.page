@@ -1,0 +1,46 @@
+<apex:page >
+    <style>
+        .button{
+        	font-size:large;
+        	text-align:-webkit-center;
+        	width:600px;
+        	margin-left:auto;
+        	margin-right:auto;
+        }
+        p{
+        	font-size: x-large;
+        	text-align:-webkit-center;
+        }
+    
+    </style>
+    <html>
+        <head>
+            <link rel="stylesheet" href="{!URLFOR($Resource.Bootstrap_SF1,'/bootstrap-sf1-0.1.0-beta.5/dist/css/bootstrap.min.css')}"/>
+            <script type="text/javascript" src="{!$Resource.JQuery_2_1_3}"></script>
+            <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+        </head>
+        <body>
+            <div class="page-header page-header-anchor">
+               <h1>Media</h1>
+            </div>
+            <div class="well button" id="photos">
+                <b>Photos</b>
+            </div>
+            <p>
+                Password is <i>nsc2015</i> for photo gallery.
+            </p>
+        </body>
+            <script type="text/javascript">
+            $(document).ready(function() {
+                
+            $("#photos").on("click", function() {
+                if( (typeof sforce != 'undefined') && (sforce != null) ) {
+                    sforce.one.navigateToURL('http://afa.shootproof.com');
+                } else {
+                    window.location.href = 'http://afa.shootproof.com';
+                }
+            });
+        })
+        </script>
+    </html>
+</apex:page>

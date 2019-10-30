@@ -1,0 +1,45 @@
+.THIS.af-enrollment-site-container {
+	overflow-y: auto !important;
+}
+
+.THIS .af-nav-button-container {
+	height: 30px;
+}
+
+.THIS .af-enrollment-site-dates-container {
+	max-width: 30%;
+}
+
+.THIS .af-enrollment-site-dates-container,
+.THIS .af-limited-width {
+	max-width: 30%;
+}
+
+.THIS .af-enrollment-site-schedule-table {
+    border: 1px solid token(AFAgrey3);
+    border-collapse: separate;
+    border-radius: 4px;
+    max-width: 800px;
+}
+
+.THIS .af-enrollment-site-schedule-table th,
+.THIS .af-enrollment-site-schedule-table td {
+    border-left: 1px solid token(AFAgrey3);
+    padding: 0.5rem;
+    line-height: 1.5rem;
+    text-align: left;
+}
+
+.THIS .af-enrollment-site-schedule-table th {
+    color: black;
+    background-color: token(AFAgrey5);
+    font-size: 0.9rem;
+}
+
+.THIS .af-edit-site-btn {
+    margin-left: 1.25rem;
+}
+
+.THIS .af-enrollment-site-dates-action-column {
+    min-width: 125px;
+}

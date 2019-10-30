@@ -1,0 +1,18 @@
+<aura:component extends="c:LightningInputContainer">
+    <aura:attribute name="type" type="String" default="text" />
+    <aura:attribute name="formatter" type="String" />
+    <aura:attribute name="step" type="String" />
+    
+    <aura:method name="getInputComponent" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <lightning:input aura:id="myInput" type="{! v.type }"
+                     value="{! v.value }" label=" "
+                     required="{! v.required }"
+                     formatter="{! v.formatter }"
+                     step="{! v.step }"
+                     onblur="{! c.onValueChange }"
+                     disabled="{! v.disabled }"
+                     messageWhenValueMissing="{! v.messageWhenValueMissing }" />
+</aura:component>

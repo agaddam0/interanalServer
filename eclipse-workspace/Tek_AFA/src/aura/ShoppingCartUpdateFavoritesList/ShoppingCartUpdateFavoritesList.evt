@@ -1,0 +1,5 @@
+<aura:event type="APPLICATION" description="Event template">
+    <aura:attribute name="materialId" type="String"/>
+    <aura:attribute name="isFavorite" type="Boolean" />
+    <aura:attribute name="rerender" type="Boolean" default="true" />
+</aura:event>

@@ -1,0 +1,115 @@
+<aura:component controller="MyTasksAFController" implements="flexipage:availableForAllPageTypes">
+    <aura:attribute name="DisplayLimit" type="Integer" required="true" />
+
+    <aura:attribute name="Filter" type="String" access="private" />
+    <aura:attribute name="MyTasks" type="MyTasksAFController.TaskRecord[]" access="private" />
+    <aura:attribute name="DisplayTasks" type="MyTasksAFController.TaskRecord[]" access="private" />
+    <aura:attribute name="ShowEditTaskModal" type="Boolean" access="private" default="false" />
+    <aura:attribute name="TaskToEdit" type="MyTasksAFController.TaskRecord" access="private" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler event="force:showToast" action="{!c.reloadOnTaskSaveSuccess}"/>
+    <aura:handler name="fieldSetFormLoaded" event="c:OnFieldSetFormLoaded"  action="{!c.onFieldSetFormLoaded}" />
+
+    <div class="slds-box slds-is-relative">
+        <div aura:id="main">
+            
+                
+            <div class="slds-panel__section slds-border_bottom slds-m-bottom_medium">
+                <fieldset class="slds-form__compound">
+                    <ui:inputSelect aura:id="timeSpan" class="slds-input" value="{! v.Filter }" change="{! c.onFilterChange }">
+                        <ui:inputSelectOption text="AllOpen" label="All Open" value="true" />
+                        <ui:inputSelectOption text="Overdue" label="Overdue" />
+                        <ui:inputSelectOption text="Today" label="Today" />
+                        <ui:inputSelectOption text="TodayAndOverdue" label="Today + Overdue" />
+                        <ui:inputSelectOption text="Tomorrow" label="Tomorrow" />
+                        <ui:inputSelectOption text="NextSevenDays" label="Next 7 Days" />
+                        <ui:inputSelectOption text="NextSevenDaysOverdue" label="Next 7 Days + Overdue" />
+                        <ui:inputSelectOption text="ThisMonth" label="This Month" />
+                        
+                    </ui:inputSelect>
+                    <ui:button class="slds-button slds-button_neutral slds-float_right slds-text-body_regular af-new-task-button" label="New" press="{!c.newTask}"/>
+                </fieldset>    
+                <!-- <ui:button class="slds-button slds-button_neutral slds-text-body_regular af-new-task-button" label="New" press="{!c.newTask}"/> -->
+            </div>
+            
+        </div>
+        
+        <aura:iteration items="{! v.DisplayTasks }" var="myTask" indexVar="displayIndex">
+            <lightning:card title="{! myTask.Name }" class="{! myTask.IsCustom ? 'customTask slds-m-horizontal_medium custom-event-card' : 'slds-m-horizontal_medium custom-event-card'}">
+				<aura:set attribute="actions">
+				    <lightning:buttonIcon alternativeText="Edit" iconName="utility:edit" title="Edit Task" onclick="{!c.editTask}" value="{! myTask }" />
+				    <lightning:buttonIcon alternativeText="Complete Task" iconName="utility:check" title="Complete Task" onclick="{! c.completeThisTask }" value="{! myTask }" />
+				</aura:set>
+
+			    <div class="slds-tile__detail slds-m-left_medium">
+			        <dl class="{! myTask.IsOverdueOrDueToday ? 'slds-list_horizontal slds-wrap overdueOrDueTodayTask' : 'slds-list_horizontal slds-wrap' }">
+			                <dt class="{! myTask.IsOverdueOrDueToday ? 'slds-item_label slds-text-color_weak overdueOrDueTodayTask' : 'slds-item_label slds-text-color_weak' }">Due Date</dt>
+			                <dd class="slds-item_detail">
+			                    <ui:outputDate format="MM/dd/yyyy" value="{! myTask.DueDate }"/>
+			                </dd>
+			        </dl>
+
+                    <dl class="slds-list_horizontal slds-wrap">
+                            <dt class="slds-item_label slds-text-color_weak">Status</dt>
+                            <dd class="slds-item_detail">{! myTask.Status }</dd>
+                    </dl>
+                    
+                    <dl class="slds-list_horizontal slds-wrap">
+                            <dt class="slds-item_label slds-text-color_weak">Related To</dt>
+                            <dd class="slds-item_detail">
+                               {! myTask.RelatedTo }
+                            
+                               <!-- Luke Freeland: The task icons were put here so they show at the bottom right.
+                                    If new fields are added below this one, move the icons down so they stay at
+                                    the bottom right.
+                                -->
+                               <aura:if isTrue="{! myTask.IsCustom == false }">
+		                            <lightning:icon iconName="standard:task" size="small" class="slds-float_right" title="standard task" />
+		                        </aura:if>
+		                        
+		                        <aura:if isTrue="{! myTask.IsCustom }">
+		                            <lightning:icon iconName="custom:custom25" size="small" class="slds-float_right" title="custom task" />
+		                        </aura:if>
+                            </dd>
+                    </dl>
+			    </div>
+			</lightning:card>
+        </aura:iteration>
+        
+        <div class="slds-m-horizontal_medium">
+            <c:Paginator aura:id="paginator" PageSize="{! v.DisplayLimit }" AllItems="{! v.MyTasks }" DisplayedItems="{! v.DisplayTasks }" />
+            
+            <aura:if isTrue="{! v.DisplayTasks.length == 0 }">
+                No Tasks Found
+            </aura:if>
+        </div>
+        
+        <lightning:spinner aura:id="mySpinner" class="slds-hide" />
+        
+        <div class="{! v.ShowEditTaskModal ? 'slds-show' : 'slds-hide'}">
+	        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+	            <div class="slds-modal__container">
+	                <header class="slds-modal__header">
+	                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeEditTaskModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+	
+	                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Edit {! v.TaskToEdit.Name }</h2>
+	                </header>
+	                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+	                    <c:FieldSetForm fieldSetName="{! v.TaskToEdit.Task.Edit_Field_Set__c }"
+	                                    objectName="Task__c"
+	                                    record="{! v.TaskToEdit.Task }"
+	                                    loadOnInit="false"
+	                                    aura:id="taskEditFieldSetForm" />
+	                </div>
+	                <footer class="slds-modal__footer">
+	                    <button class="slds-button slds-button_neutral" onclick="{! c.closeEditTaskModal }">Cancel</button>
+	                    <button class="slds-button slds-button_brand" onclick="{! c.saveEditedCustomTask }">Save</button>
+	                </footer>
+	            </div>
+	        </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+        
+    </div>
+</aura:component>

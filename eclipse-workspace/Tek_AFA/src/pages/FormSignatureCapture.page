@@ -1,0 +1,1551 @@
+<apex:page standardController="Enrollment_Form__c" extensions="PDFCreateController" standardStylesheets="false" docType="html-5.0" sidebar="false" showHeader="false" >
+    
+    <apex:stylesheet value="{!urlfor($Resource.lib_js, 'css/bootstrap/bootstrap.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.lib_js, 'css/bootstrap/bootstrap-theme.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jQueryUI, 'jquery-ui-1.11.2/jquery-ui.min.css')}"/>
+    <apex:stylesheet value="{!urlfor($Resource.lib_js, 'css/toastr.min.css')}"/>
+    
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/jquery/jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jQueryUI, 'jquery-ui-1.11.2/jquery-ui.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/bootstrap/bootstrap.min.js')}"/>
+    
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/moment.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ramda.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/toastr.min.js')}"/>
+    
+    <style>
+        /*
+        rgba(235,0,41,1) // AFA red
+        #6e6d70 // AFA grey
+        */
+        /* Component containers
+        ----------------------------------*/
+        
+        .container{
+            margin-left:0px;
+        }
+        
+        #formNavigation{
+             width:100%;
+             position:fixed;
+             z-index:3;
+             background-color: white;
+        }
+        
+        .content{
+        	font-size: 1.25rem;
+        }
+        
+         .header-cont {
+             width:100%;
+             position:fixed;
+             top:0px;
+             z-index:3;
+        }
+        
+        .header-cont h4 {
+            float:left;
+            display:inline;
+            font-weight:bold;
+        }
+        
+        .row h4 {
+            font-weight:bold;
+        }
+        
+        #double {
+            width: 760px;
+            margin-bottom: 20px;
+        }        
+        
+        #double li {
+            float:left;
+            width: 50%;
+        }
+        
+        .acctName {
+            text-decoration: underline;
+        }
+        
+        .custom-table a {
+            color: #428bca;
+        }
+        
+        .custom-table{
+        	width:90%;
+        }
+        .custom-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 350px;
+        }
+        .custom-table tr th,
+        .custom-table tr td {
+            border-right: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            padding: 5px;
+        }
+        .custom-table tr th:first-child, table tr th:last-child{
+        	border-top:solid 1px      #ddd;
+        }
+        .custom-table tr th:first-child,
+        .custom-table tr td:first-child {
+        	border-left: 1px solid #ddd;
+        }
+        .custom-table tr th:first-child,
+        .custom-table tr td:first-child {
+        	border-left: 1px solid #ddd;
+        }
+        .custom-table tr th {
+            background: #2989d8;
+            color: #FFF;
+            text-align: center;
+            border-top: 1px solid #ddd;
+        }
+        
+        .custom-table.Info tr th,
+        .custom-table.Info tr:first-child td
+        {
+        	border-top: 1px solid #ddd;
+        }
+        
+        /* top-left border-radius */
+        .custom-table tr:first-child th:first-child,
+        .custom-table.Info tr:first-child td:first-child {
+        	border-top-left-radius: 4px;
+        }
+        
+        /* top-right border-radius */
+        .custom-table tr:first-child th:last-child,
+        .custom-table.Info tr:first-child td:last-child {
+        	border-top-right-radius: 4px;
+        }
+        
+        /* bottom-left border-radius */
+        .custom-table tr:last-child td:first-child {
+        	border-bottom-left-radius: 4px;
+        }
+        
+        /* bottom-right border-radius */
+        .custom-table tr:last-child td:last-child {
+        	border-bottom-right-radius: 4px;
+        }
+        
+        a[disabled] {
+            color: gray;
+        }
+        
+        .overviewHeader {
+            font-weight: bold;
+        }
+        
+        .ui-widget-content {
+        //border: 1px solid rgba(255,0,41,1);
+            border: none;
+            background: #ffffff;
+            color: #474648;
+        }
+        .ui-widget-content a {
+        //color: #474648;
+        }
+        .ui-widget-header {
+            border-bottom: 1px solid #ddd;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            background: white;
+            color: #ffffff;
+            border-bottom-right-radius: 0px;
+            border-bottom-left-radius: 0px;
+        }
+        .ui-widget-header a {
+            color: #ffffff;
+        }
+        .ui-tabs .ui-tabs-nav {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .ui-tabs .ui-tabs-panel {
+            border-width: 0;
+            padding: 1em 1.4em;
+            background: none;
+            padding-top: 60px;
+        }
+        /* Interaction states
+        ----------------------------------*/
+        .ui-state-default,
+        .ui-widget-content .ui-state-default,
+        .ui-widget-header .ui-state-default {
+            border: none;
+            background: #ffffff;
+            font-size: 14px;
+            font-weight: normal;
+            font-family: "Salesforce Sans", Arial, sans-serif;
+        }
+        .ui-state-default a,
+        .ui-state-default a:link,
+        .ui-state-default a:visited {
+            color: #000000;
+            border-color: #eee #eee #ddd;
+            border: 1px;
+            border-top-right-radius: 4px;
+            border-top-left-radius: 4px;
+            line-height: 20px;
+        }
+        .ui-state-hover,
+        .ui-widget-content .ui-state-hover,
+        .ui-widget-header .ui-state-hover,
+        .ui-state-focus,
+        .ui-widget-content .ui-state-focus,
+        .ui-widget-header .ui-state-focus {
+            background: #eee;
+            border-color: #eee #eee #ddd;
+            border-top-right-radius: 4px;
+            border-top-left-radius: 4px;
+            outline-color:transparent;
+        }
+        .ui-state-hover a,
+        .ui-state-hover a:hover,
+        .ui-state-hover a:link,
+        .ui-state-hover a:visited,
+        .ui-state-focus a,
+        .ui-state-focus a:hover,
+        .ui-state-focus a:link,
+        .ui-state-focus a:visited {
+            color: #000000;
+            border-color: #eee #eee #ddd;
+            outline-color:transparent;
+        }
+        .ui-state-active,
+        .ui-widget-content .ui-state-active,
+        .ui-widget-header .ui-state-active {
+            border: 1px solid #ddd;
+            background: #ffffff;
+            color: rgba(235,0,41,1);
+        }
+        .ui-state-active a,
+        .ui-state-active a:link,
+        .ui-state-active a:visited {
+            color: #000000;
+            line-height: 20px;
+        
+        }
+        
+        /* Interaction Cues
+        ----------------------------------*/
+        .ui-state-highlight,
+        .ui-widget-content .ui-state-highlight,
+        .ui-widget-header .ui-state-highlight {
+            background: #ffffff;
+            color: #B9B7BC;
+        }
+        .ui-state-highlight a,
+        .ui-widget-content .ui-state-highlight a,
+        .ui-widget-header .ui-state-highlight a {
+            color: #B9B7BC;
+        }
+        
+        /* Boostrap overrides */
+        .btn-primary,
+        .btn.btn-primary {
+            background-color: #007C3D !important;
+            border-color: #007C3D !important;
+            background-image: none !important;
+            color: white;
+        }
+        
+        #newFormBtn,
+        #newFormBtn:hover,
+        #newFormBtn:focus {
+            background-color: #126671 !important;
+            border-color: #126671 !important;
+            background-image: none !important;
+            color: white;
+        }
+        
+        
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: #007C3D !important;
+            border-color: #007C3D !important;
+            background-image: none !important;
+            color: white;
+        }
+        
+        #clearSignature,
+        #clearSignature:hover,
+        #clearSignature:focus {
+            background-color: #DCDDDE !important;
+            border-color: #DCDDDE !important;
+            background-image: none !important;
+            color: black;
+        }
+        
+        .tab-title {
+            color: #3E3E40;
+        }
+        .tab-status {
+            font-size: x-small;
+            color: #3E3E40;
+        }
+        .ui-datepicker-title {
+            color: #3E3E40;
+        }
+        
+        .ui-datepicker-next-hover,
+        .ui-datepicker-next {
+            background-color: rgba(235,0,41,1);
+        }
+        
+        .ui-datepicker-prev-hover,
+        .ui-datepicker-prev {
+            background-color: rgba(235,0,41,1);
+        }
+        .logo {
+            width:300px;
+        }
+        .printLink {
+        	float:right;
+        	margin-top:-50px;
+        }
+        .requiredLabel:before {
+        color: rgb(255,0,0);
+        content: "*";
+        margin-right:2px; 
+        visibiity: hidden;
+        display: inline;
+      }
+      
+       /* Beginning of sub-tab lightning styling */
+       /*
+       .nav-tabs {
+           border-bottom: 3px solid #0070D2;
+       }*/
+
+       .ui-tabs .ui-tabs-nav li,
+       .ui-tabs .ui-tabs-nav li a,
+       .ui-tabs .ui-tabs-nav li.ui-tabs-active {
+           border-radius: 0px;
+       }
+
+       .ui-tabs .ui-tabs-nav li.ui-tabs-active .ui-tabs-anchor,
+       .ui-tabs .ui-tabs-nav li.ui-tabs-active .ui-tabs-anchor:hover,
+       .ui-tabs .ui-tabs-nav li.ui-tabs-active .ui-tabs-anchor:focus {
+           background-color: rgb(230, 241, 251);
+           border-top: 3px solid #0070D2;
+       }
+
+       .ui-tabs .ui-tabs-nav li.ui-tabs-active .ui-tabs-anchor:hover {
+           border-bottom: 3px solid #0070D2;
+       }
+
+       .ui-tabs .ui-tabs-nav li:not(.ui-tabs-active) .ui-tabs-anchor:hover,
+       .ui-tabs .ui-tabs-nav li:not(.ui-tabs-active) .ui-tabs-anchor:focus {
+           background-color: rgb(230, 241, 251);
+           border-bottom: 3px solid #0070D2;
+       }
+       
+       /* End of sub-tab lightning styling */
+        
+    </style>
+    
+    <style>
+        canvas {
+        border-color: #5A5A5C;
+        border-style: solid;
+        margin: 5px;
+        width : 100%;
+        }
+    </style>
+    <!--<apex:include pageName="SetupFormsStyleSheet"/>-->
+        <script type="text/javascript">
+
+            (function(){
+
+                var r = R;
+
+                Signature = function(canvas) {
+                    var context, imgUrl = 'data:image/png;base64,';
+
+                    $(canvas)
+                        .find('signature')
+                        .find('button')
+                        .on('click', clear);
+
+                    this.canvas     = canvas = $(canvas).find('canvas')[0];
+                    this.loadImage  = loadImage;
+                    this.markSigned = markSigned;
+                    this.isSigned   = isSigned;
+                    this.getBase64  = getBase64;
+
+                    $(canvas).on('mousedown touchstart', start);
+
+                    return this;
+
+                    // Is this where the signature gets cleared?
+                    function getBase64() {
+                        return (isSigned())? canvas.toDataURL().replace(imgUrl, '') : '';
+                    }
+
+                    function isSigned() {  
+                        return $(canvas).data('signed');
+                    }
+
+                    function markSigned(isSigned) {
+                        $(canvas).data('signed', isSigned);
+                    }
+
+                    function loadImage(baseData) {
+                        if(r.is(String, baseData) === false)
+                            return;
+
+                        baseData = imgUrl + baseData.replace(imgUrl, '');
+
+                        markSigned(true);
+                        var image = new Image();
+                        image.onload = function () {
+                            context = drawImageScaled(image, canvas.getContext('2d'));
+                        };
+                            
+                        image.src = baseData;
+                    }
+
+
+                    function start(event) {
+                        event.preventDefault();
+                        $(canvas)
+                            .on('touchmove', touch)
+                            .on('mousemove', mouse)
+                            .on('touchend mouseup mouseout', stop)
+
+                        markSigned(canvas, true);
+                        var
+                            baseData = canvas.toDataURL(),
+                            width = $(canvas).outerWidth(),
+                            height = (width) / 2;
+
+                        if(Math.floor(height) != Math.floor(canvas.height))
+                        {
+                            canvas.height = height;
+                            canvas.width = width;
+                            loadImage(baseData);
+                        }
+
+
+                        context.beginPath();
+                    }
+
+                    function mouse(event) {
+                        event.preventDefault();
+                        context.lineTo(event.offsetX, event.offsetY);
+                        context.stroke();
+
+                    }
+
+                    function touch(event) {
+
+                        event.preventDefault();
+                        var
+                            rect = canvas.getBoundingClientRect(),
+                            location = event.originalEvent.touches[0];
+
+                        context.lineTo(location.clientX - rect.left, location.clientY - rect.top);
+
+                        context.stroke();
+                    }
+
+                    function stop(event) {
+                        $(canvas)
+                            .off('touchmove', touch)
+                            .off('mousemove', mouse)
+                            .off('touchend mouseup mouseout', stop);
+                    }
+
+                    function clear() {
+                        markSigned(false);
+                        if(context != null)
+                        	context.clearRect(0, 0, canvas.width, canvas.height);
+                    }
+
+
+                    function drawImageScaled(img, ctx) {
+                        var canvas =            ctx.canvas ;
+
+                        var hRatio =            canvas.width  / img.width;
+                        var vRatio =            canvas.height / img.height;
+                        // var hRatio =             Math.round(canvas.width  / img.width);
+                        // var vRatio =             Math.round(canvas.height / img.height);
+                        var ratio  =            Math.max ( hRatio, vRatio );
+                        var centerShift_x =     ( canvas.width - img.width*ratio ) / 2;
+                        var centerShift_y =     ( canvas.height - img.height*ratio ) / 2;
+
+
+                        ctx.clearRect(0,0,canvas.width, canvas.height);
+                        ctx.drawImage(
+                            img, 0, 0,
+                            img.width, img.height,
+                            centerShift_x, centerShift_y,
+                            img.width * ratio, img.height * ratio);
+                        return ctx;
+                    }
+
+
+                };
+
+
+                // opportunity is parent to enrollmentForms
+                Opportunity = function(opportunity) {
+                    var ele = this, displayFormat = 'MM/DD/YYYY';
+                    this.effectiveDate          = moment
+                        .utc(opportunity.Effective_Date_of_AFA_Products__c)
+                        .format(displayFormat);
+                    this.employerName           = opportunity.Account.Name;
+                    this.estimatedEmployees     = opportunity.Estimated_Employees__c;
+                    this.billingStreet          = opportunity.Account.BillingStreet;
+
+                    this.save                   = save;
+
+                    return this;
+
+                    function save() {
+
+                        opportunity.Effective_Date_of_AFA_Products__c = moment
+                            (ele.effectiveDate, displayFormat)
+                            .valueOf();
+
+                        opportunity.Account.Name = ele.employerName;
+                        opportunity.Estimated_Employees__c = ele.estimatedEmployees;
+
+                        return new Promise(
+                            function(resolve, reject) {
+
+                                PDFCreateController.updateOpportunity(opportunity,
+                                    function(result, event){
+                                        if(event.status)
+                                            resolve(result);
+                                        else
+                                            reject(result);
+
+                                });
+                            });
+                    }
+                };
+
+                Enrollment = function (enrollment) {
+                    var
+                        displayFormat = 'MM/DD/YYYY',
+                        statedDate = moment(),
+                        ele = this;
+
+                    statedDate.date(enrollment.Day__c);
+                    statedDate.month(enrollment.Month__c );
+                    statedDate.year('20' + enrollment.Year__c);
+
+                    this.other                  = enrollment.Other__c;
+                    this.printedSignature       = enrollment.Printed_Signature__c;
+                    this.title                  = enrollment.Title__c;
+                    this.status                 = enrollment.Status__c || 'In Progress';
+                    this.formName               = enrollment.RecordType.DeveloperName;
+                    this.canvas                 = enrollment.Digital_Signature__c;
+
+                    this.address                = enrollment.Physical_Address_Street__c || enrollment.Enrollment_Opportunity__r.Account.BillingStreet;
+                    this.city                   = enrollment.Physical_Address_City__c || enrollment.Enrollment_Opportunity__r.Account.BillingCity;
+                    this.state                  = enrollment.Physical_Address_State__c || enrollment.Enrollment_Opportunity__r.Account.BillingState;
+                    this.zipCode                = enrollment.Physical_Address_Zip_Code__c || enrollment.Enrollment_Opportunity__r.Account.BillingPostalCode;
+                    this.name                   = enrollment.Signature_Form_Name__c;
+                    this.enrollmentId           = enrollment.Id;
+                    this.commonOwnership        = enrollment.Common_Ownership__c;
+                    this.MCPnumber              = enrollment.MCP_Number__c;
+                    
+                    this.statedDate             =
+                        (statedDate.isValid()? statedDate : moment())
+                            .format(displayFormat);
+
+                    this.save                   = save;
+                    this.saveAndPrint			= saveAndPrint;
+
+                    return this;
+
+                    function save() {
+
+                        enrollment.Other__c             = ele.other;
+                        enrollment.Printed_Signature__c = ele.printedSignature;
+                        enrollment.Title__c             = ele.title;
+                        enrollment.Status__c            = ele.status;
+
+                        enrollment.Physical_Address_Street__c   = ele.address;
+                        enrollment.Physical_Address_City__c     = ele.city;
+                        enrollment.Physical_Address_State__c    = ele.state;
+                        enrollment.Physical_Address_Zip_Code__c = ele.zipCode;
+                        
+                        enrollment.Common_Ownership__c  = ele.commonOwnership;
+
+                        var date = moment(ele.statedDate, displayFormat);
+
+                        enrollment.Month__c             = date.format('MMMM');
+                        enrollment.Day__c               = date.format('D');
+                        enrollment.Year__c              = date.format('YY');
+
+                        enrollment.Digital_Signature__c = ele.canvas;
+
+                        return new Promise(
+                            function(resolve, reject) {
+                                PDFCreateController.updateEnrollmentForm(enrollment,
+                                    function(result, event){
+                                        if(event.status)
+                                            resolve(result);
+                                        else
+                                            reject(result);
+
+                                });
+                            });
+                    }
+                    
+                    function saveAndPrint() {
+
+                        enrollment.Other__c             = ele.other;
+                        enrollment.Printed_Signature__c = ele.printedSignature;
+                        enrollment.Title__c             = ele.title;
+                        enrollment.Status__c            = ele.status;
+
+                        enrollment.Physical_Address_Street__c   = ele.address;
+                        enrollment.Physical_Address_City__c     = ele.city;
+                        enrollment.Physical_Address_State__c    = ele.state;
+                        enrollment.Physical_Address_Zip_Code__c = ele.zipCode;
+                        
+                        enrollment.Common_Ownership__c  = ele.commonOwnership;
+
+                        var date = moment(ele.statedDate, displayFormat);
+
+                        enrollment.Month__c             = date.format('MMMM');
+                        enrollment.Day__c               = date.format('D');
+                        enrollment.Year__c              = date.format('YY');
+
+                        enrollment.Digital_Signature__c = ele.canvas;
+
+                        return new Promise(
+                            function(resolve, reject) {
+                                PDFCreateController.saveEnrollmentFormForPrint(enrollment,
+                                    function(result, event){
+                                        if(event.status)
+                                            resolve(result);
+                                        else
+                                            reject(result);
+
+                                });
+                            });
+                    }
+
+                };
+                
+                OpportunityForm = function(opportunity, form, selectors) {
+                    var page = form.form;
+                    this.opportunity = opportunity;
+
+                    page
+                        .find(selectors.effectiveDate)
+                        .datepicker();
+
+                    page
+                        .find(selectors.submitBtn)
+                        .on('click', submit);
+                    
+                    page
+                    	.find(selectors.savePrint)
+                    	.on('click', submit);
+                   
+                    form.setFieldData(opportunity);
+
+                    page
+                        .find('#estimatedEmployees')
+                        .text(opportunity.estimatedEmployees);
+
+                    return this;
+
+                    function submit() {
+                        var buttonId = this.id;
+                        opportunity.save()
+                            .then(function(opportunity){ // reset form
+                                if(buttonId != 'saveAndPrint'){
+                                	form.setFieldData(new Opportunity(opportunity));
+                                    }
+                                // TODO reset display data, but currently not needed
+                            });
+                    }
+                };
+
+                EnrollmentForm = function(enrollment, form, signature, selectors) {
+                    var
+                        tab,
+                        datedStatement  = '[Dated this ]DD[ day of ]MMMM[, ]YYYY',
+                        // Status List
+                        notStarted      = 'Not Started',
+                        inProgress      = 'In Progress',
+                        submitted       = 'Submitted',
+                        notNeeded       = 'Not Needed';
+
+                    this.enrollment     = enrollment;
+                    this.signature      = signature;
+                    this.setFieldData   = form.setFieldData;
+                    this.tab = tab      = $('[href="#'+form.form.attr('id')+'"]');
+
+                    // init
+                    this.setFieldData(enrollment);
+                    //form.validForm(enrollment);
+                    setEvents(form);
+                    displayData(enrollment);
+
+                    return this;
+
+                    function setEvents(form) {
+
+                        // Event Handlers
+
+                        // Mark Form as Not Needed Handler
+                        form
+                            .form
+                            .find(selectors.notNeededBtn)
+                            .on('click',
+                                function() {
+                                    form.formState('loading', $(this));
+
+                                    enrollment.status = 'Not Needed';
+                                    enrollment.save()
+                                        .then(
+                                            function(enrollment){
+                                                form.formState('done', $(this));
+                                                form.formState('disable');
+                                            });
+                                });
+
+                        // Submit Form Handler
+                        form
+                            .form
+                            .find(selectors.submitBtn)
+                            .on('click',
+                                function() {
+                                    var btn = $(this);
+
+                                    if(form.validForm(enrollment) === false)
+                                        return; //return enrollment.save();
+
+                                    form.formState('loading', btn);
+
+                                    enrollment.save()
+                                        .then(
+                                            function(enrollment) { // reset form
+
+                                                form.formState('done', btn);
+
+                                                var enrollmentObj = new Enrollment(enrollment);
+                                                displayData(enrollmentObj);
+                                                form.setFieldData(enrollmentObj);
+
+                                                if(enrollmentObj.status === submitted)
+                                                    form.formState('disable');
+
+                                            });
+                                });
+                        
+                        form
+                        	.form
+                        	.find(selectors.savePrint)
+                        	.on('click',
+                                function () {
+                                    var btn = $(this);
+                                    enrollment.saveAndPrint()
+                                        .then(
+                                            function(enrollment) { 
+                                                
+                                                var pdfURL = '';
+                                                if(enrollment.Signature_Form_Name__c == 'Service Exchange Agreement')
+                                                    pdfURL = '{!ServicePDF}';
+                                                if(enrollment.Signature_Form_Name__c == 'Subscription Agreement')
+                                                    pdfURL = '{!SubscriptionPDF}';
+                                                
+                                                if(typeof sforce !== "undefined" && sforce !== null) {
+                                                    // Salesforce1 and Lightning navigation
+                                                    sforce.one.navigateToURL(pdfURL);
+                                                } else {
+                                                    // Desktop navigation
+                                                    window.open(pdfURL, '_blank');
+                                                }
+                                                
+
+                                            });
+                                    
+                                });
+                    }
+
+                    function displayData(enrollment) {
+                        var
+                            status          = enrollment.status,
+                            statusColor     =
+                                (status === notStarted || status === inProgress || r.isNil(status)) ?
+                                    '#FFD344' : '#0B0'  // #FFD344 warning yellow
+
+                        form
+                            .form
+                            .find('input,button,canvas,textarea')
+                            .attr('disabled', (status == notNeeded || status == submitted));
+
+                        form
+                            .form
+                            .find(selectors.datedStatements)
+                            .html(moment(new Date(enrollment.statedDate)).format(datedStatement));
+
+
+                        var dpicker = form
+                            .form
+                            .find(selectors.statedDate);
+
+                        dpicker // Datepicker uses id so the id must be unique
+                            .attr('id', dpicker.attr('id') + '-' + form.form.attr('id'))
+                            .on('change',
+                                function() {
+                                    form // update the signed date statement
+                                        .form
+                                        .find(selectors.datedStatements)
+                                        .html(moment(enrollment.statedDate).format(datedStatement));
+                                })
+                            .datepicker();
+
+                        form
+                            .form
+                            .find(selectors.estimatedEmployees)
+                            .html(enrollment.estimatedEmployees);
+
+                        form
+                            .form
+                            .find('#enrollStatus')
+                            .text(status)
+                            .css('color', statusColor);
+                        
+                        form
+                            .form
+                            .find(selectors.address)
+                            .val(enrollment.address);
+                        
+                        form
+                            .form
+                            .find(selectors.city)
+                            .val(enrollment.city);
+                        
+                        form
+                            .form
+                            .find(selectors.state)
+                            .val(enrollment.state);
+                        
+                        form
+                            .form
+                            .find(selectors.zipcode)
+                            .val(enrollment.zipcode);
+                        
+                        form
+                            .form
+                            .find(selectors.commonO)
+                            .html(enrollment.commonOwnership);
+                        
+                        form
+                            .form
+                            .find(selectors.MCP)
+                            .html(enrollment.MCPnumber);
+                        
+                    }
+
+                };
+
+                // Base form logic for enrollment and opportunity forms
+                Form = function(form, signature) {
+                    this.form           = form;
+                    this.signature      = signature;
+
+                    this.setFieldData   = setFieldData;
+                    this.validForm      = validForm;
+                    this.formState  = formState;
+                    
+                    return this;
+
+
+                    //functions
+                    function setFieldData(obj) {
+                        form // sets the data and updates module on data change
+                            .find('input,canvas,textarea')
+                            .each(function() {
+                                var ele = $(this);
+                                if(ele.attr('id') == null)
+                                    return;
+                                
+                                var id = ele.attr('id').match(/[a-zA-Z]+/i)[0];
+
+
+                                if(!id || r.has(id, obj) === false)
+                                    return;
+
+                                if(ele[0].tagName === 'CANVAS') {
+                                    if(r.isNil(signature))
+                                        return toastr.error('Missing Signature Object');
+
+                                    form
+                                        .on('touchend mouseup mouseout', function(){
+                                            /*
+                                                this will load a blank signature, there is no
+                                                way to tell that it is blank
+                                            */
+                                            if(signature.isSigned())
+                                                obj[id] = signature.getBase64();
+                                        });
+
+                                    if(r.isEmpty(obj[id]) || r.isNil(obj[id]))
+                                        return;
+                                    
+                                    signature.loadImage(obj[id]);
+
+                                } else {
+                                    ele.val(obj[id]);
+
+                                    ele.on('change', function() {
+                                        obj[id] = ele.val();
+                                    });
+                                }
+
+                            });
+                    }
+
+                    // silent validate without turning labels red, mostly for startup
+                    function validForm(data) {
+                        
+                        if(r.isNil(data))
+                            throw 'Valid Form Data Object is Undefined';
+
+                        toastr.options.positionClass = 'toast-bottom-right';
+
+                        var
+                            invalidInput =  form
+                                .find('canvas, input')
+                                .filter(function(){ // filter signatures that are valid
+                                    if($(this)[0].tagName != 'CANVAS')
+                                        return true; // not a canvas
+
+                                    var signed = $(this).data('signed') || false;
+                                    return signed == false;
+                                    //return  $(this).data('signed') == false;
+                                })
+                                .filter(function(){ // filter input that are complete
+                                    return $(this).val() == false;
+                                })
+                        		.filter(function() { // filter incomplete input that are not required
+                                   return $(this).hasClass('required');
+                                });
+                            // valid
+                            if(invalidInput.length === 0)
+                                return true;
+
+                            // mark invalid
+                            invalidInput.map(function(){
+                                // mark all invalid fields
+                                $(this).css('border-color', 'rgba(235,0,41,1)');
+
+                                toastr.warning(
+                                    'Oops : Missing ' +
+                                    form
+                                        .find('label[for="' + $(this).attr('id') + '"]')
+                                        .first()
+                                        .text());
+
+                                return this;
+                            });
+
+                            return false;                        
+                    }
+
+                    // tracks state of updates, kind of...
+                    function formState(state, btn) {
+                        var disabled;
+                        if(state === 'loading') {
+                            $(btn).data('orig-text', $(btn).text());
+                            $(btn).text('loading ....');
+                            disabled = true;
+                        } else if(state === 'disable') {
+                            form.find('canvas').off();
+                            disabled = true;
+                        } else if(state === 'done') {
+                            disabled = false;
+                            $(btn).text($(btn).data('orig-text'));
+                        } else {
+                            throw 'Unknown form state';
+                        }
+                        
+                        form.find('input,button,textarea').prop( "disabled", disabled );
+
+                    }
+                
+                };
+            })();
+            // set some globals
+            var
+                r = R,
+                selectors = {
+                    effectiveDate       : '#effectiveDate',
+                    estimatedEmployees  : '#estimatedEmployees',
+                    progress            : '#overallProgress',
+                    tabs                : '#tabs',
+                    submitBtn           : 'button[type=submit]',
+                    savePrint			: '#saveAndPrint',
+                    notNeededBtn        : 'button:contains("Not Needed")',
+
+                    datedTemplate       : '#dated-template',
+                    datedStatements     : 'dated-statement',
+                    datePickers         : '.datepicker',
+                    statedDate          : '#statedDate',
+                    address             : '#address',
+                    city                : '#city',
+                    state               : '#state',
+                    zipCode             : '#zipCode',
+                    commonO             : '#commonOwnership',
+                    MCP                 : '#MCPnumber'
+                },
+
+                opportunityId = '{!opptyItem.Id}',
+                returnUrl = '{!retUrl}';
+
+            $(function() {
+
+                // Add templates to tabs
+                $('#tabs-0')
+                    .append($('#overview').html());
+                
+                $('#tabs-2')
+                    .prepend($('#dated-template').html())
+                    .prepend($('#tab-2-legal').html())
+                    .prepend($('#logo').html())
+                    .append($('#sign-form-template').html())
+                	.append($('#Submit-Buttons').html());
+
+                $('#tabs-3')
+                    .prepend($('#dated-template').html())
+                    .prepend($('#tab-3-legal').html())
+                    .prepend($('#logo').html())
+                    .append($('#address-form-template').html())
+                    .append($('#common').html())
+                    .append($('#sign-form-template-Subscription').html())
+                	.append($('#Submit-Buttons').html());
+
+                $('#tabs-4')
+                    .prepend($('#address-form-template').html())
+                    .prepend($('#dated-template').html())
+                    .prepend($('#tab-4-legal').html())
+                    .prepend($('#logo').html())
+                    .append($('#sign-form-template').html())
+                	.append($('#Submit-Buttons').html());
+                
+                $('#tabs-5')
+                    .prepend($('#dated-template').html())
+                    .prepend($('#tab-5-legal').html())
+                    .prepend($('#logo').html())
+                    .append($('#garySig').html())
+                    .append($('#sign-form-template').html())
+                	.append($('#Submit-Buttons').html());
+                
+                $('#tabs-6')
+                	.prepend($('#address-form-template').html())
+                    .prepend($('#dated-template').html())
+                    .prepend($('#tab-6-legal').html())
+                    .prepend($('#logo').html())
+                    .append($('#sign-form-template').html())
+                	.append($('#Submit-Buttons').html());
+
+                $('signature')
+                    .append($('#signThis').html());
+
+                // the variable is not used but the tabs() sets the query tabs widget
+                var tabs = $(selectors.tabs).tabs();
+
+                $('nav').find('.navbar-brand').attr('href', returnUrl);
+
+                $('input,button,textarea').attr('disabled', true);
+                $('input[type="checkbox"]').attr('disabled', false);
+                $('#newFormBtn').attr('disabled', false);
+
+            }).ready(function(){
+
+                // gets data from Salesforce JS Api
+                PDFCreateController.getOpportunity('{!opptyItem.Id}',
+                    function(opportunity, event) {
+                        if(event.status === false)
+                            return toastr.error('So .... I think something is wrong!  Better call someone.')
+
+                        PDFCreateController.getEnrollmentForms(opportunity.Id,
+                            function(enrollments) {
+                                if(event.status === false)
+                                    return toastr.error('So .... I think something is wrong!   Better call someone.')
+
+                                // load data and the magic begins
+                                init(opportunity, enrollments);
+                            });
+
+                    });
+
+                // this is where the magic happens
+                function init(opportunity, enrollments) {
+                    r.forEach(
+                        function(val) {
+                            var
+                                enrollment = new Enrollment(val),
+                                form = $('[data-form=' + enrollment.formName + ']').first(),
+                                signature = new Signature(form);
+
+                            return new EnrollmentForm(
+                                enrollment,
+                                new Form(form, signature),
+                                signature,
+                                selectors);
+
+                        }, enrollments);
+
+                    var
+                        oppForm = new OpportunityForm(
+                            new Opportunity(opportunity),
+                            new Form($('body')),
+                            selectors);
+                }
+            });
+        </script>
+
+    <body class="container">
+        <!---------- Navigation Bar ------------->
+        <div class="header-cont" style="background-color:white;padding-bottom:20px">
+            <div style="margin: 2px 0px -100px -55px">
+                <c:SetupFormsNavBar formName="signature" efId="{!MasterEfId}" submitLabel=""/>
+                <br/>
+                <span id="submitmessage" style="margin-left:300px;font-size:16pt;color:red; vertical-align:bottom;"></span>
+            </div>
+            <div style="clear:both"/>
+            <br/>
+        </div>
+        <div class="content" style="padding-top: 65px;">
+            
+            <div id="tabs">
+                <ul id="formNavigation">
+                    <li>
+                        <a href="#tabs-0">
+                            Signature Form Overview
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#tabs-3" style="{!IF(SubscriptionAgreementSig == null, 'display:none;', '')}" >
+                            Subscription Agreement
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#tabs-5" style="{!IF(ServiceExchangeSig == null, 'display:none;', '')}" >
+                            Service Exchange Agreement
+                        </a>
+                    </li>
+                </ul>
+                <div id="tabs-0">
+                </div>
+                <div id="tabs-3" data-form="Subscription_Agreement" >
+                    <hr/>
+                    <div class="row">
+                        <div class="form-group col-sm-12">
+                            <div class="requiredLabel"><label for="effectiveDate" class="form-label">
+                                Group Effective Date
+                                </label></div>
+                            <input class="form-control datepicker required" id="effectiveDate"/>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div id="tabs-5" data-form="Service_Exchange_Agreement">
+                </div>
+            </div>            
+            <template id="logo">
+                <div>
+                    <apex:image styleClass="logo" url="{!$Resource.AFALogo}"/>
+                </div>
+            </template>
+            <template id="tab-3-legal" >
+                <small id="enrollStatus" style="color:red">No Enrollment Form Object Created</small>
+                <h3 class="row tab-title">Subscription Agreement<hr/></h3>
+                <div class="row">
+                    <p>
+                        The Employer hereby subscribes to one or more of the following trusts and makes application for coverage issued
+                        by American Fidelity Assurance Company (the "Underwriter") based on the following:
+                    </p>
+                </div>
+                <div class="row" style="padding-bottom:10px">
+                    <ul id="double">
+                        <li>Higher Education Insurance Trust</li>
+                        <li>National Public Employees Insurance Trust</li>
+                        <li>National Business Insurance Trust</li>
+                        <li>National Service Industry Insurance Trust</li>
+                        <li>National Education Association Insurance Trust</li>
+                        <li>National School Employees Insurance Trust</li>
+                        <li>National Employers Insurance Trust (Group Life Insurance not available)</li>
+                        <li>U.S. Business Insurance Trust</li>
+                    </ul>
+                </div>
+                <div class="row">
+                    <p>
+                        We have reviewed the eligibility rules and understand and agree that:
+                    </p>
+                    <ol>
+                        <li>All eligible Employees who enroll must comply with the participation requirements established by the Underwriter.</li>
+                        <li>Coverage is not in force until: the Underwriter and Trustee have approved this agreement,
+                            individual applications have been approved by the Underwriter, and the first premium for the
+                            insurance provided under the plan is paid. Premiums are due each month thereafter based upon
+                            the Employer’s mode of payment.</li>
+                        <li>The Underwriter will issue a certificate of insurance on behalf of the Employer to each Employee
+                            participating in the plan.</li>
+                    </ol>
+                </div>
+                <div class="row">
+                    <p>
+                        Upon approval by the Underwriter, it is requested that the agreement become effective at 12:01 AM Standard Time
+                        on the Group Effective Date indicated below.  It is agreed that the coverage of an eligible person will not take
+                        effect until the first premium has been paid on the applicatn's behalf.
+                    </p>
+                </div>
+                
+                <div class="row">
+                    <p>
+                        <b>ERISA Acknowledgment:</b> The Employer named below acknowledges that the Employee Retirement Income Security 
+                        Act of 1974 (ERISA), as amended or other laws, if applicable, may require that certain Employers be responsible 
+                        for certain duties or obligations with respect to the Employer or Employer's Employees and dependents under any 
+                        certificate under such group policy or policies subject to this law.
+                    </p>
+                </div>
+            </template>
+            <template id="tab-5-legal">
+                <small id="enrollStatus" style="color:red">No Enrollment Form Object Created</small>
+                <div class="row">
+                    <h3 class="tab-title">Service Exchange Agreement</h3>
+                </div>
+                <div class="row">
+                    <p>
+                        This Service Exchange Agreement is entered into by and between American Fidelity Assurance Company ("American Fidelity") and
+                        <span class="acctName">{!opptyItem.Account.Name}</span> ("Customer"), who in consideration of the mutual agreements and promises contained herein, agree to
+                        work together as described in this Service Exchange Agreement.  This Service Exchange Agreement shall be effective on the date
+                        signed by American Fidelity, and shall continue until terminated or modified by agreement of the parties.
+                    </p>
+                </div>
+                <div class="row">
+                    <h4>
+                        American Fidelity will provide to Customer the following services (the "Services"):
+                    </h4>
+                    <ul>
+                        <li>Section 125 Plan Administrative Services</li>
+                        <li>Healthcare Flexible Spending Account Administrative Services</li>
+                        <li>Benefits Debit Card Services for Health FSA Participants</li>
+                        <li>Annual Enrollment (American Fidelity's or Customer's platform)</li>
+                        <li>Year-Round Support from a dedicated Account Manager</li>
+                    </ul>
+                </div>
+                <div class="row">
+                    <h4>
+                        In exchange for the Services, Customer shall:
+                    </h4>
+                    <h7><i>Products</i></h7>
+                    <ul>
+                        <li>Allow American Fidelity to be the primary provider for supplemental insurance products; and</li>
+                        <li>Give American Fidelity the opportunity to offer insurance products to all eligible employees.</li>
+                    </ul>
+                    <h7><i>Communication</i></h7>
+                    <ul>
+                        <li>Permit American Fidelity opportunities to present to employees or employee groups prior to enrollment;</li>
+                        <li>Facilitate one-on-one meetings of employees with American Fidelity to discuss employee benefit options and 
+                        as applicable, to make their annual Section 125 Plan enrollment elections; and</li>
+                        <li>Provide working space for American Fidelity during enrollment meetings.</li>
+                    </ul>
+                    <h7><i>Administration</i></h7>
+                    <ul>
+                        <li>Provide a complete employee census to American Fidelity each year;</li>
+                        <li>Provide other administrative services to American Fidelity as may be mutually agreed to by the parties; and</li>
+                        <li>Provide payroll deduction for American Fidelity products and services.</li>
+                    </ul>
+                </div>
+                
+                <div class="row">
+                    <h4>
+                        By agreeing to the Services, Customer acknowledges its understanding of the following:
+                    </h4>
+                    <ul>
+                        <li>The Services described above will be provided to the extent allowed by law;</li>
+                        <li>American Fidelity does not provide tax or legal advice;</li>
+                        <li>American Fidelity reserves the right to change the delivery of Services and cost associated with them, but only
+                        with advanced written communication to Customer.</li>
+                    </ul>
+                </div>
+                
+                <div class="row">
+                    <p>
+                        Intending to be bound, American Fidelity and Customer have caused their duly authorized representatives to execute
+                        this Service Exchange Agreement.
+                    </p>
+                </div>
+            </template>
+            <template id="dated-template">
+                <div class="row">
+                    <hr/>
+                    
+                    <div class="form-group col-sm-12">
+                        
+                        <div class="requiredLabel"><label for="statedDate" class="form-label">
+                            <dated-statement><!-- fill with javascript --></dated-statement>
+                            </label></div>
+                        <input id="statedDate" class="form-control datepicker required"/>
+                        
+                    </div>
+                </div>
+            </template>
+            <template id="garySig">
+                <hr />
+                <div class="row">
+                    <div class="col-md-12">
+                        <label>American Fidelity Officer</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="GaryPrintedSig">Printed Name</label>
+                        <input type="text" class="form-control" id="GaryPrintedSig" value="Jeanette Rice"/>
+                    </div>
+                    
+                    <div class="form-group col-md-5">
+                        <label for="GarySig">Signature</label><br/>
+                        <apex:image id="GarySig" url="{!URLFOR($Resource.Signatures, 'Jeanette_Rice_Signature.png')}" width="200px"/>
+                    </div>
+                </div>
+            </template>
+            <template id="sign-form-template">
+                <hr/>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <div class="requiredLabel"><label for="employerName">Name of Employer</label></div>
+                            <input type="text" class="form-control required" id="employerName" placeholder="Employer"/>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="requiredLabel"><label for="title">Title</label></div>
+                            <input type="text" class="form-control required" id="title" placeholder="Title"/>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="requiredLabel"><label for="printedSignature">Printed Name</label></div>
+                            <input type="text" class="form-control required" id="printedSignature" placeholder="Name"/>
+                        </div>
+                        
+                        
+                    </div>
+                    <div class="col-md-6" >
+                        <signature ></signature>
+                    </div>
+                </div>
+                
+            </template>
+            <template id="sign-form-template-Subscription">
+                <hr/>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <div class="requiredLabel"><label for="employerName">Name of Master Contract Participant (Employer)</label></div>
+                            <input type="text" class="form-control required" id="employerName" placeholder="Employer"/>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="MCPnumber">MCP Number</label>
+                            <input type="text" class="form-control" id="MCPnumber" placeholder="MCP Number"/>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="requiredLabel"><label for="title">Title</label></div>
+                            <input type="text" class="form-control required" id="title" placeholder="Title"/>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="requiredLabel"><label for="printedSignature">Printed Name</label></div>
+                            <input type="text" class="form-control required" id="printedSignature" placeholder="Name"/>
+                        </div>
+                        
+                        
+                    </div>
+                    <div class="col-md-6" >
+                        <signature ></signature>
+                    </div>
+                </div>
+            </template>
+            <template id="Submit-Buttons">
+            	<div class="row" >
+                    <hr/>
+                        <button type="submit" name="print" class="btn btn-secondary" id="saveAndPrint">Save and Print</button>
+                        <button type="submit" class="btn btn-primary" >Submit Form</button>
+                </div>
+            </template>
+            <template id="address-form-template">
+                
+                <hr/>
+                
+                <div class="row">
+                    <div class="form-group col-sm-12">
+                        <div class="requiredLabel"><label for="address">Street Address</label></div>
+                        <input type="text" class="form-control required" id="address" placeholder="Street Address"/>
+                    </div>
+                </div>
+                <div class="row ">
+                    <div class="form-group col-md-5">
+                        <div class="requiredLabel"><label for="city">City</label></div>
+                        <input type="text" class="form-control required" id="city" placeholder="City"/>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <div class="requiredLabel"><label for="state">State</label></div>
+                        <input type="text" class="form-control required" id="state" value="OK"/>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <div class="requiredLabel"><label for="zipCode">Zip Code</label></div>
+                        <input type="text" class="form-control required" id="zipCode" placeholder="Zip Code"/>
+                        
+                    </div>
+                </div>
+                
+            </template>
+            <template id="signThis">
+                
+                
+                <div>
+                    
+                    <div class="row">
+                        
+                        <label for="canvas" >Sign Here:</label>
+                        
+                    </div>
+                    <div class="row">
+                        <canvas id="canvas" class="required" ></canvas>
+                    </div>
+                    <div class="row">
+                        <div class="btn-group" role="group" aria-label="...">
+                            <button type="button" id="clearSignature" class="btn btn-default">Clear Signature</button>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+                
+            </template>
+            <template id="common">
+                <hr />
+                <div class="row">
+                    <p>
+                        <b>Only one Subscription Agreement is necessary for Common Ownership Groups.  Please list groups in common
+                        ownership.</b>
+                    </p>
+                    <p>
+                        <b>Common Ownership Groups</b> are controlled groups defined by the IRS as a parent-subsidiary group, brother-sister
+                        controlled group, combined group or a life insurance controlled group.  Please list all businesses under
+                        Common Ownership to be covered under this Agreement.
+                    </p>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label for="address"></label>
+                        <textarea class="form-control" id="commonOwnership" rows="4" placeholder="List Common Ownerships" />
+                    </div>
+                </div>
+            </template>
+            <template id="overview">
+                <apex:form >
+                    <apex:pageMessages id="msgs" />
+                    <h2 class="overviewHeader">
+                        Generated Forms
+                    </h2>
+                    <apex:outputPanel rendered="{!generatedForms.size < 1}">
+                        <p>
+                            <i>No forms have been generated for this enrollment.</i>
+                        </p>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!generatedForms.size > 0}">
+                        <table id="test" class="custom-table">
+                                <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Required</th>
+                                    <th>Download</th>
+                                    <th>Upload Signed Form</th>
+                                </tr>
+                            
+                                <apex:repeat value="{!generatedForms}" var="gf">
+                                    <tr>
+                                        <td style="color: #428bca; font-size: small; width:70px;">
+                                            <apex:outputLink value="#" onclick="goToTab('{!gf.Name}');">View</apex:outputLink>| 
+                                            <apex:outputLink value="#" onclick="deleteForm('{!gf.FormId}');">Del</apex:outputLink>
+                                        </td>
+                                        <td>
+                                            <apex:outputText value="{!gf.Name}"/>
+                                            <span style="font-size:x-small; {!IF(gf.Tagline == '', 'display:none;', '')}">
+                                                <br/><i>{!gf.Tagline}</i>
+                                            </span>
+                                        </td>
+                                        <td style="{!IF(gf.Status == 'In Progress', 'color: red;', 'color: green;')}">
+                                            {!gf.Status}
+                                        </td>
+                                        <td>
+                                            <apex:outputText value="{!IF(gf.AutoGenerated, 'Required', 'Optional')}"></apex:outputText>
+                                        </td>
+                                        <td>
+                                            <a href="{!gf.PDFlink}" target="_blank">PDF Version</a>
+                                        </td>
+                                        <td>
+                                        	<apex:iframe id="uploadFrame" src="/apex/uploadFiles?id={!gf.FormId}&ContentLinkIds={!enrollmentFormId},{!accountId}" height="60%" ></apex:iframe>
+                                            <script>
+                                            console.log("/apex/uploadFiles?id={!gf.FormId}&ContentLinkIds={!enrollmentFormId},{!accountId}");
+                                            </script>
+                                        </td>
+                                    </tr>
+                                </apex:repeat>
+                        </table>
+                    </apex:outputPanel>
+                    <br/>
+                    <p style="width:90%">
+                        {!$Label.Signature_Forms_Upload_Instructions}
+                    </p>
+                    <br/>
+                    <table style="width:90%">
+                        <tr style="vertical-align:top;">
+                            <td>
+                                <h2 class="overviewHeader">
+                                    Generate Additional Forms
+                                </h2>
+                                <p>
+                                    <i>I need to generate the additional signature forms:</i>
+                                </p>
+                                <table>
+                                    <apex:repeat value="{!formSelect}" var="fs">
+                                        <tr>
+                                            <td><apex:inputCheckbox value="{!fs.selected}"/></td>
+                                            <td style="padding-left: 10px;">{!fs.Name}</td>
+                                        </tr>
+                                    </apex:repeat>
+                                </table>
+                                <br/>
+                                <input type="button"  class="btn btn-primary generateFormBtn" value="Generate Form(s)" id="newFormBtn" onclick="newForms();"/>
+                            </td>
+                        </tr>
+                    </table>
+                    <apex:actionFunction name="newForms" action="{!generateNewForms}" rerender="msgs"/>
+                    <apex:actionFunction name="deleteForm" action="{!deleteEnrollmentForm}" rerender="msgs">
+                        <apex:param assignTo="{!deleteId}" name="deleteId" value=""/>
+                    </apex:actionFunction>
+                    <script>
+                    function goToTab(tabName) {
+                        return $("a:contains('" + tabName + "')").click();   
+                    }
+                    </script>
+                </apex:form>
+            </template>
+        </div>
+    </body>
+</apex:page>

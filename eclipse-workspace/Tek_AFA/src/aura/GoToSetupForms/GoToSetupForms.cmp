@@ -1,0 +1,31 @@
+<aura:component implements="force:hasRecordId,flexipage:availableForRecordHome" controller="GoToSetupFormsController">
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    
+    <aura:attribute name="opportunity" type="Opportunity" access="private" />
+    <aura:attribute name="emptyMessage" type="String" access="private" />
+    <aura:attribute name="showEmptyMessage" type="String" access="private" />
+    <aura:attribute name="showReserviceButton" type="Boolean" default="false" access="private" />
+    <aura:attribute name="showSetupFormButton" type="Boolean" default="false" access="private" />
+    
+    <div class="{! v.showEmptyMessage ? 'slds-show slds-text-align_center af-width slds-p-around_small' : 'slds-hide' }">
+        {!v.emptyMessage}
+    </div>
+    
+    <div class="{! v.opportunity.Simple_Setup_Changes__c || v.opportunity.Significant_Setup_Changes__c ? 'slds-text-align_center' : 'slds-hide'}">
+        
+        <div class="{! v.showEmptyMessage ? 'slds-hide' : 'slds-show slds-p-around_small af-width' }" >
+            
+            <span class="af-form-title">Setup Forms</span>
+            <div>
+                <aura:if isTrue="{! v.opportunity.Simple_Setup_Changes__c}">
+                    <lightning:button class="af-progress-button" label="{! $Label.c.Direct_To_Reservice_Setup}" onclick="{! c.openReserviceForm }"/>
+                </aura:if>
+                
+                <aura:if isTrue="{! v.opportunity.Significant_Setup_Changes__c }">
+                    <lightning:button class="af-progress-button" label="{! $Label.c.Direct_To_Full_Setup_Form}" onclick="{! c.openFullSetupForms }"/>
+                </aura:if>
+            </div>
+        </div>
+        
+    </div>
+</aura:component>

@@ -1,0 +1,12 @@
+<aura:component extends="c:LightningInputContainer">
+    <aura:attribute name="format" type="String" default="MM/dd/yyyy" />
+    <aura:attribute name="displayDatePicker" type="Boolean" default="true" />
+    
+    <aura:handler name="change" value="{!v.value}" action="{!c.onValueChange}"/>
+
+    <aura:method name="getInputComponent" />
+
+    <ui:inputDate value="{! v.value }" label="{! !v.label ? ' ' : v.label }"
+                  format="{! v.format }" displayDatePicker="{! v.displayDatePicker }"
+                  aura:id="myInput" disabled="{! v.disabled }"/>
+</aura:component>

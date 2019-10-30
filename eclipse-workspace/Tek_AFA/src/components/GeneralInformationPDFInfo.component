@@ -1,0 +1,622 @@
+<apex:component controller="GeneralInformationPDFInfoController">
+    <apex:attribute name="efId"  description="Enrollment Form Id" type="string" required="true" assignto="{!enrollmentFormId}"/>
+    <apex:attribute name="title" type="string" required="true" description="The title to display." />
+    
+    <div>
+        <div class="title">
+            <center>
+                <h3>
+                    {! title }
+                </h3>
+            </center>
+        </div>
+    </div>
+    <!-- From s125PDF -->
+      <div class="sectionHeader">
+        <apex:outputText styleclass="sectionLabel" value="Account Information"/>
+    </div>
+    <table class="formtable" style="width:100%;">
+        <!-- 1 -->
+        <tr>
+            <td width="50%" class="fieldLabel">{! $ObjectType.Opportunity.Fields.Group_Name__c.Label }</td>
+            <td width="50%" class="fieldLabel">
+                <apex:outputPanel layout="none" rendered="{! IsNewSetup == false }">
+                {! $ObjectType.Opportunity.Fields.MCP_Number__c.Label }
+                </apex:outputPanel>
+            </td>
+        </tr>
+        <tr>
+            <td><apex:outputField value="{!enrollmentOpp.Group_Name__c}" /></td>
+            <td><apex:outputField value="{!enrollmentOpp.MCP_Number__c}" rendered="{! IsNewSetup == false }" /></td>
+            
+        </tr>
+        
+        <!-- 2 -->
+        <tr>
+            <td width="50%" class="fieldLabel">{! $ObjectType.Opportunity.Fields.Assigned_Account_Manager__c.Label }</td>
+            <td width="50%" class="fieldLabel">
+                <apex:outputPanel layout="none" rendered="{! IsNewSetup == false }">
+                {! $ObjectType.Opportunity.Fields.Additional_MCPs__c.Label }
+                </apex:outputPanel>
+            </td>
+        </tr>
+        <tr>
+            <td><apex:outputField value="{!enrollmentOpp.Assigned_Account_Manager__c}" /></td>
+            <td><apex:outputField value="{!enrollmentOpp.Additional_MCPs__c}" rendered="{! IsNewSetup == false }" /></td>
+        </tr>
+        
+        <!-- 3 -->
+        <tr>
+            <td width="50%" class="fieldLabel">{! $ObjectType.Opportunity.Fields.Estimated_Employees__c.Label }</td>
+            <td class="fieldLabel"><apex:outputPanel layout="none" rendered="{! enrollmentOpp.Confirm_New_or_Existing_Group__c != 'Existing' }">Tax ID#</apex:outputPanel></td>
+        </tr>
+        <tr>
+            <td><apex:outputField value="{!enrollmentOpp.Estimated_Employees__c}" /></td>
+            <td><apex:outputField value="{!enrollmentOpp.Tax_ID__c}" rendered="{! enrollmentOpp.Confirm_New_or_Existing_Group__c != 'Existing' }" /></td>
+            
+            
+        </tr>
+        
+        <!-- 4 -->
+        <tr>
+            <td width="50%" class="fieldLabel">Employee Eligibility Waiting Period</td>
+            <td width="50%" class="fieldLabel">
+                <apex:outputPanel layout="none" rendered="{! IsReservice == false }">
+                Legal Name Different
+                </apex:outputPanel>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <apex:outputField value="{!enrollmentOpp.EE_Eligibility_Waiting_Period__c}" />
+                
+                <div class="fieldLabel"><apex:outputText value="{! $ObjectType.Opportunity.Fields.Other_Eligibility_Waiting_Period__c.Label }"
+                                    rendered="{! enrollmentOpp.EE_Eligibility_Waiting_Period__c = 'Other' }" />
+                </div>
+
+                <apex:outputField value="{! enrollmentOpp.Other_Eligibility_Waiting_Period__c }"
+                                  rendered="{! enrollmentOpp.EE_Eligibility_Waiting_Period__c = 'Other' }"/>
+            
+            </td>
+            <td style="vertical-align: top;"><apex:outputField value="{!enrollmentOpp.Legal_Name_is_different_than_Group_Name__c}" rendered="{! IsReservice == false }" /></td>
+        </tr>
+        
+        <!-- 5 -->
+        <tr>
+            <td width="50%" class="fieldLabel">{! $ObjectType.Opportunity.Fields.Waiting_Period_Effective__c.Label }</td>
+            <td width="50%" class="fieldLabel">
+                <apex:outputPanel layout="none" rendered="{! IsReservice == false }">
+                {! $ObjectType.Opportunity.Fields.Legal_Name__c.Label }
+                </apex:outputPanel>
+            </td>
+        </tr>
+        <tr>
+            <td><apex:outputField value="{!enrollmentOpp.Waiting_Period_Effective__c}" /></td>
+            <td><apex:outputField value="{!enrollmentOpp.Legal_Name__c}" rendered="{! IsReservice == false }" /></td>
+        </tr>
+        
+        <!-- 6 -->
+        <tr>
+            <td width="50%" class="fieldLabel">{! $ObjectType.Opportunity.Fields.Residence_State_s__c.Label }</td>
+            
+            <td class="fieldLabel"></td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top;"><apex:outputField value="{!enrollmentOpp.Residence_State_s__c}" /></td>
+        </tr>
+    </table>
+    <div class="sectionHeader">
+        <apex:outputText styleclass="sectionLabel" value="Key Enrollment Dates"/>
+    </div>
+    <table class="formtable" style="width:100%;">
+        <tr>
+            <td width="50%" class="fieldLabel">{! $ObjectType.Opportunity.Fields.Enrollment_Start_Date__c.Label }</td>
+            <td width="50%" class="fieldLabel">{! $ObjectType.Opportunity.Fields.Effective_Date_of_AFA_Products__c.Label }</td>
+        </tr>
+        <tr>
+            <td><apex:outputField value="{!enrollmentOpp.Enrollment_Start_Date__c}" /></td>
+            <td><apex:outputField value="{!enrollmentOpp.Effective_Date_of_AFA_Products__c}" /></td>                                    
+        </tr>
+        <tr>
+            <td width="50%" class="fieldLabel">{! $ObjectType.Opportunity.Fields.Enrollment_End_Date__c.Label }</td>
+            <td width="50%" class="fieldLabel">{! $ObjectType.Opportunity.Fields.Effective_Date_of_Core_Products__c.Label }</td>
+        </tr>
+        <tr>
+            <td><apex:outputField value="{!enrollmentOpp.Enrollment_End_Date__c}" /></td>
+            <td><apex:outputField value="{!enrollmentOpp.Effective_Date_of_Core_Products__c}" /></td>                                   
+        </tr>
+        <tr>
+            <td width="50%" class="fieldLabel">{! $ObjectType.Opportunity.Fields.Plan_Date_New__c.Label }</td>
+        </tr>
+        <tr>
+            <td><apex:outputField value="{!enrollmentOpp.Plan_Date_New__c}" /></td>
+        </tr>
+    </table> 
+    <!-- end s125PDF -->
+   
+        <div class="sectionHeader">
+        <apex:outputText styleclass="sectionLabel" value="Platform Details"/>
+        </div>
+ 
+    
+    <apex:outputPanel id="platformDetails">
+        <apex:outputPanel layout="block" style="position: relative;">
+        <table>
+            <tr>
+            <td style="vertical-align: top; width: 51%;">
+        <table id="platform" class="formtable">
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Opportunity.Fields.Enrollment_Path__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{! enrollmentOpp.Enrollment_Path__c }" /></td>
+            </tr>
+            <apex:outputPanel layout="none" rendered="{! enrollmentOpp.Enrollment_Rush_Request_Reason__c != null && enrollmentOpp.ENrollment_Rush_Request_Reason__c != '' }">
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Opportunity.Fields.Enrollment_Rush_Request_Reason__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{! enrollmentOpp.Enrollment_Rush_Request_Reason__c }" /></td>
+            </tr>
+            </apex:outputPanel>
+            
+            <apex:outputPanel layout="none" rendered="{! ps.Below_Eligible_Employee_Threshold_Reason__c != null && ps.Below_Eligible_Employee_Threshold_Reason__c != '' }">
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Below_Eligible_Employee_Threshold_Reason__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{! ps.Below_Eligible_Employee_Threshold_Reason__c }" /></td>
+            </tr>
+            </apex:outputPanel>
+
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Enroll_Info_Service_Process__c.Label }</td>
+            </tr>
+            
+            <tr>
+                <td><apex:outputField value="{!ps.Enroll_Info_Service_Process__c}" /></td>
+            </tr>
+            
+            <apex:repeat value="{! EnrollmentPathPlatformSetupFieldSet.Fields }" var="psField">
+            <tr>
+                <td class="fieldLabel">{! psField.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{! ps[psField] }" /></td>
+            </tr>
+            </apex:repeat>
+        </table>
+        </td>
+        </tr>
+        </table>
+        </apex:outputPanel>
+    </apex:outputPanel>
+       
+        <div class="sectionHeader">
+        <apex:outputText styleclass="sectionLabel" value="Enrollment Details"/>
+        </div>
+ 
+
+      
+      <apex:outputPanel id="enrollmentDetails">
+       <table  class="formtable" style="width:100%">
+           <tr>
+               <td class="fieldLabel" ><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.Enroll_Info_GrpToCcontactForData__c.Label }</div></td>
+           </tr>
+           <tr>
+               <td ><apex:outputField value="{!ps.Enroll_Info_GrpToCcontactForData__c}" /></td>
+           </tr>
+           
+            <tr>
+               <td class="fieldLabel" style="vertical-align:top;" >{! $ObjectType.Opportunity.Fields.Enrollment_Setup_Notes__c.Label }</td>
+           </tr>
+           <tr>
+               <td colspan="3"><apex:outputField value="{!enrollmentOpp.Enrollment_Setup_Notes__c}" style="width:700px"/></td>
+           </tr>
+           <tr>
+               <td style="vertical-align:top" class="fieldLabel">Enrollment Conditions</td>
+           </tr>
+           <tr>
+               <td colspan="3"><apex:outputField value="{!enrollmentOpp.Working_Conditions__c}"/></td>
+            </tr>
+       </table>
+       </apex:outputPanel>
+
+    <div class="sectionHeader">
+        <apex:outputText styleclass="sectionLabel" value="Address Information"/>
+    </div>
+    
+    <apex:variable var="physicalAddressDisplayStyle" value="{! if (enrollmentOpp.Physical_Address_Same_As_Billing__c == 'No', '', 'none;') }" />
+    
+    <table id="addressInformation" class="formtable" style="width:100%">
+        <tr>
+            <td class="fieldLabel">Billing Address</td>
+            <td class="fieldLabel">Physical Address</td>
+        </tr>
+    
+		<tr>
+		    <td class="fieldLabel" style="vertial-alighment:top">Street</td>
+		    <td class="fieldLabel">Same as Billing Address?</td>
+		</tr>
+		<tr>
+		    <td><apex:outputField value="{!acct.BillingStreet}" /></td>
+		    <td style="vertical-align:top"><apex:outputField value="{!enrollmentOpp.Physical_Address_Same_As_Billing__c}" /></td>
+		</tr> 
+		<tr>
+		    <td class="fieldLabel">City</td>
+		    <td class="fieldLabel" style="display: {! physicalAddressDisplayStyle }">Street</td>
+		</tr>
+		<tr>
+		    <td style="vertical-align:top"><apex:outputField value="{!acct.BillingCity}" /></td>
+		    <td style="display: {! physicalAddressDisplayStyle }"><apex:outputField value="{!acct.ShippingStreet}" /></td>
+		</tr>
+	    <tr>
+	        <td class="fieldLabel">State</td>
+	        <td class="fieldLabel" style="display: {! physicalAddressDisplayStyle }">City</td>
+	    </tr>
+	    <tr>
+	        <td><apex:outputField value="{!acct.BillingState}" /></td>
+	        <td style="display: {! physicalAddressDisplayStyle }"><apex:outputField value="{!acct.ShippingCity}" /></td>
+	    </tr>
+	    <tr>
+	        <td class="fieldLabel">Zip Code</td>
+	        <td class="fieldLabel" style="display: {! physicalAddressDisplayStyle }">State</td>
+	    </tr>
+	    <tr>
+	        <td><apex:outputField value="{!acct.BillingPostalCode}" /></td>
+	        <td style="display: {! physicalAddressDisplayStyle }"><apex:outputField value="{!acct.ShippingState}" /></td>
+	    </tr>
+	    <tr>
+	        <td class="fieldLabel"></td>
+	        <td class="fieldLabel" style="display: {! physicalAddressDisplayStyle }">Zip Code</td>
+	    </tr>
+	    <tr>
+	        <td/>
+	        <td style="display: {! physicalAddressDisplayStyle }"><apex:outputField value="{!acct.ShippingPostalCode}" /></td>
+	    </tr>
+	</table>
+
+    <div class="sectionHeader">
+        <apex:outputText styleclass="sectionLabel" value="Payroll Information"/>
+    </div>
+  
+    <apex:variable var="showPayrollDeductionBegins" value="{! ps.Enroll_Info_Payroll_Deduction_Begins__c != null && ps.Enroll_Info_Payroll_Deduction_Begins__c != '' }" />
+    <apex:variable var="showPayrollDeductionFrequency" value="{! ps.EnrollInfoPayrollDeductFrequenc__c != null && ps.EnrollInfoPayrollDeductFrequenc__c != '' }" />
+    <apex:variable var="showPayrollSkipMonths" value="{! ps.PayrollInfo9MoCheck__c == true || ps.PayrollInfoSkipMonths9__c != null || ps.PayrollInfo10MoCheck__c == true || ps.PayrollInfoSkipMonths10__c != null || ps.PayrollInfo11MoCheck__c == true || ps.PayrollInfoSkipMonths11__c != null }" />
+
+    <table class="formtable" style="100%">
+    
+    <td style="width:50%">
+    
+        <table id="payrollInformation" class="formtable" >
+            <tr>
+                <td class="fieldLabel" ><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.Enroll_Info_First_Payroll_Deduction_Date__c.Label }</div></td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!ps.Enroll_Info_First_Payroll_Deduction_Date__c}"  style="width:220px" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel"><div class="requiredLabel">{!$ObjectType.Platform_Setup__c.Fields.Enroll_Info_Payroll_Company__c.Label}</div></td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!ps.Enroll_Info_Payroll_Company__c}" style="width:220px"/></td>
+            </tr>
+            
+            <apex:outputPanel layout="none" rendered="{! enrollmentOpp.Confirm_New_or_Existing_Group__c == 'Existing' }">
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Account.Fields.AFenroll_Pay_Groups__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!enrollmentOpp.Account.AFenroll_Pay_Groups__c}" /></td>
+            </tr>
+            
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Opportunity.Fields.Are_you_changing_AFenroll_Frequencies__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!enrollmentOpp.Are_you_changing_AFenroll_Frequencies__c}" /></td>
+            </tr>
+            
+            <apex:outputPanel layout="none" rendered="{! enrollmentOpp.Are_you_changing_AFenroll_Frequencies__c == 'Yes' }">
+            <tr>
+                <td class="fieldLabel">{! $ObjectType.Opportunity.Fields.New_AFenroll_Deduction_Frequencies__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!enrollmentOpp.New_AFenroll_Deduction_Frequencies__c}" /></td>
+            </tr>
+            </apex:outputPanel>
+            
+            
+            <apex:outputPanel layout="none" rendered="{! showPayrollDeductionBegins || showPayrollDeductionFrequency || showPayrollSkipMonths}">
+            <tr>
+                <td class="af-previouslyEnteredValuesHeader fieldLabel">
+                    <apex:outputText value="Previously Entered Values"/>
+                    <hr />
+                </td>
+            </tr>
+            </apex:outputPanel>
+            
+            <apex:outputPanel layout="none" rendered="{! showPayrollDeductionBegins }">
+            <tr>
+                <td class="fieldLabel" ><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.Enroll_Info_Payroll_Deduction_Begins__c.Label }</div></td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!ps.Enroll_Info_Payroll_Deduction_Begins__c}"   style="width:220px" /></td>
+            </tr>
+            </apex:outputPanel>
+            
+            <apex:outputPanel layout="none" rendered="{! showPayrollDeductionFrequency }">
+            <tr>
+                <td class="fieldLabel" >{! $ObjectType.Platform_Setup__c.Fields.EnrollInfoPayrollDeductFrequenc__c.Label }</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{!ps.EnrollInfoPayrollDeductFrequenc__c}" /></td>
+            </tr>
+            </apex:outputPanel>
+           </apex:outputPanel>
+        </table>
+          
+        <apex:outputPanel layout="none" rendered="{! showPayrollSkipMonths }">
+        <table class="formtable" > 
+            <tr>
+                <td class="fieldLabel" >Are there any skip months?</td>
+                <td></td>
+            </tr>
+        </table>
+        <table class="formtable" style="width:350px" > 
+            <tr>
+                <td style="width:150px"><apex:outputField value="{!ps.PayrollInfo9MoCheck__c}" /> 
+                                        {! $ObjectType.Platform_Setup__c.Fields.PayrollInfo9MoCheck__c.Label }
+                </td>
+                <td>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfoSkipMonths9__c.Label } <br/>
+                    <apex:outputField value="{!ps.PayrollInfoSkipMonths9__c}"  style="width:200px"/>
+                </td>
+            </tr>
+            <tr>
+                <td style="width:150px"><apex:outputField value="{!ps.PayrollInfo10MoCheck__c}" />
+                                         {! $ObjectType.Platform_Setup__c.Fields.PayrollInfo10MoCheck__c.Label }
+                </td>
+                <td>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfoSkipMonths10__c.Label }<br/>
+                    <apex:outputField value="{!ps.PayrollInfoSkipMonths10__c}"  style="width:200px" />
+                </td>
+            </tr>
+            <tr>
+                <td style="width:150px"><apex:outputField value="{!ps.PayrollInfo11MoCheck__c}" /> 
+                                        {! $ObjectType.Platform_Setup__c.Fields.PayrollInfo11MoCheck__c.Label }
+                </td>
+                <td>{! $ObjectType.Platform_Setup__c.Fields.PayrollInfoSkipMonths11__c.Label }<br/>
+                    <apex:outputField value="{!ps.PayrollInfoSkipMonths11__c}"  style="width:200px"/>
+                </td>
+            </tr>
+        </table>
+        </apex:outputPanel>
+      </td>
+
+    
+         <td style="width:50%;vertical-align:top">         
+             <div>
+	             <div class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Enroll_Info_Upload__c.Label }</div>
+	         </div>
+             <div>
+	             <div><apex:outputField value="{!ps.Enroll_Info_Upload__c}" /></div>
+	         </div>
+
+             <apex:outputPanel layout="none" rendered="{! ps.Enroll_Info_Upload__c == 'Yes' }">
+             <div id="payrollFileUploadDueDateLabelRow">
+	             <div class="fieldLabel"><apex:outputText value="{! $ObjectType.Platform_Setup__c.Fields.EnrollInfoUploadDueDate__c.Label }" /></div>
+	         </div>
+	         <div id="payrollFileUploadDueDateInputRow">
+	             <apex:outputField value="{!ps.EnrollInfoUploadDueDate__c}" />
+	         </div>
+	         </apex:outputPanel>
+         </td>
+     </table>
+   
+    <div class="pageBreak" />
+    
+    <!--  more s125PDF -->
+    
+    <div class="sectionHeader" style="margin-top:20px">
+        <apex:outputText styleclass="sectionLabel" value="Marketed Products"/>
+    </div>
+    <div>
+        <div style="color: rgb(22, 50,92) !important;">
+            <center>
+                <h4>Benefit Products</h4>
+            </center>
+        </div>
+    </div>
+    <table style="width:100%;border-collapse: collapse;">
+        <thead style="background-color:#2989d8; color:#FFF; page-break-inside: avoid;">
+            <tr>
+                <th>Marketed Product Name</th>
+                <th>Tax Treatment</th>
+                <th>Plan Status</th>
+                <th>Rider</th>
+                <th>Employer Paid Portion</th>
+            </tr>
+        </thead>
+        <tbody>
+            <apex:repeat value="{!benefitMarketedProducts}" var="ben">
+                <tr>
+                    <td style="width:25%;border-bottom:.5pt solid gray;">
+                        <apex:outputField value="{!ben.Products__r.Name}" style="width:100%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!ben.Tax_Treatment__c}" style="width:90%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!ben.Plan_Status__c}" style="width:90%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!ben.Products__r.Rider__c}" style="width:90%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!ben.Employer_Paid_Portion__c}" style="width:90%"/>
+                    </td>
+                </tr>
+            </apex:repeat>
+        </tbody>
+    </table>
+    <div>
+        <div style="color: rgb(22, 50,92) !important;">
+            <center>
+                <h4>Service Products</h4>
+            </center>
+        </div>
+    </div>
+    <table style="width:100%;border-collapse: collapse;">
+        <thead style="background-color:#2989d8; color:#FFF; page-break-inside: avoid;">
+            <tr>
+                <th>Marketed Product Name</th>
+                <th>Plan Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <apex:repeat value="{!serviceMarketedProducts}" var="svc">
+                <tr>
+                    <td style="width:50%;border-bottom:.5pt solid gray;">
+                        <apex:outputField value="{!svc.Products__r.Name}" style="width:100%"/>
+                    </td>
+                    <td style="width:50%;border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!svc.Plan_Status__c}" style="width:90%"/>
+                    </td>
+                </tr>
+            </apex:repeat>
+        </tbody>
+    </table>
+    <div> 
+        <div style="color: rgb(22, 50,92) !important;">
+            <center>
+                <h4>Import Products</h4>
+            </center>
+        </div>
+    </div>
+    <table style="width:100%;border-collapse: collapse;">
+        <thead style="background-color:#2989d8; color:#FFF; page-break-inside: avoid;">
+            <tr>
+                <th>Marketed Product Name</th>
+                <th>Tax Treatment</th>
+                <th>Plan Status</th>
+                <th>Is AFA the AOR?</th>
+                <th>Carrier</th>
+                <th>Product Description</th>
+                <th>Employer Paid Portion</th>
+            </tr>
+        </thead>
+        <tbody>
+            <apex:repeat value="{!importMarketedProducts}" var="imp">
+                <tr>
+                    <td style="width:25%;border-bottom:.5pt solid gray;">
+                        <apex:outputField value="{!imp.Products__r.Name}" style="width:100%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!imp.Tax_Treatment__c}" style="width:90%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!imp.Plan_Status__c}" style="width:90%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!imp.AOR__c}" style="width:90%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!imp.Carrier__c}" style="width:90%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!imp.Product_Description__c}" style="width:90%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!imp.Employer_Paid_Portion__c}" style="width:90%"/>
+                    </td>
+                </tr>
+            </apex:repeat>
+        </tbody>
+    </table>
+    <br/>
+    <div class="sectionHeader">
+        <apex:outputText styleclass="sectionLabel" value="Enrollment Team"/>
+    </div>
+    <table style="width:100%;border-collapse: collapse;">
+        <thead style="background-color:#2989d8; color:#FFF; page-break-inside: avoid;">
+            <tr>
+                <th>Team Member</th>
+                <th>Network Id</th>
+                <th>Agent No.</th>
+            </tr>
+        </thead>
+        <tbody>
+            <apex:repeat value="{!oppTeamOwner}" var="o">
+                <tr>
+                    <td style="border-bottom:.5pt solid gray;">
+                        <apex:outputField value="{!o.User.Name}" style="width:100%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!o.User.Network_ID__c}" style="width:90%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!o.User.Agent_ID__c}" style="width:90%"/>
+                    </td>
+                </tr>
+            </apex:repeat>
+            <apex:repeat value="{!oppTeam}" var="o">
+                <tr>
+                    <td style="width:25%;border-bottom:.5pt solid gray;">
+                        <apex:outputField value="{!o.User.Name}" style="width:100%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!o.User.Network_ID__c}" style="width:90%"/>
+                    </td>
+                    <td style="border-bottom:.5px solid gray;">
+                        <apex:outputField value="{!o.User.Agent_ID__c}" style="width:90%"/>
+                    </td>
+                </tr>
+            </apex:repeat>
+        </tbody>
+    </table>
+    <br/>
+    
+    
+    <apex:repeat value="{!EnrollmentContacts}" var="enrollmentContact">
+        <div class="sectionHeader" style="margin-top:20px">
+            <apex:outputText styleclass="sectionLabel" value="{! enrollmentContact.ContactType }"/>
+        </div>
+        
+        <table class="formtable"> 
+            <apex:outputPanel layout="none" rendered="{! enrollmentContact.HasSameAsAdminContactField == true }">
+            <tr>
+                <td class="fieldLabel">Same as Admin Contact?</td>
+            </tr>
+            <tr>
+                <td><apex:outputText value="{! enrollmentContact.SameAsAdminContactYesNo }" /></td>                
+            </tr>
+            </apex:outputPanel>
+
+            <tr>
+                <td class="fieldLabel">Name</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{! enrollmentContact.Record.Name }" /></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Title</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{! enrollmentContact.Record.Title }"/></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Email</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{! enrollmentContact.Record.Email }"/></td>
+            </tr>
+            <tr>
+                <td class="fieldLabel">Phone</td>
+            </tr>
+            <tr>
+                <td><apex:outputField value="{! enrollmentContact.Record.Phone }" /></td>
+            </tr>
+        </table>
+    </apex:repeat>
+    
+    <div class="pageBreak" />
+</apex:component>

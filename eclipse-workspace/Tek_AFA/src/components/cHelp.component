@@ -1,0 +1,9 @@
+<apex:component >
+    <apex:attribute name="helpText"  description="Help Text" type="string" required="true" />
+    <apex:variable var="v_display" value="{!IF(LEN(helpText) > 0, '', 'display:none;')}"/>
+    
+    <span class="helpButton" style="{!v_display}">
+        <img src="/s.gif" alt="" class="helpOrb"/>
+        <span class="spanText" style="display:none">{!helpText}</span>
+    </span>
+</apex:component>

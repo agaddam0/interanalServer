@@ -1,0 +1,77 @@
+<aura:component extends="c:ReserviceComponentContainer" controller="ReserviceSetupController">
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    <aura:handler event="c:ReloadReserviceSetup" action="{! c.init}" />
+    
+    <aura:attribute name="PlatformSetup" type="Platform_Setup__c" />
+    <aura:attribute name="Opportunity" type="Opportunity" />
+    <aura:attribute name="EnrollmentForm" type="Enrollment_Form__c" />
+    
+    <aura:attribute name="showAdminContact" type="Boolean" access="private" default="false" />
+    <aura:attribute name="showImportPlans" type="Boolean" access="private" default="false" />
+    <aura:attribute name="showIndividualPlans" type="Boolean" access="private" default="false" />
+    <aura:attribute name="showFlexAmounts" type="Boolean" access="private" default="false" />
+    <aura:attribute name="showFrequencies" type="Boolean" access="private" default="false" />
+    <aura:attribute name="showDVR" type="Boolean" access="private" default="false" />
+    <aura:attribute name="showTexasLife" type="Boolean" access="private" default="false" />
+    <aura:attribute name="NoChanges" type="Boolean" access="private"  default="true"/>
+    <aura:attribute name="formsValid" type="Boolean" access="private" default="false" />
+    <aura:attribute name="disableInputFields" type="Boolean" default="false" />
+    
+    <aura:method name="validateForm" />
+    <aura:method name="disableForm" >
+        <aura:attribute name="disabled" type="Boolean" />
+    </aura:method>
+    
+    <div class="{! v.NoChanges ? 'slds-show' : 'slds-hide'}">
+        <aura:unescapedHTML value="{! $Label.c.No_Setup_Changes}" />
+    </div>
+    
+    <div class="slds-size_1-of-3">
+        <div class="{! v.showAdminContact ? 'slds-show afa-setup-form-subheader' : 'slds-hide'}">
+            Change Administrative Contact
+        </div>
+        <div aura:Id="adminContactContainer" class="{! v.showAdminContact ? 'slds-p-bottom_large' : 'slds-hide'}"/>
+    </div>
+    
+    <div>
+        <div class="{! v.showIndividualPlans ? 'slds-show afa-setup-form-subheader' : 'slds-hide'}">
+            Add Individual Plan(s)
+        </div>
+        <div aura:Id="individualPlansContainer" class="{! v.showIndividualPlans ? 'slds-p-bottom_large' : 'slds-hide'}" />
+    </div>
+    
+    <div>
+        <div class="{! v.showImportPlans ? 'slds-show afa-setup-form-subheader' : 'slds-hide'}">
+            Add Import Plan(s)
+        </div>
+        <div aura:Id="importPlansContainer" class="{! v.showImportPlans ? 'slds-p-bottom_large' : 'slds-hide'}" />
+    </div>
+    
+    <div class="slds-size_1-of-3">
+        <div class="{! v.showFlexAmounts ? 'slds-show afa-setup-form-subheader' : 'slds-hide'}">
+            Change Flex Amounts
+        </div>
+        <div aura:Id="flexAmountContainer" class="{! v.showFlexAmounts ? 'slds-p-bottom_large' : 'slds-hide'}" />
+    </div>
+    
+    <div class="slds-size_1-of-3">
+        <div class="{! v.showFrequencies ? 'slds-show afa-setup-form-subheader' : 'slds-hide'}">
+            Change AFenroll Frequencies
+        </div>
+        <div aura:Id="deductionFrequenciesContainer" class="{! v.showFrequencies ? 'slds-p-bottom_large' : 'slds-hide'}" />
+    </div>
+    
+    <div class="slds-size_1-of-3">
+        <div class="{! v.showDVR ? 'slds-show afa-setup-form-subheader' : 'slds-hide'}">
+            Add a DVR
+        </div>
+        <div aura:Id="dvrContainer" class="{! v.showDVR ? 'slds-p-bottom_large' : 'slds-hide'}" />
+    </div>
+    
+    <div class="slds-size_1-of-3">
+        <div class="{! v.showTexasLife ? 'slds-show afa-setup-form-subheader' : 'slds-hide'}">
+            Add Texas Life
+        </div>
+        <div aura:Id="texasLifeContainer" class="{! v.showTexasLife ? 'slds-p-bottom_large' : 'slds-hide'}" />
+    </div>
+</aura:component>

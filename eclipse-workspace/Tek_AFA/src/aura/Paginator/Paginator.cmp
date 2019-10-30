@@ -1,0 +1,22 @@
+<aura:component >
+    <aura:attribute name="PageSize" type="Integer" default="10" required="true" />
+    <aura:attribute name="AllItems" type="Object[]" required="true" />
+    <aura:attribute name="DisplayedItems" type="Object[]" required="true" />
+    
+    <aura:attribute name="maxSlice" type="Integer" access="private" default="1" />
+    <aura:attribute name="sliceNo" type="Integer" access="private" default="1"/>
+    <aura:attribute name="showLess" type="boolean" access="private" default="false"/>
+    
+    <aura:method name="reload" />
+
+	<aura:if isTrue="{! and(v.AllItems.length > 0, or(v.maxSlice > v.sliceNo, v.showLess)) }">
+	    <div class="slds-p-bottom_medium slds-m-vertical_medium">
+	        <aura:renderIf isTrue="{!v.maxSlice > v.sliceNo}">
+	            <ui:button label="Load More.." press="{!c.loadMore}" class="'slds-button slds-button--neutral slds-float_right slds-m-left_medium" />
+	        </aura:renderIf>
+	        <aura:renderIf isTrue="{! v.showLess }">
+	            <ui:button label="Show Less.." press="{!c.showLess}" class="slds-button slds-button--neutral slds-float_right" />
+	        </aura:renderIf>
+	    </div>
+	</aura:if>
+</aura:component>

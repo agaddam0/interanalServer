@@ -1,0 +1,84 @@
+.THIS.af-emailbuilder-container {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    grid-template-rows: 100%;
+    height: 100% !important;
+    background-color: token(colorBackgroundAlt);
+}
+
+.THIS .af-emailbuilder-sub-container {
+    height: 100%;
+}
+
+.THIS .af-main-content-container {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    height: 85%;
+}
+
+.THIS .slds-gutters {
+    margin-right: 0px !important;
+}
+
+.THIS .af-subcontainer {
+    overflow-y: auto;
+    width: auto;
+}
+
+.THIS .af-preview-btn {
+    background-color: token(AFAgrey7);
+}
+
+.THIS .af-button[disabled] {
+    background-color: token(AFAgrey1);
+    cursor: not-allowed;
+    color: token(AFAgrey3)
+}
+
+.THIS .af-email-template-header {
+    background-color: token(AFAblue0);
+    border-radius: 0 100px 100px 0; /* Makes the right side rounded */
+    box-shadow: 0 0 0 4px white;
+    position: relative;
+    left: 10px;
+    z-index: 100;
+}
+
+.THIS .af-email-preview-header {
+    background-color: token(AFAgrey2);
+    border-radius: 0 100px 100px 0; /* Makes the right side rounded */
+}
+
+.THIS .af-email-template-select label {
+    display: none;
+}
+
+.THIS .sl-lookup__input.slds-col {
+    /* Make the lookup input aligned with the rest of the inputs */
+    padding-right: 0.25rem !important;
+    padding-left: 0.25rem !important;
+}
+
+.THIS .af-move-right-small-amt {
+    position: relative;
+    left: 10px;
+}
+
+.THIS .slds-radio_faux:after {
+    background-color: token(AFAgreen5) !important;
+}
+
+.THIS .af-preview-instructions {
+    height: 100%;
+}
+
+.THIS .af-recipient-contact {
+    width: auto !important;
+}
+
+.THIS .af-recipient-contact .slds-lookup__menu {
+    /* Place the search results above the Recipient Contact input so they're visible.
+       Otherwise, one has to scroll down to see them. */
+    bottom: 40px;
+}

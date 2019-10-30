@@ -1,0 +1,17 @@
+<apex:component controller="findUserAccounts" access="global">
+<apex:attribute name="ownerId" type="Id" description="Id of the user" assignTo="{!userId}"/>
+    <apex:dataTable value="{!accounts}" var="a" border="2" cellspacing="8" cellpadding="5">
+        <apex:column >
+            <apex:facet name="header">Account Name</apex:facet>
+            {!a.Name}
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Status</apex:facet>
+            {!a.Status__c}
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Type</apex:facet>
+            {!a.Type}
+        </apex:column>
+    </apex:dataTable>
+</apex:component>

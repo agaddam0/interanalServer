@@ -1,0 +1,245 @@
+<aura:component controller="FeatureController"
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId"
+    access="global">
+    <aura:attribute name="featureReleases" type="Feature_Release__c[]" access="private" />
+    <aura:attribute name="filterYear" type="String" access="private" default="2019" />
+    <aura:attribute name="filterTeam" type="String" access="private" default="Salesforce" />
+    <aura:attribute name="pdfhtml" type="String" access="private" default="" />
+    <aura:attribute name="themeName" type="String" access="private" default="" />
+    <aura:attribute name="navigationSideBarCollapsed" type="Boolean" default="false" access="private" />
+    <aura:attribute name="ShowFeatureDetailModal" type="Boolean" access="private" default="false" />
+    <aura:attribute name="ShowPrintModal" type="Boolean" access="private" default="false" />
+    <aura:attribute name="yearOptions" type="String[]" access="private" default="['2019', '2020', '2021', '2022']" />
+    <aura:attribute name="featureClassMap" type="Map" access="private" />
+    <aura:attribute name="selectedFeature" type="Feature_Release__c" access="private"
+        default="{ sobjectType: 'Feature_Release__c' }" />
+    <aura:attribute name="summaryColumns" type="Map" access="private" />
+    <aura:handler name="fieldSetFormLoaded" event="c:OnFieldSetFormLoaded" action="{!c.onFieldSetFormLoaded}" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <div class="slds-page-header slds-m-bottom" role="banner">
+        <div id="printContainer">
+            <aura:unescapedHtml value="{!v.pdfhtml}" />
+        </div>
+
+        <!-- <c:lwcFeatureList /> -->
+        <div class="slds-media slds-media--center">
+            <div class="slds-media__body">
+                <span class="slds-float_left slds-p-right_medium">
+                    <a title="{! v.navigationSideBarCollapsed == true ? 'Click to Open Sidebar' : 'Click to Close Sidebar' }"
+                        onclick="{! c.toggleNavigationSidebar }">
+                        <lightning:icon iconName="action:filter" size="small"
+                            class="{! v.navigationSideBarCollapsed == true ? 'icon-collapsed-color' : 'icon-open-color' }"
+                            alternativeText="Filter features" />
+                    </a>
+                </span>
+                <p class="slds-page-header__title slds-truncate slds-align-middle slds-text-heading_large">
+                    <strong><i class="fa fa-th" aria-hidden="true"></i>&nbsp;Feature
+                        Roadmap</strong>
+                    <span class="slds-float_right slds-p-right_large"><i>{! v.filterYear }</i></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="slds-text-heading_medium af-project-body-header slds-is-relative slds-p-vertical slds-p-left_medium slds-m-bottom_xx-large">
+        <!--Kanban Columns-->
+        <div id="main" class="slds-grid slds-gutters slds-m-top_medium">
+            <div
+                class="{! v.navigationSideBarCollapsed == true ? 'slds-col slds-size_1-of-5 slds-hide slds-p-around_small slds-border_right slds-is-relative' : 'slds-col slds-size_1-of-6 slds-p-around_small slds-border_right slds-is-relative' }">
+                <div class="slds-m-top_medium slds-m-bottom_large">
+                    <lightning:select name="yearSelect" label="Filter by year:" aura:id="yearSelect"
+                        value="{!v.filterYear}" onchange="{!c.updateYear}">
+                        <aura:iteration items="{! v.yearOptions }" var="yearNumber" indexVar="i">
+                            <option text="{! yearNumber }" value="{! yearNumber }"
+                                selected="{! v.filterYear == yearNumber }" />
+                        </aura:iteration>
+                    </lightning:select>
+                </div>
+                <div class="slds-m-top_medium slds-m-bottom_xx-large">
+                    <lightning:select name="teamSelect" label="Filter by team:" aura:id="teamSelect"
+                        value="{!v.filterTeam}" onchange="{!c.updateTeam}">
+                        <option text="Salesforce" value="Salesforce" selected="{! v.filterTeam == 'Salesforce' }" />
+                    </lightning:select>
+                </div>
+
+                <div class="my-legend">
+                    <div class="legend-title">Status Indicators</div>
+                    <div class="legend-scale">
+                        <ul class="legend-labels">
+                            <li><span
+                                    class="{! ('feature-not-started' + (v.themeName != '' ? '_' + (v.themeName) : '')) }"></span>Not
+                                Started</li>
+                            <li><span
+                                    class="{! ('feature-discovery' + (v.themeName != '' ? '_' + (v.themeName) : '')) }"></span>Discovery
+                            </li>
+                            <li><span
+                                    class="{! ('feature-in-progress' + (v.themeName != '' ? '_' + (v.themeName) : '')) }"></span>In
+                                Progress</li>
+                            <li><span
+                                    class="{! ('feature-complete' + (v.themeName != '' ? '_' + (v.themeName) : '')) }"></span>Complete
+                            </li>
+                            <li><span
+                                    class="{! ('feature-on-hold' + (v.themeName != '' ? '_' + (v.themeName) : '')) }"></span>On
+                                Hold</li>
+                            <li><span class="feature-future"></span>Future</li>
+                            <li class="slds-p-top_medium">
+                                <p class="tier-one">Features in bold</p> are associated with
+                                tier one projects
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="slds-hide slds-m-top_xx-large slds-m-bottom_xx-large slds-text-align_center"
+                    style="margin-top: 30vh;">
+                    <a href="" onclick="{! c.openPrintModal }" class="slds-button">Export as PDF</a>
+                </div>
+                <div class="slds-m-xx_large slds-m-bottom_xx-large">
+                    <lightning:select name="themeSelect" label="Theme:" aura:id="themeSelect" value="{!v.themeName}"
+                        onchange="{!c.updateTheme}">
+                        <option text="Default" value="" selected="{! v.themeName == '' }" />
+                        <option text="Alt" value="alt" selected="{! v.themeName == 'alt' }" />
+                        <option text="Brand" value="brand" selected="{! v.themeName == 'brand' }" />
+                    </lightning:select>
+                </div>
+            </div>
+            <aura:iteration items="{! v.summaryColumns }" var="summary" indexVar="i">
+                <div
+                    class="{! v.navigationSideBarCollapsed == true ? 'slds-col slds-size_1-of-5 slds-has-dividers_around-space slds-scrollable__y' : 'slds-col slds-size_1-of-6 slds-has-dividers_around-space slds-scrollable__y' }">
+                    <div class="slds-m-around slds-m-bottom_medium">
+                        <h3 class="heading">
+                            <div class="slds-tabs_path__item" role="presentation">
+                                <span
+                                    class="slds-text-heading_small slds-p-around_x-small header-white slds-tabs_path__title">{!
+                                    summary.key }</span>
+                            </div>
+                        </h3>
+                    </div>
+
+                    <aura:iteration items="{! summary.data }" var="feature" indexVar="i">
+                        <div class="{! feature.placeholderClass }">
+                            <div class="slds-tile slds-tile__board">
+                                <h3 class="{! feature.className }">
+                                    <a href="javascript:void(0);" class="slds-p-inside_small"
+                                        data-target="{! feature.Id }" onclick="{! c.openFeatureDetailModal }"
+                                        style="font-size: 120%;">
+                                        &nbsp;{! feature.Name }
+                                    </a>
+                                </h3>
+
+                                <div class="slds-text-align_right">
+                                    <span class="slds-text-body_regular">{! feature.releaseDisplayText }</span>
+                                </div>
+                            </div>
+                        </div>
+                    </aura:iteration>
+                </div>
+            </aura:iteration>
+        </div>
+    </div>
+    <!-- slds grid -->
+
+    <div class="{! v.ShowFeatureDetailModal ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1"
+            class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeFeatureDetailModal }"
+                        iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close"
+                        title="Close" />
+                    <div class="{! v.selectedFeature.className }">
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">{!
+                            v.selectedFeature.Name }</h2>
+                    </div>
+                </header>
+
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <c:FieldSetForm fieldSetName="Feature_Roadmap" objectName="Feature_Release__c"
+                        record="{! v.selectedFeature }" loadOnInit="false" aura:id="featureDetailsFieldSetForm"
+                        disableInputFields="true" />
+                </div>
+                <footer class="slds-modal__footer">
+                    <div class="slds-button slds-button_neutral">
+                        <a target="_blank" href="{!'/'+v.selectedFeature.Id}">Detail</a>
+                    </div>
+
+                    <button class="slds-button slds-button_neutral"
+                        onclick="{! c.closeFeatureDetailModal }">Close</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+
+    <div id="printarea" class="{! v.ShowPrintModal ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-02" aria-describedby="modal-content-id-2"
+            class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closePrintModal }"
+                        iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close"
+                        title="Close" />
+                    <div>
+                        <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate">Print</h2>
+                    </div>
+                </header>
+
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
+                    <div class="slds-page-header slds-m-bottom" role="banner">
+                        <div class="slds-media slds-media--center">
+                            <div class="slds-media__body">
+                                <p
+                                    class="slds-page-header__title slds-truncate slds-align-middle slds-text-heading_large">
+                                    <strong><i class="fa fa-th" aria-hidden="true"></i>&nbsp;Feature
+                                        Roadmap</strong>
+                                    <span class="slds-float_right slds-p-right_large"><i>{! v.filterYear }</i></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="main" class=" slds-gutters slds-m-top_medium" style="zoom: 60%;">
+                        <aura:iteration items="{! v.summaryColumns }" var="summary" indexVar="i">
+                            <div class="slds-col slds-size_1-of-5 slds-has-dividers_around-space slds-scrollable__y">
+                                <div class="slds-m-around slds-m-bottom_medium">
+                                    <h3 class="heading">
+                                        <div class="slds-tabs_path__item" role="presentation">
+                                            <span
+                                                class="slds-tabs_path__title slds-text-heading_small slds-p-around_x-small header-white">{!
+                                                summary.key }</span>
+                                        </div>
+                                    </h3>
+                                </div>
+
+                                <aura:iteration items="{! summary.data }" var="feature" indexVar="i">
+                                    <div class="{! feature.placeholderClass }">
+                                        <div class="slds-tile slds-tile__board">
+                                            <h3 class="{! feature.className }">
+                                                <p href="javascript:void(0);" class="slds-p-inside_small"
+                                                    data-target="{! feature.Id }" style="font-size: 120%;">
+                                                    &nbsp;{! feature.Name }
+                                                </p>
+                                            </h3>
+
+                                            <div class="slds-text-align_right">
+                                                <span class="slds-text-body_regular">{! feature.releaseDisplayText
+                                                    }</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </aura:iteration>
+                            </div>
+                        </aura:iteration>
+                    </div>
+                </div>
+
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closePrintModal }">Close</button>
+                </footer>
+            </div>
+        </section>
+
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+</aura:component>

@@ -1,0 +1,8 @@
+<aura:event type="APPLICATION" description="This event determines what pages the user should be seeing in the Shopping Cart">
+
+    <aura:attribute name="navigate" type="String"/>
+    <aura:attribute name="MarketingMaterial" type="Object" />
+    <aura:attribute name="OrderId" type="Id" />
+    <aura:attribute name="ReturnLocation" type="String" />
+    
+</aura:event>

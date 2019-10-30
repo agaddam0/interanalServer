@@ -1,0 +1,118 @@
+<apex:page standardController="Policyholder__c" extensions="PolicyHolderClaimEXT" showHeader="false" sidebar="false">
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"/>
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.tablesorter, '/tablesorter-master/jquery.tablesorter.min.js')}"/>
+    <apex:slds />
+    <style>
+        .header div:hover
+        {
+        text-decoration: underline;
+        cursor:pointer;
+        }
+        .headerSortUp div::after
+        {
+        content: " &#x25BC;";
+        }
+        .headerSortDown div::after
+        {
+        content: ' &#x25B2;';
+        }
+    </style>
+    <script type="text/javascript">
+    var $ = jQuery.noConflict();
+    
+    $(document).ready(function ($) {
+        getClaimData('{!holder.Customer_Number__c}');
+        
+        $("[id$=lightningClaims]").tablesorter({
+            sortList: [[1,1]]
+        });
+    });
+    
+    function resetTableSort() {
+        $("[id$=lightningClaims]").tablesorter({
+            sortList: [[1,1]]
+        });
+    }
+    
+    function overridePageMessages(){
+        $('ul[role="alert"] li').addClass('slds-notify slds-notify--alert slds-theme--error');
+    }
+    
+    </script>
+    <apex:form >
+        <apex:outputPanel id="ProductPanel">
+            <apex:messages />
+        
+            <apex:outputPanel rendered="{!PClaims != null && PClaims.size > 0 && HasErrorMessages == false}">
+                <table id="lightningClaims" class="slds-table slds-table_bordered slds-table_cell-buffer " style="width:98%">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th scope="col">
+                                <div class="slds-truncate" title="Policy">Policy</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Claims Incurred Date">Claims Incurred Date</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Claim Number">Claim Number</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Claim Status">Claim Status</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="EOB Status">EOB Status</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="EOB Date">EOB Date</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:repeat value="{!Pclaims}" var="c">
+                            <tr>
+                                <th scope="row" data-label="Policy">
+                                    <div class="slds-truncate" title="Policy">{!c.ProductCode}</div>
+                                </th>
+                                <td data-label="Claims Incurred Date">
+                                    <div class="slds-truncate" title="Claims Incurred Date">{!c.ClaimsIncurredDate}</div>
+                                </td>
+                                <td data-label="Claim Number">
+                                    <div class="slds-truncate" title="Claim Number">{!c.ClaimNumber}</div>
+                                </td>
+                                <td data-label="Claim Status">
+                                    <div class="slds-truncate" title="Claim Status">{!c.ClaimStatus}</div>
+                                </td>
+                                <td data-label="EOB Status">
+                                    <div class="slds-truncate" title="EOB Status">{!c.EOBStatus}</div>
+                                </td>
+                                <td data-label="EOB Date">
+                                    <div class="slds-truncate" title="EOB Date">{!c.EOBDate}</div>
+                                </td>
+                            </tr>
+                        </apex:repeat>
+                    </tbody>
+                </table>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!(PClaims == null || PClaims.size == 0) && showTable && HasErrorMessages == false}">
+                This policyholder does not have any product claims.
+            </apex:outputPanel>
+        </apex:outputPanel>
+        
+        <apex:actionFunction name="getClaimData" action="{!getProductClaims}" rerender="ProductPanel" status="sts" oncomplete="resetTableSort();overridePageMessages();">
+            <apex:param name="CustomerNo" value="" assignTo="{!CustomerNo}"/>
+        </apex:actionFunction>
+        
+        <apex:actionstatus id="sts">
+            <apex:facet name="start">
+                <div class="slds-spinner_container">
+                    <div id="mySpinner" role="status" class="slds-spinner slds-spinner_medium">
+                        <span class="slds-assistive-text">Loading</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                    </div>
+                </div>
+            </apex:facet>
+        </apex:actionstatus>  
+    </apex:form>
+</apex:page>

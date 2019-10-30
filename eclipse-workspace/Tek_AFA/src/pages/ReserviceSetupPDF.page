@@ -1,0 +1,529 @@
+<apex:page sidebar="false" standardStylesheets="true" showHeader="false" 
+           standardController="Platform_Setup__c" extensions="ReserviceSetupPDFExt" docType="html-5.0"
+           renderAs="PDF" applyBodyTag="false">
+    
+    <apex:composition template="SetupFormPDFTemplate">
+        <apex:define name="body">
+            
+            <!-- Current Setup Review Section -->
+            <div class="afa-section-header">
+                <apex:outputText styleclass="sectionLabel" value="Current Setup Review for {!CustomerAccount.Name}"/>
+            </div>
+            
+            <table style="width:100%;">
+                <tr>
+                    <td valign="top" style="width:50%">
+                        <span class="af-title">General Information</span>
+                        <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! EnrollmentOpportunity }" fieldSetName="Opportunity_Current_Setup_Review" numberOfLayoutColumns="1" />
+                    </td>
+                    <td valign="top" style="width:50%">
+                        <span class="af-title">Administrative Contact</span>
+                        <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! EnrollmentOpportunity }" fieldSetName="Administrative_Contact_Fields" numberOfLayoutColumns="1"/>
+                        <span class="af-title">Account Billing Address</span>
+                        <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! CustomerAccount }" fieldSetName="Billing_Address" numberOfLayoutColumns="1" />
+                    </td>
+                </tr>
+            </table>
+            
+            <div class="afa-setup-form-subheader">Products</div>
+            
+            <table class="af-setup-form-table" style="width:100%;">
+                <thead style="page-break-inside: avoid;">
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Product Description</th>
+                        <th>Elimination Period</th>
+                        <th>Benefit Period</th>
+                        <th>Plan Code</th>
+                        <th>Contract Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:variable var="gi" value="{!1}"/>
+                    <apex:repeat value="{!groupProducts}" var="gp">
+                        <tr class="{!IF(MOD(gi,2) == 0, 'altRow', '')}">
+                            <td style="width:25%;">
+                                <apex:outputField value="{!gp.Product_Name__c}" style="width:100%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!gp.Product_Description__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!gp.EliminationPeriod__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!gp.BenefitPeriod__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!gp.Name}" style="width:90%"/>
+                            </td>                                    
+                            <td>
+                                <apex:outputField value="{!gp.Contract_Number__c}" style="width:90%"/>
+                            </td>
+                        </tr>
+                        <apex:variable value="{!gi + 1}" var="gi"/>
+                    </apex:repeat>
+                </tbody>
+            </table>
+            <br/><br/>
+            <table class="af-setup-form-table" style="width:100%;">
+                <thead style="page-break-inside: avoid;">
+                    <tr>
+                        <th>Marketed Product Name</th>
+                        <th>Tax Treatment</th>
+                        <th>Carrier</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:variable var="mi" value="{!1}"/>
+                    <apex:repeat value="{!marketedProducts}" var="mp">                        
+                        <tr class="{!IF(MOD(mi,2) == 0, 'altRow', '')}">
+                            <td style="width:25%;">
+                                <apex:outputField value="{!mp.Name}" style="width:100%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!mp.Tax_Treatment__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!mp.Carrier__c}" style="width:90%"/>
+                            </td>
+                        </tr>
+                        <apex:variable var="mi" value="{!mi + 1}"/>
+                    </apex:repeat>
+                </tbody>
+            </table>
+            
+            <div class="afa-setup-form-subheader">Services Information</div>
+            
+            <table class="af-setup-form-table" style="width:100%;">
+                <thead style="page-break-inside: avoid;">
+                    <tr>
+                        <th>Plan Number</th>
+                        <th>Plan Name</th>
+                        <th>Plan Start Date</th>
+                        <th>Plan End Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:variable var="pdi" value="{!1}"/>
+                    <apex:repeat value="{!planDates}" var="pd">
+                        <tr class="{!IF(MOD(pdi,2) == 0, 'altRow', '')}">
+                            <td style="width:25%;">
+                                <apex:outputField value="{!pd.Name}" style="width:100%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!pd.Plan_Name__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!pd.Plan_Start_Date__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!pd.Plan_End_Date__c}" style="width:90%"/>
+                            </td>
+                        </tr>
+                        <apex:variable var="pdi" value="{!pdi + 1}"/>
+                    </apex:repeat>
+                </tbody>
+            </table>  
+            <br/><br/>
+            <table class="af-setup-form-table" style="width:100%;">
+                <thead style="page-break-inside: avoid;">
+                    <tr>
+                        <th>Benefit Code</th>
+                        <th>Benefit Description</th>
+                        <th>Max Election Amount</th>
+                        <th>Min Election Amount</th>
+                        <th>Debit Card</th>
+                        <th>Grace Period Days</th>
+                        <th>Effective Start Date</th>
+                        <th>Effective End Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:variable var="eci" value="{!1}"/>
+                    <apex:repeat value="{!eligibleCoverages}" var="ec">
+                        <tr class="{!IF(MOD(eci,2) == 0, 'altRow', '')}">
+                            <td style="width:25%;">
+                                <apex:outputField value="{!ec.BenefitCode__c}" style="width:100%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!ec.BenefitDescription__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!ec.MaxElectionAmount__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!ec.MinElectionAmount__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!ec.DebitCard__c}" style="width:100%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!ec.GracePeriodDays__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!ec.EffectiveStartDate__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!ec.EffectiveEndDate__c}" style="width:90%"/>
+                            </td>
+                        </tr>
+                        <apex:variable var="eci" value="{!mi + 1}"/>
+                    </apex:repeat>
+                </tbody>
+            </table>
+            <br/><br/>
+            
+            <apex:outputPanel rendered="{!isSection125Only}">
+                <span>This account is Section 125 Only</span><br/><br/>
+            </apex:outputPanel>
+            
+            <div class="afa-setup-form-subheader">Bill Modes</div>
+            
+            <table class="af-setup-form-table" style="width:100%;">
+                <thead style="page-break-inside: avoid;">
+                    <tr>
+                        <th>Bill Mode</th>
+                        <th>Billing Mode Description</th>
+                        <th>Payroll Deduction</th>
+                        <th>Payor Number</th>
+                        <th>Distribution ID</th>
+                        <th>Preference</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:variable var="bmi" value="{!1}"/>
+                    <apex:repeat value="{!billingModes}" var="bm">
+                        <tr class="{!IF(MOD(pdi,2) == 0, 'altRow', '')}">
+                            <td style="width:25%;">
+                                <apex:outputField value="{!bm.BillMode__c}" style="width:100%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!bm.Billing_Mode_Description__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!bm.Payroll_Deduction__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!bm.Payor_Number__c}" style="width:90%"/>
+                            </td>
+                            <td>
+                                <apex:outputField value="{!bm.DistributionID__c}" style="width:90%"/>
+                            </td>                                    
+                            <td>
+                                <apex:outputField value="{!bm.Preference__c}" style="width:90%"/>
+                            </td>
+                        </tr>
+                        <apex:variable var="bmi" value="{!bmi + 1}"/>
+                    </apex:repeat>
+                </tbody>
+            </table>
+            <br/><br/>
+            
+            <div>
+                <div class="title">
+                    <center>
+                        <h3>
+                            Selected Changes
+                        </h3>
+                    </center>
+                </div>
+            </div>
+            
+            <!-- Selected Changes Section -->
+            
+            <table style="width:100%">
+                <tr>
+                    <td valign="top" style="width:50%">
+                        <span class="af-title">Simple Setup Changes</span>
+                        <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! EnrollmentOpportunity }" fieldSetName="Opportunity_Reservice_Simple_Changes" numberOfLayoutColumns="1" />
+                    </td>
+                    <td valign="top">
+                        <span class="af-title">Significant Setup Changes</span>
+                        <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! EnrollmentOpportunity }" fieldSetName="Opportunity_Reservice_Significant_Change" numberOfLayoutColumns="1" />
+                    </td>
+                </tr>
+            </table>
+            
+            
+            <!-- Quick Setup Changes -->
+            
+            <div>
+                <div class="title">
+                    <center>
+                        <h3>
+                            Quick Setup
+                        </h3>
+                    </center>
+                </div>
+            </div>
+            
+            <div class="afa-section-header">
+                <apex:outputText value="General Information"/>
+            </div>
+            
+            <table style="width:100%">
+                <tr>
+                    <td style="width:50%">
+                        <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! EnrollmentOpportunity }" fieldSetName="Quick_Setup_General_Info" numberOfLayoutColumns="1" />
+                        <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! EnrollmentOpportunity }" fieldSetName="Quick_Setup_Gen_Info_Waiting" numberOfLayoutColumns="1" />
+                    </td>
+                </tr>
+            </table>
+            
+            <apex:outputPanel rendered="{! EnrollmentOpportunity.EE_Eligibility_Waiting_Period__c == 'Other'}">
+                <table>
+                    <tr>
+                        <td style="width:50%">
+                            <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! EnrollmentOpportunity }" fieldSetName="Quick_Setup_Gen_Info_Other_Eligibility" numberOfLayoutColumns="1" />
+                        </td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+            
+            <table>
+                <tr>
+                    <td style="width:50%">
+                        <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! EnrollmentOpportunity }" fieldSetName="Quick_Setup_Gen_Info_Effective" numberOfLayoutColumns="1" />
+                    </td>
+                </tr>
+            </table>
+            
+            <div class="afa-section-header">
+                <apex:outputText styleclass="sectionLabel" value="Key Dates"/>
+            </div>
+            
+            <table style="width:100%;">
+                <tr>
+                    <td valign="top" style="width:50%">
+                        <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! EnrollmentOpportunity }" fieldSetName="Quick_Setup_Key_Dates" numberOfLayoutColumns="1" />
+                    </td>
+                    <td valign="top" style="width:50%">
+                        <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! p }" fieldSetName="Quick_Setup_Key_Dates" numberOfLayoutColumns="1" />
+                    </td>
+                </tr>
+            </table>
+            
+            <div class="afa-section-header">
+                <apex:outputText styleclass="sectionLabel" value="AFEnroll Platform Details"/>
+            </div>
+            
+            <table>
+                <tr>
+                    <td style="vertical-align: top; width: 51%;">
+                        <table id="platform" class="af-form-table">
+                            <tr>
+                                <td class="fieldLabel">{! $ObjectType.Opportunity.Fields.Enrollment_Path__c.Label }</td>
+                            </tr>
+                            <tr>
+                                <td class="fieldValueClass"><apex:outputField value="{! EnrollmentOpportunity.Enrollment_Path__c }" /></td>
+                            </tr>
+                            <apex:outputPanel layout="none" rendered="{! EnrollmentOpportunity.Enrollment_Rush_Request_Reason__c != null && EnrollmentOpportunity.ENrollment_Rush_Request_Reason__c != '' }">
+                                <tr>
+                                    <td class="fieldLabel">{! $ObjectType.Opportunity.Fields.Enrollment_Rush_Request_Reason__c.Label }</td>
+                                </tr>
+                                <tr>
+                                    <td class="fieldValueClass"><apex:outputField value="{! EnrollmentOpportunity.Enrollment_Rush_Request_Reason__c }" /></td>
+                                </tr>
+                            </apex:outputPanel>
+                            
+                            <apex:outputPanel layout="none" rendered="{! p.Below_Eligible_Employee_Threshold_Reason__c != null && p.Below_Eligible_Employee_Threshold_Reason__c != '' }">
+                                <tr>
+                                    <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Below_Eligible_Employee_Threshold_Reason__c.Label }</td>
+                                </tr>
+                                <tr>
+                                    <td class="fieldValueClass"><apex:outputField value="{! p.Below_Eligible_Employee_Threshold_Reason__c }" /></td>
+                                </tr>
+                            </apex:outputPanel>
+                            
+                            <tr>
+                                <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Enroll_Info_Service_Process__c.Label }</td>
+                            </tr>
+                            
+                            <tr>
+                                <td class="fieldValueClass"><apex:outputField value="{!p.Enroll_Info_Service_Process__c}" /></td>
+                            </tr>
+                            
+                            <apex:repeat value="{! EnrollmentPathPlatformSetupFieldSet.Fields }" var="psField">
+                                <tr>
+                                    <td class="fieldLabel">{! psField.Label }</td>
+                                </tr>
+                                <tr>
+                                    <td class="fieldValueClass"><apex:outputField value="{! p[psField] }" /></td>
+                                </tr>
+                            </apex:repeat>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            
+            <table>
+                <tr>
+                    <td>
+                        <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! p }" fieldSetName="Quick_Setup_Return_Data_Info_Upload" numberOfLayoutColumns="1" />
+                        <apex:outputPanel rendered="{!p.Enroll_Info_Upload__c == 'Yes'}">
+                            <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! p }" fieldSetName="Quick_Setup_Return_Data_Info_Upload_Yes" numberOfLayoutColumns="1" />
+                        </apex:outputPanel>
+                    </td>
+                </tr>
+            </table>
+            
+            <div class="afa-section-header">
+                <apex:outputText styleclass="sectionLabel" value="Setup Changes"/>
+            </div>
+            
+            <apex:outputPanel rendered="{! NOT(EnrollmentOpportunity.Change_Administrative_Contact__c 
+                                        && EnrollmentOpportunity.Add_Individual_Plan_s__c
+                                        && EnrollmentOpportunity.Add_Import_Plan_s__c
+                                        && EnrollmentOpportunity.Change_Flex_Amount__c
+                                        && EnrollmentOpportunity.Change_AFenroll_Frequencies__c
+                                        && EnrollmentOpportunity.Add_a_DVR__c
+                                        && EnrollmentOpportunity.Add_Texas_Life__c)}">
+                <apex:outputText value="{!$Label.No_Setup_Changes}" escape="false" />
+            </apex:outputPanel>
+            <table style="width:100%">
+                <apex:outputPanel rendered="{! EnrollmentOpportunity.Change_Administrative_Contact__c }">
+                    <tr>
+                        <td style="width:50%">
+                            <span class="afa-setup-form-subheader">Change Administrative Contact</span>
+                            <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! EnrollmentOpportunity }" fieldSetName="Quick_Setup_Admin_Contact" numberOfLayoutColumns="1" />
+                        </td>
+                    </tr>  
+                </apex:outputPanel>               
+            </table>
+            
+            <apex:outputPanel rendered="{!EnrollmentOpportunity.Add_Individual_Plan_s__c}">
+                
+                <span class="afa-setup-form-subheader">Add Individual Plan(s)</span>
+                
+                <table class="af-setup-form-table" style="width:100%;">
+                    <thead style="page-break-inside: avoid;">
+                        <tr>
+                            <th>Marketed Product Name</th>
+                            <th>Tax Treatment</th>
+                            <th>Plan Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:variable var="impi" value="{!1}"/>
+                        <apex:repeat value="{!individualProducts}" var="individual">
+                            <tr class="{!IF(MOD(impi,2) == 0, 'altRow', '')}">
+                                <td style="width:25%">
+                                    <apex:outputField value="{!individual.Products__r.Name}" style="width:100%"/>
+                                </td>
+                                <td>
+                                    <apex:outputField value="{!individual.Products__r.Tax_Treatment__c}" style="width:90%"/>
+                                </td>
+                                <td>
+                                    <apex:outputField value="{!individual.Plan_Status__c}" style="width:90%"/>
+                                </td>
+                            </tr>
+                            <apex:variable var="impi" value="{!impi + 1}"/>
+                        </apex:repeat>
+                    </tbody>
+                </table>
+                <br/>
+            </apex:outputPanel>
+            
+            <apex:outputPanel rendered="{!EnrollmentOpportunity.Add_Import_Plan_s__c}">
+                <div class="afa-setup-form-subheader">Add Import Plan(s)</div>
+                
+                <table class="af-setup-form-table" style="width:100%;">
+                    <thead style="page-break-inside: avoid;">
+                        <tr>
+                            <th>Marketed Product Name</th>
+                            <th>Tax Treatment</th>
+                            <th>Plan Status</th>
+                            <th>Is AFA the AOR</th>
+                            <th>Carrier</th>
+                            <th>Product Description</th>
+                            <th>Employer Paid Portion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:variable var="idvi" value="{!1}"/>
+                        <apex:repeat value="{!importProducts}" var="import">
+                            <tr class="{!IF(MOD(idvi,2) == 0, 'altRow', '')}">
+                                <td style="width:25%;">
+                                    <apex:outputField value="{!import.Products__r.Name}" style="width:100%"/>
+                                </td>
+                                <td>
+                                    <apex:outputField value="{!import.Products__r.Tax_Treatment__c}" style="width:90%"/>
+                                </td>
+                                <td>
+                                    <apex:outputField value="{!import.Plan_Status__c}" style="width:90%"/>
+                                </td>
+                                <td>
+                                    <apex:outputField value="{!import.AOR__c}" style="width:90%"/>
+                                </td>
+                                <td>
+                                    <apex:outputField value="{!import.Carrier__c}" style="width:90%"/>
+                                </td>                                    
+                                <td>
+                                    <apex:outputField value="{!import.Products__r.Product_Description__c}" style="width:90%"/>
+                                </td>
+                                <td>
+                                    <apex:outputField value="{!import.Employer_Paid_Portion__c}" style="width:90%"/>
+                                </td>
+                            </tr>
+                            <apex:variable var="idvi" value="{!idvi + 1}"/>
+                        </apex:repeat>
+                    </tbody>
+                </table>
+            </apex:outputPanel>
+            
+            <table>
+            <apex:outputPanel rendered="{! EnrollmentOpportunity.Change_Flex_Amount__c }">
+                    <tr>
+                        <td style="width:50%">
+                            <div class="afa-setup-form-subheader">Change Flex Amounts</div>
+                            <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! p }" fieldSetName="Quick_Setup_Health_FSA_Amounts" numberOfLayoutColumns="1" />
+                        </td>
+                    </tr>  
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{! EnrollmentOpportunity.Change_AFenroll_Frequencies__c }">
+                    <tr>
+                        <td style="width:50%">
+                            <div class="afa-setup-form-subheader">Change AFenroll Frequencies</div>
+                            <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! EnrollmentOpportunity }" fieldSetName="Quick_Setup_Deduction_Frequencies" numberOfLayoutColumns="1" />
+                        </td>
+                    </tr>  
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{! EnrollmentOpportunity.Add_a_DVR__c }">
+                    <tr>
+                        <td style="width:50%">
+                            <div class="afa-setup-form-subheader">Add a DVR</div>
+                            <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! p }" fieldSetName="DVR_Setup" numberOfLayoutColumns="1" />
+                        </td>
+                    </tr>  
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{! EnrollmentOpportunity.Add_Texas_Life__c }">
+                    <tr>
+                        <td style="width:50%">
+                            <div class="afa-setup-form-subheader">Add Texas Life</div>
+                            <c:VF_FieldSetOutputForm styleClass="af-form-table" record="{! p }" fieldSetName="Texas_Life_Setup" numberOfLayoutColumns="1" />
+                        </td>
+                    </tr>  
+                </apex:outputPanel>
+            </table>
+            
+            <div class="afa-section-header">
+                <apex:outputText value="Notes"/>
+            </div>
+            <table class="af-form-table" style="width:100%">
+                <tr>
+                    <td class="fieldLabel" style="width: 50%">
+                        {! $ObjectType.Opportunity.Fields.Enrollment_Setup_Notes__c.Label }
+                    </td>
+                </tr>
+                <tr>
+                    <td class="fieldValueClass">
+                        <apex:outputField value="{! EnrollmentOpportunity.Enrollment_Setup_Notes__c }" />
+                    </td>
+                </tr>
+            </table>
+            
+            
+        </apex:define>
+    </apex:composition>        
+</apex:page>

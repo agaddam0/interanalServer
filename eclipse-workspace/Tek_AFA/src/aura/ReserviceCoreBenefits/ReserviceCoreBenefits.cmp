@@ -1,0 +1,93 @@
+<aura:component controller="ReserviceSetupController" extends="c:ReserviceComponentContainer">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="valueChange" event="c:SelectChange" action="{!c.checkToShowCoreBenefits}" />
+    <aura:handler name="onRowAction" event="c:CustomizableGridRowAction" action="{!c.handleGridRowAction}"/>
+
+    <aura:attribute name="PlatformSetup" type="Platform_Setup__c" required="true" />
+    <aura:attribute name="disableInputFields" type="Boolean" default="false" />
+    <aura:attribute name="showCoreFoldersRecords" type="Boolean" default="false" access="private" />
+    <aura:attribute name="showNewCoreBenefitModal" type="Boolean" default="false" access="private" />
+    <aura:attribute name="showDependencyField" type="Boolean" default="false" access="private" />
+    <aura:attribute name="coreBenefitsWhereClause" type="String" access="private" />
+    <aura:attribute name="newCoreFolder" type="Core_Benefit_Form__c" access="private" default="{ 'sobjectType' : 'Core_Benefit_Form__c'}" />
+    <aura:attribute name="activeRecord" type="Core_Benefit_Form__c" access="private" />
+    <aura:attribute name="coreFoldersGridRowActions" type="Object[]" access="private" />
+
+    <aura:method name="validateForm" />
+    <aura:method name="disableForm" >
+        <aura:attribute name="disabled" type="Boolean" />
+    </aura:method>
+
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+    
+    <div class="slds-size_1-of-3">
+        <c:FieldSetForm aura:Id="coreBenefitFields"
+            objectName="Platform_Setup__c" 
+            fieldSetName="Core_Benefits_Questions"
+            record="{!v.PlatformSetup}"
+            disableInputFields="{! v.disableInputFields }"/>
+    </div>
+
+    <!-- Core Benefits Folder Section -->
+    <div class="{! v.showCoreFoldersRecords ? 'slds-show' : 'slds-hide'}">
+
+        <div class="slds-p-top_large">
+            <c:CustomizableGridWithSearch aura:Id="coreBenefitsGrid" 
+                                            fieldSetColumns="Quick_Setup_Core_Folders" 
+                                            objectName="Core_Benefit_Form__c"
+                                            whereClause="{!v.coreBenefitsWhereClause}"
+                                            showAlternatingStripes="true"
+                                            removeHoverHighlight="true"
+                                            showBox="false"
+                                            allowGoToRecord="false"
+                                            rowActions="{!v.coreFoldersGridRowActions}"
+                                            class="af-setup-form-table"
+                                            useUppercaseCaseHeaders="false"
+                                            loadOnInit="false"
+                                            showNoRecordsMessage="true"
+                                            noRecordsMessage="No records to show."
+                                            numItemsToShow="50"/>
+
+            <div class="slds-p-top_small">
+                <ui:button aura:id="addFolders" label="+ Add Folder" press="{!c.openModal}" class="slds-button slds-button_neutral" disabled="{! v.disableInputFields }" />
+            </div>
+        </div>
+    </div>
+
+    <div class="{! v.showNewCoreBenefitModal ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeNewCoreBenefitModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+                    
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New Core Folder</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    
+                    <c:FieldSetForm aura:Id="newCoreFolderForm"
+                                    objectName="Core_Benefit_Form__c" 
+                                    fieldSetName="Quick_Setup_Core_Folders"
+                                    record="{!v.activeRecord}"
+                                    disableInputFields="{! v.disableInputFields }"/>
+
+                    <div class="{! v.showDependencyField ? 'slds-show' : 'slds-hide' }">
+                        <c:FieldSetForm aura:Id="newCoreFolderDependencyFields"
+                                        objectName="Core_Benefit_Form__c"
+                                        fieldSetName="Quick_Setup_Dependent_Rated_Folder"
+                                        record="{!v.activeRecord}"
+                                        disableInputFields="{!v.disableInputFields }"/>
+                        
+                    </div>
+                    
+                    
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_brand" onclick="{!c.addNewCoreFolder}" >Save</button>
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeNewCoreBenefitModal }">Close</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+
+</aura:component>

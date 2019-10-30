@@ -1,0 +1,82 @@
+<aura:component extends="c:ReserviceComponentContainer" controller="ReserviceSetupController">
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    
+    <aura:attribute name="Opportunity" type="Opportunity" />
+    <aura:attribute name="PlatformSetup" type="Platform_Setup__c" />
+    
+    <aura:attribute name="enrollmentPaths" type="object[]" access="private"/>
+    <aura:attribute name="showDetailsModal" type="Boolean" default="false" access="private" />
+    <aura:attribute name="modalEnrollmentPath" type="object" access="private" />
+    <aura:attribute name="showUnderEmployeeThreshold" type="Boolean" access="private" />
+    <aura:attribute name="ThresholdMessage" type="String" access="Private" />
+    <aura:attribute name="disableInputFields" type="Boolean" default="false" />
+    
+    <aura:method name="validateForm" />
+    <aura:method name="disableForm" >
+        <aura:attribute name="disabled" type="Boolean" />
+    </aura:method>
+	
+    <div>
+        <div class="slds-size_3-of-4">
+            <ul class="slds-has-dividers_around-space slds-list_horizontal af-path">
+                
+                <aura:iteration items="{!v.enrollmentPaths}" var="path">
+                    
+                    <li class="slds-item slds-m-horizontal_medium af-path-item">
+                        <article class="slds-tile slds-tile_board">
+                            <div class="{! path.Selected ? 'af-path-header-selected slds-p-around_small' : 'af-path-header slds-p-around_small'}" data-recId="{!path.EnrollmentPath.Id}">
+                                <lightning:input type="checkbox" checked="{!path.Selected}" label="{! path.EnrollmentPath.Name }" 
+                                                 class="af-large-checkbox" onchange="{!c.SaveSelection}" disabled="{! v.disableInputFields }"/>
+                            </div>
+                            <div class="slds-tile__detail slds-p-around_small">
+                                <div class="{! path.EnrollmentPath.Recommended__c ? 'slds-show af-recommended-text slds-text-align_center slds-p-bottom_small' : 'slds-hide'}">                                
+                                    {! path.EnrollmentPath.Recommended_Text__c}
+                                </div>
+                                <lightning:formattedRichText value="{! path.EnrollmentPath.Summary__c }" />
+                                
+                                
+                            </div>
+                            
+                        </article>
+                        <div class="slds-float_right slds-p-top_large details-link-container">
+                            <a class="details-link" onclick="{!c.openDetailsModal}" data-recId="{!path.EnrollmentPath.Id}">More Details</a>
+                        </div>
+                    </li>
+                    
+                </aura:iteration>
+                
+            </ul>
+        </div>
+        
+        <div aura:Id="RushRequested" class="slds-size_1-of-3"></div>
+        <div class="{! v.showUnderEmployeeThreshold ? 'slds-show slds-size_1-of-3' : 'slds-hide'}">
+        	{!v.ThresholdMessage}
+        </div>
+        <div aura:Id="BelowThreshold" class="slds-size_1-of-3"></div>
+        
+        <div aura:Id="EnrollmentPathFields" class="slds-size_1-of-3"></div>
+    </div>
+    
+    <aura:if isTrue="{!v.showDetailsModal}">
+        <div style="height: 640px;">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close" class="slds-modal__close" size="large"
+                                              variant="bare-inverse" onclick="{!c.closeModal}"/>
+                        
+                        <h2 class="slds-text-heading_medium slds-hyphenate">{!v.modalEnrollmentPath.Name} Details</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium slds-is-relative">
+                        <lightning:formattedRichText value="{!v.modalEnrollmentPath.Description__c}" />
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" onclick="{! c.closeModal }">Close</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div> 
+    </aura:if>
+    
+</aura:component>

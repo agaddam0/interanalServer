@@ -1,0 +1,18 @@
+.THIS.af-pem-marketing-wizard {
+    height: 100px;
+}
+
+.THIS .af-pem-marketing-wizard-icon {
+    height: 60px;
+}
+
+.THIS .af-start-now-button {
+    background-color: token(AFAteal6);
+    color: white;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.THIS .af-title {
+    color: token(AFAteal4);
+}

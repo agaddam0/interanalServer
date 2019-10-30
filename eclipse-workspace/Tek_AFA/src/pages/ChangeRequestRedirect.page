@@ -1,0 +1,4 @@
+<apex:page standardController="Change_Request__c" extensions="ChangeRequestRedirect" action="{!redirect}">
+    <apex:outputText value="{!Change_Request__c.Request_Number__c}"/>
+    <apex:outputText value="{!Change_Request__c.Policyholder__c}"/>
+</apex:page>

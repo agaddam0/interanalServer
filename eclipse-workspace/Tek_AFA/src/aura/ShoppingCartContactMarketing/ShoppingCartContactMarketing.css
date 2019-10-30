@@ -1,0 +1,23 @@
+.THIS .af-contact-marketing-title {
+    color: token(AFAteal5);
+}
+
+.THIS .af-header {
+    border-bottom-style: solid;
+    border-bottom-color: token(AFAredbrand);
+    border-bottom-width: 3px;
+}
+
+.THIS .af-contact-us-button {
+    background-color: token(AFAteal6);
+    color: white;
+    width: 100%;
+}
+
+.THIS .af-contact-marketing-icon {
+    width: 75%;
+}
+
+.THIS .af-header-title {
+    margin: unset;
+}

@@ -1,0 +1,625 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="true" controller="OverviewEventDashboardController">
+
+	<script type="text/javascript">
+		console.log('the user id', '{!$User.Id}', '{!$User.UserRoleId}');
+	</script>
+	
+	<style>
+	   .upsertedEvent {
+	       background-color: green;
+	       color: white;
+	   }
+	</style>
+
+	<apex:stylesheet value="{!URLFOR($Resource.lib_js, 'css/angular-material-icons.css')}"/>
+	<apex:stylesheet value="{!URLFOR($Resource.lib_js, 'css/angular-material.min.css')}"/>
+	<apex:stylesheet value="{!URLFOR($Resource.lib_js, 'js/ui-grid/ui-grid.css')}"/>
+
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/bluebird/bluebird.min.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ramda.min.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/moment.js')}"/>
+
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular.min.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-touch.min.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-animate.min.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-material.min.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-aria.min.js')}"/>
+
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ui-grid/csv.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ui-grid/pdf-make.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ui-grid/vfs-fonts.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ui-grid/ui-grid.js')}"/>
+
+	<apex:includeScript value="{!URLFOR($Resource.angular_util_localStorageService)}"/>
+	<apex:includeScript value="{!URLFOR($Resource.angular_util_timeService)}"/>
+	<apex:includeScript value="{!URLFOR($Resource.angular_util_remoteService)}"/>
+	<apex:includeScript value="{!URLFOR($Resource.angular_userService)}"/>
+	<apex:includeScript value="{!URLFOR($Resource.angular_accountService)}"/>
+	<apex:includeScript value="{!URLFOR($Resource.angular_eventService)}"/>
+	<apex:includeScript value="{!URLFOR($Resource.angular_opportunityService)}"/>
+
+	<apex:includeScript value="{!URLFOR($Resource.angular_assignmentEventCalendarGridController)}"/>
+
+	<apex:remoteObjects >
+		<apex:remoteObjectModel name="Opportunity" jsShorthand="Opportunities">
+			<apex:remoteObjectField name="Name" jsShorthand="name"></apex:remoteObjectField>
+		</apex:remoteObjectModel>
+
+		<apex:remoteObjectModel name="Overview_Event__c" jsShorthand="Assignments">
+			<apex:remoteObjectField name="Description__c" jsShorthand="subject"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Status__c" jsShorthand="status"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Event_Date__c" jsShorthand="activityDate"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Finalized_Date__c" jsShorthand="finalizedDate"></apex:remoteObjectField>
+			<apex:remoteObjectField name="OwnerId" jsShorthand="assignedUserId"></apex:remoteObjectField>
+		</apex:remoteObjectModel>
+
+		<apex:remoteObjectModel name="Event" jsShorthand="Events" retrieve="{!$RemoteAction.OverviewEventDashboardController.retrieveEvents}">
+			<apex:remoteObjectField name="IsAllDayEvent" jsShorthand="isAllDay"></apex:remoteObjectField>
+			<apex:remoteObjectField name="StartDateTime" jsShorthand="startDate"></apex:remoteObjectField>
+			<apex:remoteObjectField name="EndDateTime" jsShorthand="endDate"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Description" jsShorthand="subject"></apex:remoteObjectField>
+			<apex:remoteObjectField name="ActivityDate" jsShorthand="activityDate"></apex:remoteObjectField>
+			<apex:remoteObjectField name="OwnerId" jsShorthand="assignedUserId"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Sub_Type__c" jsShorthand="subType"></apex:remoteObjectField>
+			<apex:remoteObjectField name="WhatId" jsShorthand="whatId"></apex:remoteObjectField>
+		</apex:remoteObjectModel>
+
+		<apex:remoteObjectModel name="RecordType" jsShorthand="RecordTypes">
+			<apex:remoteObjectField name="Name" jsShorthand="name"></apex:remoteObjectField>
+		</apex:remoteObjectModel>
+
+		<apex:remoteObjectModel name="UserRole" jsShorthand="Roles">
+			<apex:remoteObjectField name="ParentRoleId" jsShorthand="parentRoleId"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Name" jsShorthand="name"></apex:remoteObjectField>
+		</apex:remoteObjectModel>
+
+		<apex:remoteObjectModel name="UserLogin" jsShorthand="Logins">
+			<apex:remoteObjectField name="IsFrozen" jsShorthand="isFrozen"></apex:remoteObjectField>
+			<apex:remoteObjectField name="UserId" jsShorthand="userId"></apex:remoteObjectField>
+		</apex:remoteObjectModel>
+
+		<apex:remoteObjectModel name="User" jsShorthand="Users">
+			<apex:remoteObjectField name="Name" jsShorthand="name"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Agent_ID__c" jsShorthand="agentId"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Region__c" jsShorthand="region"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Regional_Manager__c" jsShorthand="manager"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Team_District__c" jsShorthand="team"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Super_Region__c" jsShorthand="superRegion"></apex:remoteObjectField>
+			<apex:remoteObjectField name="Work_State__c" jsShorthand="workState"></apex:remoteObjectField>
+			<apex:remoteObjectField name="AFA_Division__c" jsShorthand="division"></apex:remoteObjectField>
+			<apex:remoteObjectField name="UserRoleId" jsShorthand="role"></apex:remoteObjectField>
+			<apex:remoteObjectField name="IsActive" jsShorthand="isActive"></apex:remoteObjectField>
+		</apex:remoteObjectModel>
+
+		<apex:remoteObjectModel name="Account" jsShorthand="Accounts">
+			<apex:remoteObjectField name="Name" jsShorthand="name"></apex:remoteObjectField>
+		</apex:remoteObjectModel>
+	</apex:remoteObjects>
+	<script>
+		var angular, R, r = R, moment, SObjectModel;
+
+		(function () {
+			'use strict';
+
+			var providers = [
+				'ngAnimate',
+				'ngTouch',
+				'ngMaterial',
+				'ui.grid',
+				'ui.grid.edit',
+				'ui.grid.pinning',
+				'ui.grid.moveColumns',
+				'ui.grid.resizeColumns',
+				'logService',
+				'dataService',
+				'userService',
+				'timeService',
+				'assignmentEventCalendarGrid'
+			];
+
+			var injectPageCtrl = [
+				'$scope',
+				'$filter',
+				'$timeout',
+				'$mdToast',
+				'$mdDialog',
+				'grid',
+				'time',
+				'roles',
+				'currentRoleId',
+				pageCtrl
+			];
+
+			angular
+				.module('assignmentEventCalendarApp', 	providers)
+				.value('currentRoleId', 				'{!$User.UserRoleId}')
+				.filter('lookAhead', 					['$q', '$timeout', lookAhead])
+				.controller('pageCtrl',					injectPageCtrl);
+
+			function pageCtrl ($scope, $filter, $timeout, $mdToast, $mdDialog, grid, time, roles, currentRoleId) {
+				var vm = this;
+				vm.done = true;
+				vm.parentRole = null;
+				vm.gridOptions = grid.grid;
+				vm.title = 'No Selection';
+				vm.range = time.month;
+				vm.search = '';
+				vm.team = '';
+				vm.year = moment(r.head(vm.range)).year();
+				vm.disabled = true;
+				vm.isEditible = false;
+				var assignment = new SObjectModel.Assignments();
+				assignment.describe(function (err, description) {
+					if (err) { console.error('error in getting description'); }
+					vm.isEditible = description.creatable;
+				});
+				roles(currentRoleId).then(function (roleList) {
+					if (r.test(/Account Manager/, roleList.parentRole.name)) {
+						return roles(roleList.parentRole.parentId);
+					}
+					vm.isEditible = true;
+					return roleList;
+				}).then(function (roles) {
+					vm.districts = filterDistricts(roles);
+				});
+				vm.finalize = function () {
+					grid.finalize().then(function () {
+						createToast('Finished the Finalization')
+					}, r.curryN(2, createToast)('That didn\'t go well at all'));
+				}
+				vm.dateRange = dateRange;
+				vm.selectMonth = selectMonth;
+				vm.updateUsers = updateUsers;
+				vm.query = r.curry(query)(r.__, vm.gridOptions);
+				$scope.vm = vm;
+				$scope.$watch('vm.done', function (value) {
+					if (r.isNil(value)) {
+						return;
+					}
+					if (!value) {
+						$timeout(function () {
+							if (vm.done) {
+								return;
+							}
+							createToast('Something went wrong, please recalibrate the flux capacitor');
+							vm.done = true;
+							console.error('Something is wrong');
+						}, 20000);
+					}
+				});
+				return vm;
+				function filterDistricts (roles) {
+					return r.compose(
+						r.map(function (role) {
+							role.name = r.compose(
+								r.trim,
+								r.replace('District', ''),
+								r.replace('Manager', ''),
+								r.replace(/[A-Z]{2,}/, ''))(role.name);
+							return role;
+						}),
+					r.sortBy(r.prop('name')),
+					r.filter(
+						r.compose(
+							r.test(/District/),
+							r.prop('name'))))(roles.all);
+				}
+				function createToast (text) {
+					var toast = $mdToast
+						.simple()
+						.textContent(text)
+						.position('top right')
+						.hideDelay(15000)
+					$mdToast.show(toast);
+				}
+				function query (filter, grid) {
+					return r.compose(
+						$filter('lookAhead')(r.__, filter),
+						r.filter(r.cond([
+							[r.is(Date), r.F], // remove complication
+							[r.is(Object), r.F], // remove complication
+							[r.T, r.T]
+						])),
+						r.flatten,
+						r.map(r.values))(grid.data);
+				}
+				function updateUsers (role) {
+					vm.done = false;
+					vm.parentRole = role;
+					vm.title = formatDate(vm.range, vm.parentRole.name);
+					return grid.getData(vm.range, role.id).then(updateGrid);
+				}
+				function updateRange (range) {
+					vm.done = false;
+					vm.range = range = time.getRange(range);
+					vm.title = formatDate(range, vm.parentRole.name);
+					return grid.getData(range, vm.parentRole.id)
+							.then(updateGrid);
+				}
+				function updateGrid (gridOptions) {
+					vm.done = true;
+					vm.disabled = false;
+					vm.gridOptions = gridOptions;
+				}
+				function formatDate (range, team) {
+					var format = function (date) {
+						return moment(date).format('MM/DD/YYYY');
+					}
+					return format(r.head(range)) + ' - ' + format(r.last(range)) + ' ' + team;
+				}
+				function selectMonth () {
+					$mdDialog.show({
+						controller: selectMonthModalCtrl,
+						templateUrl: 'select.month.panel.tmpl.html',
+						parent: angular.element(document.body),
+						clickOutsideToClose: false,
+						fullscreen: false,
+						locals: {
+							month: moment(r.head(vm.range)).month(),
+							year: moment(r.head(vm.range)).year()
+						}
+
+					})
+					.then(updateRange, console.info);
+				}
+				function dateRange () {
+					$mdDialog.show({
+						controller: dateRangeModalCtrl,
+						templateUrl: 'date.range.panel.tmpl.html',
+						parent: angular.element(document.body),
+						clickOutsideToClose: false,
+						fullscreen: false,
+						locals: {
+							minDate: r.head(vm.range),
+							maxDate: r.last(vm.range)
+						}
+					})
+					.then(updateRange);
+				}
+			}
+
+			function lookAhead ($q, $timeout) {
+				var inString = r.curry(function (str, filter) {
+					return str.includes(filter);
+				});
+
+				var inNumber = r.curry(function (num, filter) {
+					return num.toString().includes(filter);
+				});
+
+				var inDate = r.curry(function (date, filter) {
+					return moment(date)
+						.format('MMMM dddd MM DD YYYY')
+						.toString()
+						.includes(filter);
+				});
+
+				return function (rows, filter) {
+					var isObject, matchingLineFn, matchingFn, isArray;
+
+					matchingLineFn = r.curry(function (row, filter) {
+						return r.cond([
+							[r.isEmpty, r.F],
+								[r.isNil, r.F],
+								[r.is(String), inString(r.__, filter)],
+								[r.is(Number), inNumber(r.__, filter)],
+								[r.is(Date), inDate(r.__, filter)],
+								[r.is(Array), isArray(r.__, filter)],
+								[r.is(Object), isObject(r.__, filter)],
+								[r.T, r.F]
+						])(row);
+					});
+
+					isArray = r.curry(function (ary, filter) {
+						return r.any(matchingLineFn(r.__, filter), ary);
+					});
+
+					isObject = r.curry(function (obj, filter) {
+						return r.any(
+							matchingLineFn(r.__, filter),
+							r.values(obj));
+					});
+
+					matchingFn = r.curry(function (row, filters) {
+						return r.any(matchingLineFn(row), filters);
+					});
+
+					return r.filter(matchingFn(r.__, splitFilter(filter)), rows);
+				};
+
+				function splitFilter (filter) {
+					return filter.split(/\s/);
+				}
+			}
+
+			function selectMonthModalCtrl ($scope, $mdDialog, time, month, year) {
+				$scope.years = r.range(year - 5, year + 6);
+				$scope.months = r.map(function (n) {
+					return {
+						id: n,
+						name: moment()
+							.month(n)
+							.format('MMMM')
+					};
+				}, r.range(0, 12));
+
+				$scope.month = month;
+				$scope.year = year;
+
+				$scope.cancel = function () {
+					$mdDialog.hide();
+				};
+
+				$scope.submit = function () {
+					time.jumpTo(moment().year($scope.year).month($scope.month).startOf('month'));
+					$mdDialog.hide(time.month);
+				};
+			}
+
+			function dateRangeModalCtrl ($scope, $mdDialog, time, minDate, maxDate) {
+				$scope.minDate = minDate;
+				$scope.maxDate = maxDate;
+				$scope.cancel = function () {
+					$mdDialog.cancel();
+				};
+
+				$scope.submit = function () {
+					$mdDialog.hide(time.getRange([$scope.minDate, $scope.maxDate]));
+				};
+			}
+		})();
+	</script>
+
+	<style>
+		.event-data {
+			color: blue !important;
+		}
+		.weekend {
+			border-color: #FDFDFD;
+			background-color: #F0F0F0 !important;
+			border-style: solid;
+			border-width: 1px;
+		}
+		.weekday {
+			border-color: #F0F0F0;
+			background-color: #FDFDFD !important;
+			border-style: solid;
+			border-width: 1px;
+		}
+
+		.grid-cell {
+			position: relative;
+			display: inline-block;
+			height: 100%;
+			width: 100%;
+		}
+		.cell-text-display {
+			cursor: text;
+		}
+		.dialog-background {
+			background-image: url("{!URLFOR($Resource.lib_js, 'img/excel-data-icon.png')}");
+			background-repeat: no-repeat;
+			background-position: left top;
+		}
+
+		.dialog-btn {
+			cursor: pointer;
+			position: absolute;
+			width: 30%;
+			height: 20%;
+			top: 0;
+			left: 0;
+			background-color: transparent;
+			z-index: 300;
+		}
+
+		.grid-input-box {
+			position: absolute;
+			top: 0;
+			left: 0;
+			z-index: 200;
+		}
+
+		[name=cell-input] {
+			color: black !important;
+			width: 100% !important;
+			height: 100% !important;
+			z-index: 200;
+			position: absolute;
+			background: white !important;
+
+		}
+		.icons {
+			position: absolute;
+			right: 0;
+			top: 0;
+			z-index:300;
+			cursor: pointer;
+			max-width: 26px;
+		}
+		.icon {
+			max-height: 16px !important;
+			max-width: 16px !important;
+			min-height: 16px !important;
+			min-width: 16px !important;
+		}
+		.save-icon {
+			color: green;
+		}
+		.undo-icon {
+			color: black;
+		}
+		.clear-icon {
+			color: red;
+		}
+	</style>
+	<div ng-app="assignmentEventCalendarApp" ng-cloak="" ng-controller="pageCtrl as ctrl">
+		<md-toolbar class="md-menu-toolbar">
+			<h2 class="md-toolbar-tools">{{ctrl.title}}</h2>
+			<md-menu-bar>
+			<md-menu>
+				<md-button ng-click="$mdOpenMenu($event)">
+					Filter
+				</md-button>
+				<md-menu-content>
+					<md-menu-item>
+						<md-button ng-click="ctrl.dateRange()" ng-disabled="ctrl.parentRole === null">
+							Select Date Range
+						</md-button>
+					</md-menu-item>
+					<md-menu-item>
+						<md-button ng-click="ctrl.selectMonth()" ng-disabled="ctrl.parentRole === null">
+							Select Month
+						</md-button>
+					</md-menu-item>
+				</md-menu-content>
+			</md-menu>
+			<md-menu>
+				<md-button ng-click="$mdOpenMenu()">
+					Districts
+				</md-button>
+				<md-menu-content>
+					<md-menu-item ng-repeat="district in ctrl.districts">
+						<md-button ng-click="ctrl.updateUsers(district)">
+							{{district.name}}
+						</md-button>
+					</md-menu-item>
+				</md-menu-content>
+			</md-menu>
+		</md-menu-bar>
+		</md-toolbar>
+		<md-progress-linear ng-hide="ctrl.done" md-mode="indeterminate"></md-progress-linear>
+		<md-content class="page-container">
+			<md-card class="page">
+				<div
+					id="grid"
+					ui-grid="ctrl.gridOptions"
+					ui-grid-edit="true"
+					ui-grid-pinning="true"
+					ui-grid-resize-columns="true"
+					ui-grid-move-columns="true"
+					class="grid">
+				</div>
+			</md-card>
+		</md-content>
+
+		<script type="text/ng-template" id="panel.tmpl.html">
+			<div role="dialog" aria-label="Summary" layout="column" layout-align="center center">
+				<md-toolbar>
+					<div class="md-toolbar-tools"
+							style="background-color:#F0F0F0;color:#202020;">
+						<h2>
+							Summary for {{ctrl.assignment.getDate().toDate() | date:'longDate'}}
+						</h2>
+					</div>
+				</md-toolbar>
+				<md-content layout-padding="" layout-fill="">
+      				<md-card ng-if="ctrl.assignment.isEmpty() === false">
+        				<md-card-title>
+          					<md-card-title-text>
+								<span class="md-headline">Assigned Event</span>
+								<span class="md-subhead">{{ctrl.assignment.subject}}</span>
+          					</md-card-title-text>
+        				</md-card-title>
+      				</md-card>
+      				<md-card ng-repeat="event in ctrl.assignment.events">
+        				<md-card-title>
+          					<md-card-title-text>
+								<span class="md-headline">
+									{{event.owner.name}}
+								</span>
+								<span class="md-subhead">{{event.subject}}</span>
+          					</md-card-title-text>
+        				</md-card-title>
+						<md-content layout-padding=""> {{event.date.toDate() | date:'medium'}}</md-content>
+        				<md-card-actions layout="row" layout-align="end center">
+							<a ng-href="{{ctrl.url + event.owner.id}}" target="_blank">
+          						<md-button>Owner</md-button>
+							</a>
+							<a ng-href="{{ctrl.url + event.id}}" target="_blank">
+								<md-button>Event</md-button>
+							</a>
+        				</md-card-actions>
+      				</md-card>
+					<md-button class="md-primary" ng-click="ctrl.closeDialog()">
+      					Close
+					</md-button>
+				</md-content>
+			</div>
+		</script>
+		<script type="text/ng-template" id="cell.tmpl.html">
+			<md-tooltip ng-if="col.colDef.additionalEvents(row, col) > 1">
+				{{col.colDef.additionalEvents(row, col)}} Event(s)
+			</md-tooltip>
+			<div  class="grid-cell">
+				<div 	ng-mouseenter="col.colDef.showDelete(row, col)"
+						ng-mouseleave="col.colDef.hideDelete(row, col)"
+						ng-hide="row.entity.states[col.field].isInputVisible"
+						class="ui-grid-cell-contents cell-text-display {{row.entity.states[col.field].isUpserted ? 'upsertedEvent' : ''}}"
+						ng-click="col.colDef.showInput(row, col)">
+					{{col.colDef.getDisplay(row, col)}}
+
+					<div 	class="dialog-btn"
+							ng-if="col.colDef.additionalEvents(row, col) > 1"
+							ng-click="col.colDef.eventModal(row, col)"></div>
+
+					<div 	class="icons"
+							ng-show="row.entity.states[col.field].isDeleteVisible">
+        				<img 	ng-mousedown="col.colDef.clear(row, col)"
+								class="clear-icon icon"
+								alt="Delete Assignment"
+								src="{!URLFOR($Resource.lib_icon, 'icons/ic_clear_24px.svg')}"/>
+					</div>
+				</div>
+
+				<div ng-show="row.entity.states[col.field].isInputVisible" class="input-box" layout="row">
+					<input
+						ng-focus="col.colDef.showIcons(row, col)"
+						ng-blur="col.colDef.hideInput(row, col)"
+						ng-keypress="col.colDef.keyPress($event, row, col)"
+						md-input-name="cell-input"
+            			ng-model="row.entity[col.field]"/>
+				</div>
+		</script>
+		<script type="text/ng-template" id="date.range.panel.tmpl.html">
+			<md-toolbar>
+				<div class="md-toolbar-tools"
+						style="background-color:#F0F0F0;color:#202020;">
+					<h2>
+						Select a Date Range
+					</h2>
+				</div>
+			</md-toolbar>
+			<md-input-container>
+				<md-datepicker ng-model="minDate" md-placeholder="Start Date"/>
+			</md-input-container>
+			<md-input-container>
+				<md-datepicker ng-model="maxDate" md-placeholder="End Date"/>
+			</md-input-container>
+			<md-button ng-click="submit()">Submit</md-button>
+			<md-button ng-click="cancel()">Cancel</md-button>
+		</script>
+		<script type="text/ng-template" id="select.month.panel.tmpl.html">
+				<md-toolbar>
+					<div class="md-toolbar-tools"
+							style="background-color:#F0F0F0;color:#202020;">
+						<h2>
+							Select a Month
+						</h2>
+					</div>
+				</md-toolbar>
+				<md-input-container>
+					<md-select ng-model="month">
+						<md-option ng-repeat="m in months" ng-value="m.id">{{m.name}}</md-option>
+					</md-select>
+				</md-input-container>
+				<md-input-container>
+          			<md-select ng-model="year">
+						<md-option ng-repeat="y in years" ng-value="y">{{y}}</md-option>
+					</md-select>
+				</md-input-container layout="row">
+				<md-button ng-click="submit()">Submit</md-button>
+				<md-button ng-click="cancel()">Cancel</md-button>
+		</script>
+	</div>
+</apex:page>

@@ -1,0 +1,8 @@
+<aura:event type="APPLICATION" description="Event template" >
+
+    <aura:attribute name="sObjectName" type="string" />
+    <aura:attribute name="record" type="Object" />
+    <aura:attribute name="fieldName" type="String" />
+    <aura:attribute name="fieldValue" type="String" />
+    
+</aura:event>

@@ -1,0 +1,256 @@
+<apex:page standardController="Enrollment_Form__c" extensions="SignatureFormPDFext"  standardStylesheets="false" docType="html-5.0" sidebar="false" showHeader="false" renderAs="pdf" applyHtmlTag="false">
+    <head>
+        <style type="text/css" media="print">
+            @page :first {
+                padding-top: 50px;
+                padding-bottom: 0px;
+                @top-center {
+                    content: element(header);
+                }
+            }
+            @page {
+                padding-top: 25px;
+                padding-bottom: 0px;
+                @top-center {
+                    content: element(header2);
+                }
+                @bottom-center {
+                    content: element(footer);
+                }
+            }
+            body {
+                font-family: sans-serif;
+            }
+            .logo {
+                width: 300px;
+                padding-left: 300px;
+                padding-top: 0px;
+            }
+            div.header {
+                padding: 25px 10px 10px;
+                position: running(header);
+                text-align: center;
+                font-size: x-small;
+                color: gray;
+            }
+            div.header2 {
+                padding: 25px 10px 10px;
+                position: running(header2);
+                text-align: center;
+                font-size: x-small;
+                color: gray;
+            }
+            div.footer {
+                display: block;
+                padding-bottom: 20px;
+                position: running(footer);
+                font-size: small;
+                color: gray;
+            }
+            .pagenumber:before 
+            {
+                content: counter(page);
+            }
+            .pagecount:before 
+            {
+                content: counter(pages);
+            }
+            
+        </style>
+    </head>
+   <div class="header">
+        <div>
+            <apex:image styleClass="logo" url="{!$Resource.AFALogo}"/>
+        </div>
+    </div>
+    
+    <div class="footer">   
+        
+        <div style="float:left;"><apex:outputText value="{!IF(eForm.Enrollment_Opportunity__r.Division__c == 'AFES', 'TR 11/14', 'AWD - TRUST02/17')}"/></div>
+        <div style="text-align:right; float:right;">Page <span class="pagenumber"/> of <span class="pagecount"/></div>
+    </div>
+    
+    <div class="content">
+        <div>
+            <div class="col-md-12 title">
+            <center>
+                <h3>TRUST SUBSCRIPTION AGREEMENT AND APPLICATION FOR MEDICAL<br/>EXPENSE REIMBURSEMENT COVERAGE</h3>
+            </center>
+            </div>
+        </div>
+        <apex:outputPanel rendered="{!eForm.Enrollment_Opportunity__r.Division__c == 'AFES'}">
+            <p>
+                As an employer, the undersigned hereby subscribes to a particular agreement in its present form or as hereinafter 
+                amended, known as:
+            </p>
+            <ul>
+                <li>THE NATIONAL EDUCATION ASSOCIATION INSURANCE TRUST</li>
+                <li>HIGHER EDUCATION INSURANCE TRUST</li>
+                <li>THE NATIONAL SCHOOL EMPLOYEES INSURANCE TRUST</li>
+                <li>THE NATIONAL EMPLOYERS INSURANCE TRUST</li>
+                <li>THE NATIONAL PUBLIC EMPLOYEES INSURANCE TRUST</li>
+                <li>THE NATIONAL SERVICE INDUSTRY INSURANCE TRUST</li>
+                <li>THE NATIONAL BUSINESS INSURANCE TRUST</li>
+            </ul>
+            <p>
+                In addition, the employer hereby makes application for Medical Expense Reimbursement 
+                coverage as issued by American Fidelity Assurance Company.
+            </p>
+            <table style="width:100%;">
+                <tr>
+                    <td style="width:40%;">Name of Employer:
+                        <u>&nbsp;&nbsp;<apex:outputText value="{!eForm.Enrollment_Opportunity__r.Account.Name}"/>&nbsp;&nbsp;</u>
+                    </td>
+                    <td style="width:5%;"></td>
+                    <td style="width:40%;">
+                        Address:
+                        <u>&nbsp;&nbsp;<apex:outputText value="{!eForm.Enrollment_Opportunity__r.Account.BillingStreet}"/>&nbsp;&nbsp;</u>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        City:
+                        <u>&nbsp;&nbsp;<apex:outputText value="{!eForm.Enrollment_Opportunity__r.Account.BillingCity}"/>&nbsp;&nbsp;</u>
+                        State:
+                        <u>&nbsp;&nbsp;<apex:outputText value="{!eForm.Enrollment_Opportunity__r.Account.BillingState}"/>&nbsp;&nbsp;</u>
+                        Zip:
+                        <u>&nbsp;&nbsp;<apex:outputText value="{!eForm.Enrollment_Opportunity__r.Account.BillingPostalCode}"/>&nbsp;&nbsp;</u>
+                    </td>
+                </tr>
+            </table>
+            <p>
+                Effective Date of Coverage: 
+                <apex:outputText value="{0, date, MM/dd/yyyy}">
+                    <apex:param value="{!eForm.Enrollment_Opportunity__r.Effective_Date_of_AFA_Products__c}"/>
+                </apex:outputText>
+            </p>
+            <p>
+                The maximum plan year reimbursement per participant will be the amount indicated in the plan document in 
+                Section F. 7. In no event can the maximum exceed $2,550 or the amount adjusted for inflation 
+                in accordance with the law.
+            </p>
+            <p>
+                We are acquainted with the eligibility rules and we understand that no coverage is in force until this 
+                subscription and application have been approved by both the Trustee and Underwriter and the premium for 
+                the insurance provided under the plan is paid.
+            </p>
+            
+            <table width="70%">
+                <thead>
+                    <td width="50%">Coverage Level</td>
+                    <td>Annual Premium Per Participant</td>
+                </thead>
+                <tr>
+                    <td>$1,200</td>
+                    <td>$1.00</td>
+                </tr>
+                <tr>
+                    <td>$2,400</td>
+                    <td>$2.00</td>
+                </tr>
+            </table>
+            <p>
+                More simply, the coverage premium is $1.00 per participant per year per $1200 of coverage as stated in the plan document.
+            </p>
+        </apex:outputPanel>
+        
+        <apex:outputPanel rendered="{!eForm.Enrollment_Opportunity__r.Division__c == 'AWD'}">
+            <p>
+                As an employer, the undersigned hereby subscribes to a particular agreement in its present form or as 
+                hereinafter amended, known as:
+            </p>
+            <ul>
+                <li>THE NATIONAL SCHOOL EMPLOYEES INSURANCE TRUST</li>
+                <li>THE NATIONAL BUSINESS INSURANCE TRUST</li>
+                <li>THE NATIONAL PUBLIC EMPLOYEES INSURANCE TRUST</li>
+                <li>THE AMERICAN BANKING, MORTGAGE AND FINANCIAL INSURANCE TRUST</li>
+                <li>THE AMERICAN EMPLOYERS BUSINESS INSURANCE TRUST</li>
+                <li>THE AMERICAN PUBLIC EMPLOYEES INSURANCE TRUST</li>
+                <li>THE AMERICAN SCHOOL EMPLOYEES INSURANCE TRUST</li>
+                <li>U. S. BUSINESS INSURANCE TRUST</li>
+            </ul>                        
+            <p>
+                In addition, the Employer hereby makes application for Medical Expense Reimbursement coverage as 
+                issued by American Fidelity Assurance Company.
+            </p>
+            <table style="width:100%;">
+                <tr>
+                    <td style="width:40%;">Name of Employer:
+                        <u>&nbsp;&nbsp;<apex:outputText value="{!eForm.Enrollment_Opportunity__r.Account.Name}"/>&nbsp;&nbsp;</u>
+                    </td>
+                    <td style="width:5%;"></td>
+                    <td style="width:40%;">
+                        Address:
+                        <u>&nbsp;&nbsp;<apex:outputText value="{!eForm.Enrollment_Opportunity__r.Account.BillingStreet}"/>&nbsp;&nbsp;</u>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        City:
+                        <u>&nbsp;&nbsp;<apex:outputText value="{!eForm.Enrollment_Opportunity__r.Account.BillingCity}"/>&nbsp;&nbsp;</u>
+                        State:
+                        <u>&nbsp;&nbsp;<apex:outputText value="{!eForm.Enrollment_Opportunity__r.Account.BillingState}"/>&nbsp;&nbsp;</u>
+                        Zip:
+                        <u>&nbsp;&nbsp;<apex:outputText value="{!eForm.Enrollment_Opportunity__r.Account.BillingPostalCode}"/>&nbsp;&nbsp;</u>
+                    </td>
+                </tr>
+            </table>
+            <p>
+                The maximum plan year reimbursement per participant will be the amount indicated in the plan document 
+                in Section F. 7. In no event can the maximum exceed the limit as indicated by the IRS in accordance with the law.
+            </p>
+            
+            <p>
+                Annual Premium is based on the maximum set forth in Section F.7, not to exceed $14.00 per participant per plan year
+            </p>
+            <p>
+                We are acquainted with the eligibility rules and we understand that no coverage is in force until this 
+                subscription and application have been approved by both the Trustee and Underwriter and the 
+                premium for the insurance provided under the plan is paid. This Trust Subscription 
+                Agreement will continue in force from year to year unless (1) a new agreement is signed, (2) the plan is 
+                terminated, or (3) until terminated in writing by either party, whichever is the earliest to occur.  
+                By execution of this Trust Subscription Agreement, Employer agrees to the Statement of Terms and Conditions 
+                (Flex Spending Account Recordkeeping by American Fidelity Assurance Company) (the “Statement”), which is 
+                hereby incorporated and made a part of this Agreement by reference.  A copy of the Statement has been or 
+                will be provided to Employer, as presently in effect and as hereafter amended, any such amendment to be 
+                effective as to Employer upon written notice to Employer.
+            </p>
+        </apex:outputPanel>
+        <div>
+        	<p>
+                Dated this
+                <u>&nbsp;&nbsp;<apex:outputText id="numberDate" value="{!eForm.Day__c}"/>&nbsp;&nbsp;</u>
+                day of&nbsp;
+                <u>&nbsp;&nbsp;<apex:outputText id="month" value="{!eForm.Month__c}"/>&nbsp;&nbsp;</u>
+                , 20 
+                <u>&nbsp;&nbsp;<apex:outputText id="year" value="{!eForm.Year__c}"/>&nbsp;&nbsp;</u>
+            </p>
+        </div>  
+        <table class="signature" style="width:100%; margin-top: 40px;">
+            <tr>            
+                <td style="width:40%;border-bottom:solid;vertical-align:bottom;">{!eForm.Printed_Signature__c}</td>
+                <td style="width:10%;"></td>
+                <td style="width:40%;border-bottom:solid;"><apex:image url="/servlet/servlet.FileDownload?file={!signature.Id}" width="200px" rendered="{!IF(NOT(ISBLANK(signature.Id)),true,false)}"/></td>
+            </tr>
+            <tr>
+                <td style="color:gray; font-size: 12px; vertical-align:top;">Printed Name</td>
+                <td></td>
+                <td style="color:gray; font-size: 12px; height: 50px; vertical-align:top;">Signature</td>                               
+            </tr>
+            <tr>
+                <td></td>
+                <td style="width:10%"></td>
+                <td style="border-bottom:solid;">{!eForm.Title__c}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td style="width:10%"></td>
+                <td style="color:gray; font-size: 12px;">Title</td>
+            </tr>
+        </table>
+    </div>
+</apex:page>

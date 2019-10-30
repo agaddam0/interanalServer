@@ -1,0 +1,110 @@
+<aura:component controller="UpcomingEventsCTRL" implements="flexipage:availableForAllPageTypes">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:attribute name="StartDate" 			type="Date" />
+    <aura:attribute name="EndDate"   			type="date" />
+    <aura:attribute name="Events"    			type="Event[]" />
+    <aura:attribute name="newEventRecordType" 	type="string" />
+    <aura:attribute name="currentList"			type="Event[]" />
+    <aura:attribute name="displayCount"			type="Integer" default="10" />
+    <aura:attribute name="sliceNo"				type="Integer" default="1"/>
+    <aura:attribute name="maxSlice"				type="Integer" default="1" />
+    <aura:attribute name="showLess"				type="boolean" default="false"/>
+    <aura:attribute name="now"					type="DateTime" />
+    <aura:attribute name="yesterday"			type="Date" />
+    
+    <div class="slds slds-is-relative">
+        <div class="slds-box" aura:id="main">
+                        <div class="slds-panel__section slds-border_bottom slds-m-bottom_medium">
+                <fieldset class="slds-form__compound">                
+                <ui:inputSelect aura:id="timeSpan" class="slds-input" change="{!c.onSelectChange}">
+                    <ui:inputSelectOption text="Today" label="Today" value="true" />
+                    <ui:inputSelectOption text="Tomorrow" label="Tomorrow" />
+                    <ui:inputSelectOption text="This Week" label="This Week" />
+                    <ui:inputSelectOption text="Next Week" label="Next Week" />
+                </ui:inputSelect>
+                <ui:button class="slds-button slds-button_neutral slds-float_right slds-text-body_regular new-event" label="New" press="{!c.newEvent}"/>
+                            </fieldset>
+            </div>
+            <div class="slds-panel__section bottomBorder">
+                <fieldset class="slds-form--compound">
+                    <legend class="slds-form-element__label slds-text-title--caps">Search</legend>
+                    <div class="slds-form-element__group">
+                        <div class="slds-form-element__row">
+                            <div class="slds-form-element slds-size--1-of-3">
+                                <label class="slds-form-element__label" for="beginDate">Start Date</label>
+                                <ui:inputDate aura:id="beginDate" class="slds-input"
+                                              labelClass="slds-form-element__label" displayDatePicker="true"
+                                              value="{!v.StartDate}" format="MM-dd-yyyy"/>
+                            </div>
+                            <div class="slds-form-element slds-size--1-of-3">
+                                <label class="slds-form-element__label" for="endingDate">End Date</label>
+                                <ui:inputDate aura:id="endingDate" class="slds-input"
+                                              labelClass="slds-form-element__label" displayDatePicker="true"
+                                              value="{!v.EndDate}" format="MM-dd-yyyy"/>
+                            </div>
+                            <div class="slds-form-element slds-size--1-of-3 slds-align-bottom">
+                                <ui:button aura:id="dateSearch" class="slds-button slds-button--neutral " 
+                                           press="{!c.searchDates}" label="Go" />
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <div aura:id="scrollableArea" class="slds-panel__section">
+                <aura:iteration items="{!v.currentList}" var="e" >
+                    <div class="slds-timeline__item">
+                        <span class="slds-assistive-text">Event</span>
+                        <div class="slds-media">
+                            <div class="slds-media__body">
+                                <div class="slds-media slds-timeline__media slds-timeline__media_event">
+                                    <div class="slds-media__figure slds-timeline__icon icon">
+                                        <lightning:icon iconName="standard:event" size="small" />
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <aura:renderIf isTrue="{!e.IsAllDayEvent}">
+                                        		<h3 class="slds-truncate"><a class="{!e.EndDateTime &lt; v.yesterday ? 'strike' : ''}" href="" data-recId="{!e.Id}" onclick="{!c.goToRecord}">{!e.Subject} — {!e.Sub_Type__c}</a></h3>
+                                            <aura:set attribute="else">
+                                            	<h3 class="slds-truncate"><a class="{!e.EndDateTime &lt; v.now ? 'strike' : ''}" href="" data-recId="{!e.Id}" onclick="{!c.goToRecord}">{!e.Subject} — {!e.Sub_Type__c}</a></h3>
+                                            </aura:set>
+                                        </aura:renderIf>
+                                        <a href="" data-recId="{!e.WhatId}" onclick="{!c.goToRecord}">{!e.What.Name}</a>
+                                        <ul class="slds-wrap">
+                                            <li class="slds-m-right_large">
+                                                <span class="slds-text-title">Start: </span>
+                                                <aura:renderIf isTrue="{!e.IsAllDayEvent}">
+                                                    <ui:outputDate class="slds-textbody__small" value="{!e.StartDateTime}" />
+                                                    <aura:set attribute="else">
+                                                    	<ui:outputDateTime class="slds-text-body__small" value="{!e.StartDateTime}" format="MMM d, yyyy h:mm a"/>
+                                                    </aura:set>
+                                                </aura:renderIf>
+                                            </li>
+                                            <li class="slds-m-right_large">
+                                                <span class="slds-text-title">End: </span>
+                                                <aura:renderIf isTrue="{!e.IsAllDayEvent}">
+                                                    <ui:outputDate class="slds-textbody__small" value="{!e.EndDateTime}" />
+                                                    <aura:set attribute="else">
+                                                    	<ui:outputDateTime class="slds-text-body__small" value="{!e.EndDateTime}" format="MMM d, yyyy h:mm a"/>
+                                                    </aura:set>
+                                                </aura:renderIf>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aura:iteration>
+                <div class="slds-p-bottom_medium">
+                    <aura:renderIf isTrue="{!v.maxSlice > v.sliceNo}">
+                        <ui:button label="Load More.." press="{!c.loadMore}" class="slds-button slds-button--neutral slds-float_right" />
+                    </aura:renderIf>
+                    <aura:renderIf isTrue="{!v.showLess}">
+                        <ui:button label="Show Less.." press="{!c.showLess}" class="slds-button slds-button--neutral slds-float_right" />
+                    </aura:renderIf>
+                </div>
+            </div>
+        </div>
+        <lightning:spinner aura:id="mySpinner" />
+    </div>
+</aura:component>

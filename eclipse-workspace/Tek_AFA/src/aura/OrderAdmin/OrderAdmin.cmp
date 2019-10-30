@@ -1,0 +1,849 @@
+<aura:component implements="force:appHostable" controller="OrderAdminController">
+    <aura:attribute name="AllowManageTagCategories" type="Boolean" access="private" />
+    <aura:attribute name="AdminFunction" type="String" default="ManageRecords" access="private" />
+    <aura:attribute name="SaveAndNewClick" type="Boolean" default="false" access="private" />
+    
+    <!-- Tag Category Attributes -->
+    <aura:attribute name="AllTagCategories" type="Tag_Category__c[]" access="private" />
+    <aura:attribute name="TagCategoryFilter" type="String" access="private" />
+    <aura:attribute name="AllTagCategoriesListViewId" type="String" access="private" />
+    
+    <!-- Tag Attributes -->
+    <aura:attribute name="ShowTagDetails" type="Boolean" default="false" access="private" />
+    <aura:attribute name="NewTagRecord" type="Tag__c" default="{}" access="private" />
+    <aura:attribute name="EditTagRecord" type="Tag__c" default="{}" access="private" />
+    <aura:attribute name="tagsGridRowActions" type="Object[]" access="private" />
+    <aura:attribute name="ViewTagRecordId" type="Id" access="private" />
+    <aura:attribute name="ShowAddTagsMarketedMaterials" type="Boolean" default="false" access="private" />
+    <aura:attribute name="SelectedMarketingMaterialsForTag" type="Marketing_Material__c[]" default="[]" access="private" />
+    <aura:attribute name="MarketingMaterialsForTagSearchText" type="String" access="private" />
+    <aura:attribute name="AllTagsSearchText" type="String" default="" access="private" />
+    <aura:attribute name="TagCustomFieldInputs" type="Object" access="private" />
+    
+    <!-- Manage Marketing Material Attributes -->
+    <aura:attribute name="ShowMarketingMaterialDetails" type="Boolean" default="false" access="private" />
+    <aura:attribute name="MarketingMaterialsGridRowActions" type="Object[]" access="private" />
+    <aura:attribute name="MarketingMaterialListViewFilter" type="String" access="private" />
+    <aura:attribute name="AllMarketingMaterialListViews" type="Object[]" access="private" />
+    <aura:attribute name="NewMarketingMaterialRecord" type="Marketing_Material__c" default="{}" access="private" />
+    <aura:attribute name="EditMarketingMaterialRecord" type="Marketing_Material__c" default="{}" access="private" />
+    <aura:attribute name="ViewMarketingMaterialRecordId" type="Id" access="private" />
+    <aura:attribute name="ShowAddTagsToMarketedMaterials" type="Boolean" access="private" />
+    <aura:attribute name="TagsForMarketingMaterialSearchText" type="String" access="private" />
+    <aura:attribute name="SelectedTagsForMarketingMaterial" type="Tag__c[]" default="[]" access="private" />
+    <aura:attribute name="EditMarketingMaterialAllowed" type="Boolean" access="private" />
+    <aura:attribute name="DeleteMarketingMaterialAllowed" type="Boolean" access="private" />
+    <aura:attribute name="ShowDeleteMarketingMaterialConfirmationModal" type="Boolean" default="false" access="private" />
+    <aura:attribute name="AllMarketingMaterialsSearchText" type="String" default="" access="private" />
+    <aura:attribute name="MarketingMaterialThumbnailURL" type="String" default="" access="private" />
+    <aura:attribute name="MarketingMaterialThumbnailContentDocumentId" type="Id" access="private" />
+    <aura:attribute name="ShowMarketingMaterialThumbnailVersions" type="Boolean" default="false" access="private" />
+    <aura:attribute name="MarketingMaterialDownloadURL" type="String" default="" access="private" />
+    <aura:attribute name="MarketingMaterialDownloadAllowed" type="Boolean" access="private" />
+    <aura:attribute name="ShowMarketingMaterialDownloadVersions" type="Boolean" default="false" access="private" />
+    <aura:attribute name="DownloadDocumentIds" type="Id[]" default="[]" access="private" />
+    
+    <!-- Manage Orders Attributes -->
+    <aura:attribute name="ShowOrderDetails" type="Boolean" default="false" access="private" />
+    <aura:attribute name="ShowOrderLineItemDetails" type="Boolean" default="false" access="private" />
+    <aura:attribute name="ordersGridRowActions" type="Object[]" access="private" />
+    <aura:attribute name="AllOrdersSearchText" type="String" default="" access="private" />
+    <aura:attribute name="ViewOrderRecorId" type="Id" access="private" />
+    <aura:attribute name="ViewOrderLineItemRecordId" type="Id" access="private" />
+    <aura:attribute name="AllOrdersListViews" type="Object[]" access="private" />
+    <aura:attribute name="OrderListViewFilter" type="String" access="private" />
+    
+    <!-- Manage Announcements Attributes -->
+    <aura:attribute name="ShowAnnouncementDetails" type="Boolean" default="false" access="private" />
+    <aura:attribute name="ViewAnnouncementRecordId" type="Id" access="private" />
+    <aura:attribute name="AnnouncementGridRowActions" type="Object[]" access="private" />
+    <aura:attribute name="AllAnnouncementsSearchText" type="String" access="private" />
+    <aura:attribute name="AnnouncementListViewFilter" type="String" access="private" />
+    <aura:attribute name="AllAnnouncementListViews" type="Object[]" access="private" />
+    <aura:attribute name="NewAnnouncementRecord" type="Announcement__c" access="private" />
+    <aura:attribute name="EditAnnouncementRecord" type="Announcement__c" access="private" />
+    <aura:attribute name="DeleteAnnouncementAllowed" type="Boolean" default="false" access="private" />
+    <aura:attribute name="AnnouncementThumbnailURL" type="String" access="private" />
+    <aura:attribute name="AnnouncementThumbnailContentDocumentId" type="Id" access="private" />
+    <aura:attribute name="ShowAnnouncementThumbnailVersions" type="Boolean" default="false" access="private" />
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="onRowAction" event="c:CustomizableGridRowAction" action="{!c.handleGridRowAction}"/>
+    <aura:handler name="fileUploadFinished" event="c:UploadFilesFinished" action="{!c.handleUploadFilesFinished}" />
+    <aura:handler event="c:ScrollToTopEvent" action="{!c.scrollToTop}" />
+    
+    <div id="adminContainer" class="oneContent active forceContentWrapper slds-box slds-theme_default af-order-admin-container">
+        
+        <aura:if isTrue="{! v.AdminFunction }">
+            <!-- sub-navigation here based on https://lightningdesignsystem.com/components/global-navigation/ -->
+            <div class="slds-context-bar slds-m-bottom_medium">
+                <div class="slds-context-bar__primary">
+                    <div class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
+                        <span class="slds-context-bar__label-action slds-context-bar__app-name">
+                            <span class="slds-truncate" title="App Name">Marketing Catalog</span>
+                        </span>
+                    </div>
+                </div>
+                <nav class="slds-context-bar__secondary" role="navigation">
+                    <ul class="slds-grid">
+                        <li class="{! v.AdminFunction == 'ManageRecords' ? 'slds-is-active slds-context-bar__item' : 'slds-context-bar__item' }">
+                            <a onclick="{! c.onManageRecordsClick }" class="slds-context-bar__label-action" title="{! $Label.c.Order_Admin_Manage_Records_Description }">
+                                <span class="slds-truncate">{! $Label.c.Order_Admin_Manage_Records }</span>
+                            </a>
+                        </li>
+                        <li class="{! v.AdminFunction == 'ManageTags' ? 'slds-is-active slds-context-bar__item' : 'slds-context-bar__item' }">
+                            <a onclick="{! c.onManageTagsClick }" class="slds-context-bar__label-action" title="{! $Label.c.Order_Admin_Manage_Tags_Description }">
+                                <span class="slds-truncate">{! $Label.c.Order_Admin_Manage_Tags }</span>
+                            </a>
+                        </li>
+                        <aura:if isTrue="{! v.AllowManageTagCategories }">
+                        <li class="{! v.AdminFunction == 'ManageTagCategories' ? 'slds-is-active slds-context-bar__item' : 'slds-context-bar__item' }">
+                            <a onclick="{! c.onManageTagCategoriesClick }" class="slds-context-bar__label-action" title="{! $Label.c.Order_Admin_Manage_Tag_Categories_Description }">
+                                <span class="slds-truncate">{! $Label.c.Order_Admin_Manage_Tag_Categories }</span>
+                            </a>
+                        </li>
+                        </aura:if>
+                        <li class="{! v.AdminFunction == 'ManageOrders' ? 'slds-is-active slds-context-bar__item' : 'slds-context-bar__item' }">
+                            <a onclick="{! c.onManageOrdersClick }" class="slds-context-bar__label-action" title="{! $Label.c.Order_Admin_Manage_Orders_Description }">
+                                <span class="slds-truncate">{! $Label.c.Order_Admin_Manage_Orders }</span>
+                            </a>
+                        </li>
+                        <li class="{! v.AdminFunction == 'ManageAnnouncements' ? 'slds-is-active slds-context-bar__item' : 'slds-context-bar__item' }">
+                            <a onclick="{! c.onManageAnnouncementsClick }" class="slds-context-bar__label-action" title="{! $Label.c.Order_Admin_Manage_Announcements_Description }">
+                                <span class="slds-truncate">{! $Label.c.Order_Admin_Manage_Announcements }</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aura:if>
+        
+        <aura:if isTrue="{! v.AdminFunction == 'ManageRecords' }">
+            <aura:if isTrue="{! v.ShowMarketingMaterialDetails == false }">
+            <c:CustomizableGridWithSearch objectName="Marketing_Material__c"
+                                          fieldSetColumns="Default_List_View"
+                                          aura:id="marketingMaterialsGrid"
+                                          rowActions="{! v.MarketingMaterialsGridRowActions }"
+                                          goToRecordAction="{! c.marketingMaterialsGridViewRecord }"
+                                          sortField="Title__c"
+                                          sortDirection="ASC"
+                                          sortingEnabled="true"
+                                          numItemsToShow="25"
+                                          useNextPagination="true">
+                                          
+                <aura:set attribute="header">
+                    <lightning:button variant="brand"
+                                      label="New Marketing Material"
+                                      onclick="{! c.onNewMarketingMaterialClick }"
+                                      class="slds-m-bottom_medium" />
+                                      
+                    <lightning:select name="select"
+                                      label="List View"
+                                      value="{! v.MarketingMaterialListViewFilter }"
+                                      onchange="{! c.onMarketingMaterialListviewFilterChange }"
+                                      class="slds-show_inline-block af-tag-category-filter slds-m-left_medium slds-align-top">
+                        <aura:iteration items="{!v.AllMarketingMaterialListViews}" var="marketingMaterialListView">
+                            
+                            <option value="{!marketingMaterialListView.Id}" text="{!marketingMaterialListView.Label}"></option>
+                        </aura:iteration>
+                    </lightning:select>
+                    
+                    <ui:inputText aura:id="AllMarketingMaterialsSearchText"
+                                  class="slds-show_inline-block slds-align-top slds-m-left_xx-large af-all-marketing-materials-search"
+                                  keyup="{!c.filterAllMarketingMaterialsUsingSearchText}"
+                                  updateOn="keyup"
+                                  placeholder="Search All Marketing Materials"
+                                  value="{! v.AllMarketingMaterialsSearchText }" />
+                </aura:set>
+            </c:CustomizableGridWithSearch>
+            </aura:if>
+            
+            <!-- Marketing Material Details Section -->
+            <div class="{! v.ShowMarketingMaterialDetails ? 'slds-show' : 'slds-hide' }">
+                <div>
+                    <span class="slds-text-heading_large slds-m-bottom_medium">Marketing Material Details</span>
+                    <aura:if isTrue="{! v.DeleteMarketingMaterialAllowed }">
+                    <lightning:button variant="brand"
+                                      label="Delete"
+                                      onclick="{! c.onMarketingMaterialDetailDeleteClick }"
+                                      class="slds-float_right slds-m-left_medium" />
+                    </aura:if>
+                    
+                    <lightning:button variant="brand"
+                                      label="Clone"
+                                      onclick="{! c.onMarketingMaterialCloneClick }"
+                                      class="slds-float_right" />
+                    
+                    <aura:if isTrue="{! v.EditMarketingMaterialAllowed }">
+                    <lightning:button variant="brand"
+                                      label="Edit"
+                                      onclick="{! c.onMarketingMaterialDetailEditClick }"
+                                      class="slds-float_right slds-m-right_medium" />
+                    </aura:if>
+                    
+                    <lightning:button label="Back to Marketing Materials"
+                                      variant="brand"
+                                      onclick="{! c.onBackToMarketingMaterialsClick }"
+                                      class="slds-float_right slds-m-right_medium" />
+                </div>
+                
+                <div>
+                    <lightning:layout >
+                        <lightning:layoutitem aura:id="ViewMarketingMaterialRecordContainer" class="slds-m-vertical_medium af-view-tag-record-container" size="8">
+                            <force:recordView recordId="{! v.ViewMarketingMaterialRecordId }" />
+                        </lightning:layoutitem>
+                        
+                        <lightning:layoutitem padding="horizontal-large" size="4">
+                            <div class="slds-box af-thumbnail-details-container">
+                                <h2 class="slds-text-heading_medium">Thumbnail Details</h2>
+
+                                <div class="slds-m-top_medium">
+                                <aura:if isTrue="{! v.MarketingMaterialThumbnailURL }">
+                                    
+                                    <img src="{! v.MarketingMaterialThumbnailURL }" title="Current Thumbnail" />
+                                    
+                                    <aura:set attribute="else">
+                                    No Thumbnail Uploaded.
+                                    </aura:set>
+                                </aura:if>
+                                </div>
+
+                                <c:UploadFiles relatedTo="{! v.ViewMarketingMaterialRecordId }"
+                                               uploadMultiple="false"
+                                               label="  "
+                                               showDocuments="false"
+                                               accept=".png, .jpg, .gif, .jpeg"
+                                               aura:id="thumbnailFileUploader" />
+                                
+                                <aura:if isTrue="{! v.MarketingMaterialThumbnailURL }">
+                                <lightning:button variant="brand"
+                                                  label="View Thumbnail Versions"
+                                                  class="slds-m-top_medium"
+                                                  onclick="{! c.onViewThumbnailVersionsClick }" />
+                                </aura:if>
+                            </div>
+                            
+                            <aura:if isTrue="{! v.MarketingMaterialDownloadAllowed }">
+                                <div class="slds-box slds-m-vertical_medium af-download-details-container">
+                                    <h2 class="slds-text-heading_medium">Download Details</h2>
+                                    
+                                    <div class="slds-m-top_medium">
+                                    <aura:if isTrue="{! v.MarketingMaterialDownloadURL }">
+                                        <a href="{! v.MarketingMaterialDownloadURL }">Download</a>
+                                        
+                                        <aura:set attribute="else">
+                                            No downloadable files uploaded yet.
+                                        </aura:set>
+                                    </aura:if>
+                                    </div>
+    
+                                    <c:UploadFiles relatedTo="{! v.ViewMarketingMaterialRecordId }"
+                                                   uploadMultiple="false"
+                                                   label=" "
+                                                   showDocuments="false"
+                                                   aura:id="downloadableFileUploader" />
+                                    
+                                    <aura:if isTrue="{! v.MarketingMaterialDownloadURL }">
+                                    <lightning:button variant="brand"
+                                                      label="View Download Versions"
+                                                      class="slds-m-top_medium"
+                                                      onclick="{! c.onViewDownloadVersionsClick }" />
+                                    </aura:if>
+                                </div>
+                            </aura:if>
+                        </lightning:layoutitem>
+                        
+                        
+                    
+                    </lightning:layout>
+                </div>
+                
+                <c:CustomizableGridWithSearch objectName="Marketing_Material_Tag__c"
+                                              fieldSetColumns="Marketing_Material_Tags"
+                                              aura:id="marketingMaterialTagsGrid"
+                                              loadOnInit="false"
+                                              class="af-marketing-materials-tags-grid"
+                                              allowGoToRecord="false"
+                                              sortField="Tag__r.Name"
+                                              sortDirection="ASC"
+                                              sortingEnabled="true">
+                                          
+                    <aura:set attribute="header">
+                        <h2 class="slds-text-heading_medium">Tags</h2>
+                        
+                        <lightning:button variant="brand"
+                                          label="Assign Tags"
+                                          onclick="{! c.onAssignTagsToMarketingMaterialClick }"
+                                          class="slds-m-vertical_medium" />
+                    </aura:set>
+                </c:CustomizableGridWithSearch>
+                
+                <c:CustomizableGridWithSearch objectName="Marketing_Material__c"
+                                          fieldSetColumns="Default_List_View"
+                                          aura:id="marketingMaterialChildren"
+                                          rowActions="{! v.MarketingMaterialsGridRowActions }"
+                                          goToRecordAction="{! c.marketingMaterialsGridViewRecord }"
+                                          sortField="Title__c"
+                                          sortDirection="ASC"
+                                          sortingEnabled="true"
+                                          numItemsToShow="25"
+                                          useNextPagination="true"
+                                          class="slds-m-top_medium">
+                                          
+                    <aura:set attribute="header">
+                        <h2 class="slds-text-heading_medium">Child Marketing Materials</h2>
+                        
+                        <lightning:button variant="brand"
+                                          label="New Marketing Material"
+                                          onclick="{! c.onNewChildMarketingMaterialClick }"
+                                          class="slds-m-vertical_medium" />
+                    </aura:set>
+                </c:CustomizableGridWithSearch>
+                
+                <c:CustomizableGridWithSearch objectName="Marketing_Material__HISTORY"
+                                              additionalColumns="['Field','CreatedBy.Name','CreatedDate','OldValue','NewValue']"
+                                              aura:id="marketingMaterialHistoryGrid"
+                                              loadOnInit="false"
+                                              allowGoToRecord="false"
+                                              sortField="CreatedDate"
+                                              sortDirection="DESC"
+                                              sortingEnabled="true"
+                                              class="slds-m-top_medium">
+                                          
+                    <aura:set attribute="header">
+                        <h2 class="slds-text-heading_medium slds-m-bottom_medium">Marketing Material History</h2>
+                    </aura:set>
+                </c:CustomizableGridWithSearch>
+            </div>
+        </aura:if>
+
+    
+        <aura:if isTrue="{! v.AdminFunction == 'ManageTags' }">
+            <aura:if isTrue="{! v.ShowTagDetails == false }">
+            <c:CustomizableGridWithSearch objectName="Tag__c"
+                                          fieldSetColumns="Default_List_View"
+                                          aura:id="tagsGrid"
+                                          rowActions="{! v.tagsGridRowActions }"
+                                          goToRecordAction="{! c.tagsGridViewRecord }"
+                                          sortField="Name"
+                                          sortDirection="ASC"
+                                          sortingEnabled="true"
+                                          numItemsToShow="25"
+                                          useNextPagination="true">
+                                          
+                <aura:set attribute="header">
+                    <lightning:button variant="brand"
+                                      label="New Tag"
+                                      onclick="{! c.onNewTagClick }"
+                                      class="slds-m-bottom_medium" />
+                                      
+                    <lightning:select name="select"
+                                      label="Tag Category Filter"
+                                      value="{! v.TagCategoryFilter }"
+                                      onchange="{! c.onTagCategoryFilterChange }"
+                                      class="slds-show_inline-block af-tag-category-filter slds-m-left_medium slds-align-top">
+                        <option value="" text="All" selected="{! v.TagCategoryFilter == '' }"></option>
+                        <aura:iteration items="{!v.AllTagCategories}" var="tagCategory">
+                            
+                            <option value="{!tagCategory.Id}" text="{!tagCategory.Name}" selected="{! tagCategory.Id == v.TagCategoryFilter }"></option>
+                        </aura:iteration>
+                        <option value="DisplayInNav" text="Display in Navigation" selected="{!v.TagCategoryFilter == 'DisplayInNav'}"/>
+                    </lightning:select>
+                    
+                    <ui:inputText aura:id="AllTagsSearchText"
+                                  class="slds-show_inline-block slds-align-top slds-m-left_xx-large af-all-tags-search"
+                                  keyup="{!c.filterAllTagsUsingSearchText}"
+                                  updateOn="keyup"
+                                  placeholder="Search All Tags"
+                                  value="{! v.AllTagsSearchText }" />                  
+                </aura:set>
+            </c:CustomizableGridWithSearch>
+            </aura:if>
+            
+            <!-- Tag Details Section -->
+            <div class="{! v.ShowTagDetails ? 'slds-show' : 'slds-hide' }">
+                <div>
+                    <span class="slds-text-heading_large slds-m-bottom_medium">Tag Details</span>
+                    <lightning:button variant="brand"
+                                      label="Edit"
+                                      onclick="{! c.onTagDetailEditClick }"
+                                      class="slds-float_right" />
+                                      
+                    <lightning:button label="Back to Tags"
+                                      variant="brand"
+                                      onclick="{! c.onBackToTagsClick }"
+                                      class="slds-float_right slds-m-right_medium" />
+                </div>
+    
+                <div aura:id="ViewTagRecordContainer" class="slds-m-vertical_medium">
+                    <force:recordView recordId="{! v.ViewTagRecordId }" />
+                </div>
+
+                <c:CustomizableGridWithSearch objectName="Marketing_Material_Tag__c"
+                                              fieldSetColumns="Tag_Marketing_Materials"
+                                              aura:id="tagsMarketingMaterialsGrid"
+                                              loadOnInit="false"
+                                              class="af-tags-marketing-materials-grid"
+                                              allowGoToRecord="false"
+                                              sortField="Marketing_Material__r.Title__c"
+                                              sortDirection="ASC"
+                                              sortingEnabled="true">
+                                          
+                    <aura:set attribute="header">
+                        <h2 class="slds-text-heading_medium">Marketing Materials</h2>
+                        
+                        <lightning:button variant="brand"
+                                          label="Assign Marketing Materials"
+                                          onclick="{! c.onAssignTagMarketingMaterialsClick }"
+                                          class="slds-m-vertical_medium" />
+                    </aura:set>
+                </c:CustomizableGridWithSearch>
+                
+                <c:CustomizableGridWithSearch objectName="Tag__HISTORY"
+                                              additionalColumns="['Field','CreatedBy.Name','CreatedDate','OldValue','NewValue']"
+                                              aura:id="tagsHistoryGrid"
+                                              loadOnInit="false"
+                                              allowGoToRecord="false"
+                                              sortField="CreatedDate"
+                                              sortDirection="DESC"
+                                              sortingEnabled="true"
+                                              class="slds-m-top_medium">
+                                          
+                    <aura:set attribute="header">
+                        <h2 class="slds-text-heading_medium slds-m-bottom_medium">Tag History</h2>
+                    </aura:set>
+                </c:CustomizableGridWithSearch>
+            </div>
+        </aura:if>
+        
+        <!-- Manage Orders Section -->
+        <aura:if isTrue="{!v.AdminFunction == 'ManageOrders'}">
+            <aura:if isTrue="{! v.ShowOrderDetails == false }">
+                <c:CustomizableGridWithSearch objectName="Order__c"
+                                              fieldSetColumns="Default_List_View"
+                                              aura:id="ordersGrid"
+                                              goToRecordAction="{! c.ordersGridViewRecord }"
+                                              sortField="Name"
+                                              sortDirection="DESC"
+                                              sortingEnabled="true"
+                                              numItemsToShow="25"
+                                              useNextPagination="true">
+                    
+                    <aura:set attribute="header">  
+                        
+                        <lightning:select name="select"
+                                      label="List View"
+                                      value="{! v.OrderListViewFilter }"
+                                      onchange="{! c.onOrderListviewFilterChange }"
+                                      class="slds-show_inline-block af-tag-category-filter slds-m-left_medium slds-align-top">
+                        <aura:iteration items="{!v.AllOrdersListViews}" var="orderListView">
+                            <option value="{!orderListView.Id}" text="{!orderListView.Label}"></option>
+                        </aura:iteration>
+                    </lightning:select>
+                        
+                        <ui:inputText aura:id="AllOrdersSearchText"
+                                      class="slds-show_inline-block slds-align-top af-all-orders-search slds-m-bottom_large slds-m-left_xx-large"
+                                      keyup="{!c.filterAllOrdersUsingSearchText}"
+                                      updateOn="keyup"
+                                      placeholder="Search All Orders"
+                                      value="{! v.AllOrdersSearchText }" />                  
+                    </aura:set>
+                </c:CustomizableGridWithSearch>
+            </aura:if>
+            
+            <!-- Order Details Section -->
+            <div class="{! and(v.ShowOrderDetails, v.ShowOrderLineItemDetails == false) ? 'slds-show' : 'slds-hide' }">
+                <div>
+                    <span class="slds-text-heading_large slds-m-bottom_medium">Order Details</span>
+                                      
+                    <lightning:button label="Back to Orders"
+                                      variant="brand"
+                                      onclick="{! c.onBackToOrdersClick }"
+                                      class="slds-float_right slds-m-right_medium" />
+                </div>
+    
+                <div aura:id="ViewOrderRecordContainer" class="slds-m-vertical_medium">
+                    <force:recordView recordId="{! v.ViewOrderRecordId }" />
+
+                    
+                </div>
+
+                <c:CustomizableGridWithSearch objectName="Order_Line_Item__c"
+                                              fieldSetColumns="Marketing_Catalog_Order_Related_List"
+                                              aura:id="orderLineItemsGrid"
+                                              goToRecordAction="{! c.orderLineItemsGridViewRecord }"
+                                              sortField="Material_Title__c"
+                                              sortDirection="ASC"
+                                              sortingEnabled="false"
+                                              numItemsToShow="25"
+                                              useNextPagination="true">
+                    <aura:set attribute="header">
+                        <h2 class="slds-text-heading_medium slds-m-bottom_medium">Order Line Items</h2>
+                    </aura:set>
+                </c:CustomizableGridWithSearch>
+            </div>
+
+            <!-- Order Line Item Details Section -->
+            
+            <aura:if isTrue="{! v.ShowOrderLineItemDetails }">
+                <div>
+                    <span class="slds-text-heading_large slds-m-bottom_medium">Order Line Item Details</span>
+                                      
+                    <lightning:button label="Back to Order"
+                                      variant="brand"
+                                      onclick="{! c.onBackToOrderFromOrderLineItemDetailClick }"
+                                      class="slds-float_right slds-m-right_medium" />
+                </div>
+            
+                <force:recordView recordId="{! v.ViewOrderLineItemRecordId }" />
+            </aura:if>
+        </aura:if>
+        
+        <!-- Manage Announcements Section -->
+        <aura:if isTrue="{!v.AdminFunction == 'ManageAnnouncements'}">
+            <aura:if isTrue="{! v.ShowAnnouncementDetails == false }">
+                <c:CustomizableGridWithSearch objectName="Announcement__c"
+                                              fieldSetColumns="Default_List_View"
+                                              aura:id="announcementsGrid"
+                                              rowActions="{! v.AnnouncementGridRowActions }"
+                                              goToRecordAction="{! c.announcementsGridViewRecord }"
+                                              sortField="Name"
+                                              sortDirection="ASC"
+                                              sortingEnabled="true"
+                                              numItemsToShow="25"
+                                              useNextPagination="true">
+                    
+                    <aura:set attribute="header">
+                        <lightning:button variant="brand"
+                                          label="New Announcement"
+                                          onclick="{! c.onNewAnnouncementClick }"
+                                          class="slds-m-bottom_medium" />
+                        
+                        <lightning:select name="select"
+                                      label="List View"
+                                      value="{! v.AnnouncementListViewFilter }"
+                                      onchange="{! c.onAnnouncementListviewFilterChange }"
+                                      class="slds-show_inline-block af-tag-category-filter slds-m-left_medium slds-align-top">
+                        <aura:iteration items="{!v.AllAnnouncementListViews}" var="announcementListView">
+                            <option value="{!announcementListView.Id}" text="{!announcementListView.Label}"></option>
+                        </aura:iteration>
+                    </lightning:select>
+                        
+                        <ui:inputText aura:id="AllAnnouncementsSearchText"
+                                      class="slds-show_inline-block slds-align-top af-all-orders-search slds-m-bottom_large slds-m-left_large"
+                                      keyup="{!c.filterAllAnnouncementsUsingSearchText}"
+                                      updateOn="keyup"
+                                      placeholder="Search All Announcements"
+                                      value="{! v.AllAnnouncementsSearchText }" />                  
+                    </aura:set>
+                </c:CustomizableGridWithSearch>
+            </aura:if>
+            
+            <!-- Announcement Details Section -->
+            <div class="{! v.ShowAnnouncementDetails ? 'slds-show' : 'slds-hide' }">
+                <div>
+                    <span class="slds-text-heading_large slds-m-bottom_medium">Announcement Details</span>
+                    
+                    <lightning:button variant="brand"
+                                      label="Edit"
+                                      onclick="{! c.onAnnouncementDetailEditClick }"
+                                      class="slds-float_right" />
+                                      
+                    <lightning:button label="Back to Announcements"
+                                      variant="brand"
+                                      onclick="{! c.onBackToAnnouncemetClick }"
+                                      class="slds-float_right slds-m-right_medium" />
+                </div>
+    
+                <div class="slds-grid">
+                    <div aura:id="ViewAnnouncementRecordContainer" class="slds-m-vertical_medium slds-size_8-of-12">
+                        <force:recordView recordId="{! v.ViewAnnouncementRecordId }" />
+                    </div>
+                    
+                    <div class="slds-size_4-of-12 slds-p-horizontal_large">
+                        <div class="slds-box af-thumbnail-details-container">
+                            <h2 class="slds-text-heading_medium">Thumbnail Details</h2>
+                            
+                            <div class="slds-m-top_medium">
+                                <aura:if isTrue="{! v.AnnouncementThumbnailURL }">
+                                    
+                                    <img src="{! v.AnnouncementThumbnailURL }" title="Current Thumbnail" />
+                                    
+                                    <aura:set attribute="else">
+                                        No Thumbnail Uploaded.
+                                    </aura:set>
+                                </aura:if>
+                            </div>
+                            
+                            <c:UploadFiles relatedTo="{! v.ViewAnnouncementRecordId }"
+                                           uploadMultiple="false"
+                                           label="  "
+                                           showDocuments="false"
+                                           accept=".png, .jpg, .gif, .jpeg"
+                                           aura:id="thumbnailFileUploaderForAnnouncement" />
+                            
+                            <aura:if isTrue="{! v.AnnouncementThumbnailURL }">
+                                <lightning:button variant="brand"
+                                                  label="View Thumbnail Versions"
+                                                  class="slds-m-top_medium"
+                                                  onclick="{! c.onViewAnnouncementThumbnailVersionsClick }" />
+                            </aura:if>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+        
+        
+        <div class="{! v.ShowAddTagsMarketedMaterials ? 'slds-show af-selection-modal' : 'slds-hide'}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large slds-list-builder" aria-labelledby="id-of-modalheader-h2" aria-modal="true" aria-describedby="modal-content-id-1">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon alternativeText="Close" iconName="utility:close" class="slds-modal__close" onclick="{!c.closeAddTagsMarketingMaterials}" variant="border-inverse" />
+                        <h2 id="id-of-modalheader-h2" class="slds-text-heading_medium">Assign Marketing Materials</h2>
+                    </header>
+                    <div class="slds-modal__content slds-grid slds-grow" id="modal-content-id-1">
+                        <div class="slds-grid slds-grid_vertical slds-container_fluid">
+                            <div class="slds-p-vertical_x-small slds-p-horizontal_large slds-shrink-none slds-theme_shade">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="searchBox">Search</label>
+                                    <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
+                                        <lightning:icon iconName="utility:search" size="xx-small" class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"/>
+                                        <ui:inputText aura:id="searchBox" class="slds-input" keyup="{!c.filterMarketingMaterialsForTag}" updateOn="keyup" value="{! v.MarketingMaterialsForTagSearchText }" />
+                                    </div>
+                                </div>
+                                <!-- selected container -->
+                                <div class="slds-pill_container slds-pill_container_bare">
+                                    <ul class="slds-listbox slds-listbox_horizontal slds-listbox_inline" role="listbox" aria-label="Selected Options:" aria-orientation="horizontal">
+                                        <aura:iteration items="{!v.SelectedMarketingMaterialsForTag}" var="selectedMarketingMaterial">
+                                            <li class="slds-listbox-item" role="presentation">
+                                                <span class="slds-pill" role="option" tabindex="0" aria-selected="true">
+                                                    <span class="slds-pill__label" title="{!selectedMarketingMaterial.Title__c}">{!selectedMarketingMaterial.Title__c}</span>
+                                                </span>
+                                            </li>
+                                        </aura:iteration>
+                                    </ul>
+                                </div>
+                                <div class="slds-text-title slds-m-top_x-small" aria-live="polite">{!v.SelectedMarketingMaterialsForTag ? v.SelectedMarketingMaterialsForTag.length : 0} Item(s) Selected</div>
+                            </div>
+                            <div class="slds-scrollable slds-grow">
+                                <c:CustomizableGridWithSearch objectName="Marketing_Material__c"
+                                                              fieldSetColumns="Order_Admin_Selection"
+                                                              aura:id="selectTagsMarketingMaterialsGrid"
+                                                              loadOnInit="false"
+                                                              allowGoToRecord="false"
+                                                              searchText="{! v.MarketingMaterialsForTagSearchText }">
+                                </c:CustomizableGridWithSearch>
+                            
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <ui:button aura:id="Cancel" label="Cancel" press="{!c.closeAddTagsMarketingMaterials}" class="slds-button slds-button_neutral" />
+                        <ui:button aura:id="AddSelected" label="Assign Selected" press="{!c.assignMarketingMaterialsToTag}" class="slds-button slds-button_brand" />
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+        
+        <div class="{! v.ShowAddTagsToMarketedMaterials ? 'slds-show af-selection-modal' : 'slds-hide'}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large slds-list-builder" aria-labelledby="id-of-modalheader-h2" aria-modal="true" aria-describedby="modal-content-id-1">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon alternativeText="Close" iconName="utility:close" class="slds-modal__close" onclick="{!c.closeAddTagsToMarketingMaterials}" variant="border-inverse" />
+                        <h2 id="id-of-modalheader-h2" class="slds-text-heading_medium">Assign Tags</h2>
+                    </header>
+                    <div class="slds-modal__content slds-grid slds-grow" id="modal-content-id-1">
+                        <div class="slds-grid slds-grid_vertical slds-container_fluid">
+                            <div class="slds-p-vertical_x-small slds-p-horizontal_large slds-shrink-none slds-theme_shade">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="searchBox">Search</label>
+                                    <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
+                                        <lightning:icon iconName="utility:search" size="xx-small" class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"/>
+                                        <ui:inputText aura:id="searchBox" class="slds-input" keyup="{!c.filterTagsForMarketingMaterial}" updateOn="keyup" value="{! v.TagsForMarketingMaterialSearchText }" />
+                                    </div>
+                                </div>
+                                <!-- selected container -->
+                                <div class="slds-pill_container slds-pill_container_bare">
+                                    <ul class="slds-listbox slds-listbox_horizontal slds-listbox_inline" role="listbox" aria-label="Selected Options:" aria-orientation="horizontal">
+                                        <aura:iteration items="{!v.SelectedTagsForMarketingMaterial}" var="selectedTag">
+                                            <li class="slds-listbox-item" role="presentation">
+                                                <span class="slds-pill" role="option" tabindex="0" aria-selected="true">
+                                                    <span class="slds-pill__label" title="{!selectedTag.Name}">{!selectedTag.Name}</span>
+                                                </span>
+                                            </li>
+                                        </aura:iteration>
+                                    </ul>
+                                </div>
+                                <div class="slds-text-title slds-m-top_x-small" aria-live="polite">{!v.SelectedTagsForMarketingMaterial ? v.SelectedTagsForMarketingMaterial.length : 0} Item(s) Selected</div>
+                            </div>
+                            <div class="slds-scrollable slds-grow">
+                                <c:CustomizableGridWithSearch objectName="Tag__c"
+                                                              fieldSetColumns="Order_Admin_Selection"
+                                                              aura:id="selectTagsForMarketingMaterialGrid"
+                                                              loadOnInit="false"
+                                                              allowGoToRecord="false"
+                                                              searchText="{! v.TagsForMarketingMaterialSearchText }">
+                                </c:CustomizableGridWithSearch>
+                            
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <ui:button aura:id="Cancel" label="Cancel" press="{!c.closeAddTagsToMarketingMaterials}" class="slds-button slds-button_neutral" />
+                        <ui:button aura:id="AddSelected" label="Assign Selected" press="{!c.assignTagsToMarketingMaterial}" class="slds-button slds-button_brand" />
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </div>
+
+    <c:FieldSetFormModal aura:id="newTagFieldSetForm"
+                         record="{! v.NewTagRecord }"
+                         fieldSetName="Create_Tag"
+                         objectName="Tag__c"
+                         saveHandler="{! c.saveNewTag }"
+                         header="New Tag"
+                         customFieldInputs="{! v.TagCustomFieldInputs }"
+                         saveAndNewHandler="{! c.saveAndNewTagClick}"
+                         showSaveAndNewHandlerButton="true"/>
+                         
+    <c:FieldSetFormModal aura:id="editTagFieldSetForm"
+                         record="{! v.EditTagRecord }"
+                         fieldSetName="Edit_Tag"
+                         objectName="Tag__c"
+                         saveHandler="{! c.saveEditTag }"
+                         header="Edit Tag"
+                         customFieldInputs="{! v.TagCustomFieldInputs }" />
+
+    <div class="{! v.ShowDeleteMarketingMaterialConfirmationModal ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeDeleteMarketingMaterialConfirmationModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Delete Confirmation</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    Are you sure you want to delete? Once deleted, the item is no longer available to order and cannot be recovered.
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeDeleteMarketingMaterialConfirmationModal }">Cancel</button>
+                    <button class="slds-button slds-button_brand" onclick="{! c.onDeleteMarketingMaterial }">Delete</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+    
+    <div class="{! v.ShowMarketingMaterialThumbnailVersions ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeMarketingMaterialThumbnailVersionsModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Thumbnail Versions</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <c:CustomizableGridWithSearch objectName="ContentVersion"
+                                                  additionalColumns="['Title','CreatedBy.Name','CreatedDate']"
+                                                  aura:id="marketingMaterialContentVersionsGrid"
+                                                  loadOnInit="false"
+                                                  allowGoToRecord="true"
+                                                  sortField="CreatedDate"
+                                                  sortDirection="DESC"
+                                                  sortingEnabled="true" />
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeMarketingMaterialThumbnailVersionsModal }">Close</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+    
+    <div class="{! v.ShowMarketingMaterialDownloadVersions ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeMarketingMaterialDownloadVersionsModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Download Versions</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <c:CustomizableGridWithSearch objectName="ContentDocument"
+                                                  additionalColumns="['Title','CreatedBy.Name','CreatedDate']"
+                                                  aura:id="marketingMaterialDownloadDocumentsGrid"
+                                                  loadOnInit="false"
+                                                  allowGoToRecord="true"
+                                                  sortField="CreatedDate"
+                                                  sortDirection="DESC"
+                                                  sortingEnabled="true" />
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeMarketingMaterialDownloadVersionsModal }">Close</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+        
+    <c:FieldSetFormModal aura:id="newMarketingMaterialModal"
+                         record="{! v.NewMarketingMaterialRecord }"
+                         fieldSetName="Create_Marketing_Material"
+                         objectName="Marketing_Material__c"
+                         saveHandler="{! c.saveNewMarketingMaterial }"
+                         header="New Marketing Material"
+                         saveAndNewHandler="{! c.saveAndNewMaterialClick}"
+                         showSaveAndNewHandlerButton="true"/>
+
+    <c:FieldSetFormModal aura:id="editMarketingMaterialModal"
+                         record="{! v.EditMarketingMaterialRecord }"
+                         fieldSetName="Edit_Marketing_Material"
+                         objectName="Marketing_Material__c"
+                         saveHandler="{! c.saveEditedMarketingMaterial }"
+                         header="Edit Marketing Material" />
+    
+    <c:FieldSetFormModal aura:id="newAnnouncementModal"
+                         record="{! v.NewAnnouncementRecord }"
+                         fieldSetName="Create_Announcement"
+                         objectName="Announcement__c"
+                         saveHandler="{! c.saveNewAnnouncement }"
+                         header="New Announcement" />
+    
+    <c:FieldSetFormModal aura:id="editAnnouncementModal"
+                         record="{! v.EditAnnouncementRecord }"
+                         fieldSetName="Edit_Announcement"
+                         objectName="Announcement__c"
+                         saveHandler="{! c.saveEditedAnnouncement }"
+                         header="Edit Announcement" />
+    
+    <div class="{! v.ShowAnnouncementThumbnailVersions ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeAnnouncementThumbnailVersionsModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Thumbnail Versions</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <c:CustomizableGridWithSearch objectName="ContentVersion"
+                                                  additionalColumns="['Title','CreatedBy.Name','CreatedDate']"
+                                                  aura:id="announcementContentVersionsGrid"
+                                                  loadOnInit="false"
+                                                  allowGoToRecord="true"
+                                                  sortField="CreatedDate"
+                                                  sortDirection="DESC"
+                                                  sortingEnabled="true" />
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeAnnouncementThumbnailVersionsModal }">Close</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+</aura:component>

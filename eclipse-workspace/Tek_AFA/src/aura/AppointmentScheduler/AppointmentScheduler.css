@@ -1,0 +1,8 @@
+.THIS {
+}
+
+.THIS.af-appointment-scheduler-container {
+	margin: 1rem 2rem;
+	background-color: token(colorBackgroundAlt);
+	min-height: 75%;
+}

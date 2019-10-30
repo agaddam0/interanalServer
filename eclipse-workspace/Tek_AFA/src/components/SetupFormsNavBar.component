@@ -1,0 +1,368 @@
+<apex:component controller="SetupFormsNavBarController">
+
+<apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"/>
+<apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"/>
+<apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js" />
+
+<apex:stylesheet value="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css"/>
+<apex:stylesheet value="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+
+<apex:attribute name="formName" description="Name of Form.  Must match the id of the matching li element in the navbar" type="string" required="true"/>
+<apex:attribute name="ReserviceSetup" description="Flag to set visiblities if the user entered from the Reservice Setup Form." type="Boolean" default="false" required="false" assignTo="{!isReserviceSetup}" />
+<apex:attribute name="submitLabel" description="Label to be displayed on Submit/Confirm button" type="string" required="true"/>
+<apex:attribute name="efId"  description="Enrollment Form Id" type="string" required="true" assignto="{!enrollmentFormId}"/>
+<apex:attribute name="requestEditText" description="The text to display in place of the request edit button." type="string" required="false" />
+
+<style> 
+    
+        .formsbar { 
+            list-style: none; 
+            overflow: hidden; 
+            font: 12px Helvetica, Arial, Sans-Serif;
+            font-weight:bold;
+            margin-left:0px;
+        }
+        .formsbar li { 
+            float: left; 
+            line-height: 200%;     /* increase bar height */
+            margin-left:5px;
+            margin-top:5px;
+        }
+        .formsbar li a {
+            color: black;
+            text-decoration: none; 
+            padding: 10px 0 10px 45px;
+            position: relative; 
+            display: block;
+            float: left;
+            margin-right:0px;
+        }
+        .formsbar li a:after { 
+            content: " "; 
+            display: block; 
+            width: 0; 
+            height: 0;
+            border-top: 22px solid transparent;           /* Go big on the size, and let overflow hide */
+            border-bottom: 22px solid transparent;
+    
+            position: absolute;
+            top: 50%;
+            margin-top: -22px; 
+            left: 100%;
+            z-index: 2; 
+        }   
+        .formsbar li a:before { 
+            content: " "; 
+            display: block; 
+            width: 0; 
+            height: 0;
+            border-top: 24px solid transparent;           /* Go big on the size, and let overflow hide */
+            border-bottom: 24px solid transparent;
+            border-left: 22px solid white;                 /* this is the left border - starts with second element */
+            position: absolute;
+            top: 50%;
+            margin-top: -24px; 
+            margin-left: 3px;
+            left: 100%;
+            z-index: 1; 
+        }   
+        .formsbar li:first-child a {
+            padding-left: 20px;
+        }
+
+        /*.formsbar li a:hover { background: #bfb526 !Important;  }
+        .formsbar li a:hover:after { border-left-color:  #bfb526  !important; }
+        */
+        /* disable hover on current form
+        .formsbarCurrentForm li a:hover { background: #fff432 !important;;  }
+        .formsbarCurrentForm li a:hover:after { border-left-color:  #fff432  !important; }
+         */
+         
+         
+        /* for unsubmitted forms */
+        
+        .formNotSubmitted a{ 
+                background: #FFF793 !important; 
+            }
+        .formNotSubmitted  a:after { 
+                border-left: 20px solid  #FFF793 !important; 
+            }
+        .formNotSubmitted  a:hover { background: #bfb526 !important; }
+        .formNotSubmitted  a:hover:after { border-left-color:  #bfb526  !important; }    
+         
+        /* for submitted forms */
+
+        .formSubmitted a{ 
+                background: #6dd865 !important; 
+            }
+        .formSubmitted a:after { 
+                border-left: 20px solid  #6dd865 !important; 
+            }
+        .formSubmitted a:hover { background: #4d9947 !important; }
+        .formSubmitted a:hover:after { border-left-color:  #4d9947  !important; }
+
+        /* Enrollment Opportunity Link */
+
+        .formEnrollment a{ 
+                background: #2989d8 !important; 
+                color: white !important;
+            }
+        .formEnrollment a:after { 
+                border-left: 20px solid  #2989d8 !important; 
+            }
+        .formEnrollment a:hover { background: #1D6199 !important; }
+        .formEnrollment a:hover:after { border-left-color:  #1D6199  !important; }
+
+        .liBtn {
+            margin-left:30px;
+            padding-left:40px;
+            }
+
+        .liBtn li a:after { }
+        .liBtn li a:before { }
+        
+        hr .redUnderline{                   
+            display: block;
+            border-width: 3px;
+            border-color:red;
+            width:150px;
+            margin: 0px;
+          } 
+ 
+         .ovalActionButton {
+          background: #007C3D;
+          -webkit-border-radius: 48;
+          -moz-border-radius: 48;
+          border-radius: 48px;
+          font-family: Helvetica, Arial, sans-serif;
+          color: #FFFFFF;
+          font-size:12px;
+          font-weight: bold;
+          padding: 8px 14px 8px 14px;
+          border: solid #1f628d 1px;
+          text-decoration: none;
+          min-width:166px !Important;
+          vertical-align: top;
+        }
+        
+        #enrollmentOppty a {
+          background-color: #1CA6B7 !important;
+          color: white !important;
+        }
+        
+        #enrollmentOppty a:after {
+          border-left: 20px solid  #1CA6B7 !important;
+        }
+        
+        .af-unlockBtn,
+        .af-lockBtn {
+          padding-left: 30px;
+        }
+    </style>
+
+
+ <div class="container">
+    <apex:outputPanel id="navBarOutputPanel" layout="none">
+        <ul id="formBar" style="visibility:hidden" class="formsbar">
+        
+            <!--  goBackToOpp() must be defined in the inclusion form  -->
+            <li  id="enrollmentOppty" >
+                <a  href="#" onclick="openForm('/{!ef.Enrollment_Opportunity__c}');">Enrollment Opportunity</a>
+            </li>
+            <li  id="generalInfo" style="{! if(isReserviceSetup, 'display:none', '')}">
+                <a  href="#" onclick="if('{!formName}' != 'generalInfo') openForm('/apex/GeneralInformation?id={!ef.Enrollment_Opportunity__c}');">General Information <apex:outputText id="GeneralInfoNavBarStatus" value="({! ef.Status__c })" rendered="{! formname = 'generalInfo'}" styleClass="{! IF(ef.Status__c = 'In Progress', 'af-nav-tab-in-progress-status', '') } af-nav-tab-status" /> </a>
+            </li>
+            <li  id="customerSetup" style="{!if(showCustomerSetupForm,'display:block','display:none')}">
+                <a href="#" onclick="if('{!formName}' != 'customerSetup') openForm('/apex/CustomerSetupForm2?id={!cs.Id}');">Customer Setup <apex:outputText id="CustomerSetupNavBarStatus" value="({! cs.Status__c })" rendered="{! formname = 'customerSetup'}" styleClass="{! IF(cs.Status__c = 'In Progress', 'af-nav-tab-in-progress-status', '') } af-nav-tab-status" /></a>
+            </li>
+            <li  id="servicesSetup" style="{!if(showSection125Form,'display:block','display:none')}">
+                <a href="#"  onclick="if('{!formName}' != 'servicesSetup') openForm('/apex/Section125_v2?id={!ef.Id}');">Services Setup <apex:outputText id="ServicesSetupNavBarStatus" value="({! s125.Status__c })" rendered="{! formname = 'servicesSetup'}" styleClass="{! IF(s125.Status__c = 'In Progress', 'af-nav-tab-in-progress-status', '') } af-nav-tab-status" /></a>
+            </li>
+            <li  id="platformSetup" style="{! if(isReserviceSetup, 'display:none', '')}">
+                <a href="#"  onclick="if('{!formName}' != 'platformSetup') openForm('/apex/PlatformSetupForm2?id={!ps.Id}');">Platform Setup <apex:outputText id="PlatformSetupNavBarStatus" value="({! ps.Status__c })" rendered="{! formname = 'platformSetup'}" styleClass="{! IF(ps.Status__c = 'In Progress', 'af-nav-tab-in-progress-status', '') } af-nav-tab-status" /></a>
+            </li>
+            <li  id="onePage" style="{!if(showOnePageSummaryForm,'display:block','display:none')}">
+                <a href="#"  onclick="if('{!formName}' != 'onePage') openForm('/apex/PlanSummaryForm_v2?id={!s125PlanSummary.Id}');">Plan Summary <apex:outputText id="PlanSummaryNavBarStatus" value="({! s125PlanSummary.Status__c })" rendered="{! formname = 'onePage'}" styleClass="{! IF(s125PlanSummary.Status__c = 'In Progress', 'af-nav-tab-in-progress-status', '') } af-nav-tab-status" /></a>
+            </li>
+            <apex:outputPanel layout="none" rendered="{! PreEnrollmentMarketingForm != null && PreEnrollmentMarketingForm.Id != null && HasPreenrollmentSetupFormAccess }">
+            <li  id="preenrollmentMarketingForm">
+                <a href="#"  onclick="if('{!formName}' != 'preenrollmentMarketingForm') openForm('/apex/PreenrollmentMarketingSetupForm?id={!PreEnrollmentMarketingForm.Id}');">Pre-Enrollment Marketing</a>
+            </li>
+            </apex:outputPanel>
+            <li  id="signature" style="{! if(isReserviceSetup, 'display:none', '')}">
+                <a href="#"  onclick="if('{!formName}' != 'signature') openForm('/apex/FormSignatureCapture?id={!ef.Id}');">Signature Forms</a>
+            </li>
+            <li id="submit" class="liBtn" >
+                <input type="button"  class="ovalActionButton" value="{!submitLabel}" id="confirmButtonGen" onclick="$( '#submitConfirm' ).dialog().text('Once you confirm, this form will lock and take you to the next form.').dialog( 'open' ); return false;" rendered="{!submitLabel == 'Confirm & Continue'}" style="display:none;"/>
+                <input type="button"  class="ovalActionButton" value="{!submitLabel}" id="confirmButton" onclick="checkRequiredFieldsAndDisplay();" rendered="{!submitLabel != 'Confirm & Continue'}" style="display:none"/>
+                <input type="button"  class="ovalActionButton" value="Request Edit" id="requestEdit"     onclick="updateEnrollmentForm('request_edit__c','true');$(this).hide();" style="display:none"/>
+                <input type="button"  class="ovalActionButton" value="Send Update" id="SendUpdateBtn" onclick="sendUpdate();$(this).hide();" style="display:none"/>
+                
+                <span id="requestEditText" style="display:none;">{! requestEditText }</span>
+                
+                <i class="fa fa-lock fa-4x af-unlockBtn" aria-hidden="true" title="Click to Unlock" id="unlockBtn" onclick="$('#newUnlockRequest').dialog('open');" style="display:none;" />
+                <i class="fa fa-unlock fa-4x af-lockBtn" aria-hidden="true" title="Click to Lock" id="lockBtn" onclick="lockSetupForms();" style="display:none;" />
+            </li>
+            
+        </ul>
+    </apex:outputPanel>
+</div>      
+<!--  hr id="currentFormIndicator" /    -->
+
+<apex:outputPanel id="navBarScriptOutputPanel">
+<script>
+    console.log('**** formName: {!formName}');
+    
+    /* set underline to current form    */
+    $("#{!formName} a").css({"font-weight":"bold","text-decoration": "underline","font-size":"120%"});
+    
+
+    
+    /* for any form that is submitted/confirmed/completed, add to display green */
+    /* if General Info Form is not submitted, disable bar */
+    
+            $("#enrollmentOppty").addClass("formEnrollment");
+            if ({!GeneralInfoFormSubmitted}) $("#generalInfo").addClass("formSubmitted");
+                else {
+                    $("#generalInfo").addClass("formNotSubmitted");
+                //  $("#generalInfo,#customerSetup,#servicesSetup,#platformSetup,#onePage,#signature").css("pointer-events","none");
+                    }
+            if ({!CustomerSetupFormSubmitted})  $("#customerSetup").addClass("formSubmitted"); 
+                else $("#customerSetup").addClass("formNotSubmitted");
+            if ({!Section125FormSubmitted})         $("#servicesSetup").addClass("formSubmitted");
+                else $("#servicesSetup").addClass("formNotSubmitted");
+            if ({!PlatformSetupFormSubmitted})      $("#platformSetup").addClass("formSubmitted");
+                else $("#platformSetup").addClass("formNotSubmitted");
+            if ({!OnePageSummaryFormSubmitted})     $("#onePage").addClass("formSubmitted");
+                else $("#onePage").addClass("formNotSubmitted");
+            if ({!SignatureFormSubmitted})          $("#signature").addClass("formSubmitted");
+                else $("#signature").addClass("formNotSubmitted");
+            
+            $("#preenrollmentMarketingForm").addClass("formSubmitted");
+            
+            if({!!enableNavBar})
+                $("#generalInfo,#customerSetup,#servicesSetup,#platformSetup,#onePage,#preenrollmentMarketingForm,#signature,#submit").css("pointer-events","none");
+                
+            $("#formBar").css("visibility","visible");
+</script>
+</apex:outputPanel>
+
+<script>
+                
+    var openForm = function(url){
+
+          console.log('**** opening url: ' + url);
+          if(typeof sforce !== "undefined" && sforce !== null) {
+              // Salesforce1 navigation
+              sforce.one.navigateToURL(url, true);
+          } else {
+              // Desktop navigation
+              window.open(url, '_self'); 
+          }
+          
+    }
+    
+    function getNextUnsubmittedFormLink() {
+        var pathName = window.location.pathname;
+        var unsubmittedFormLinks = $('#formBar li.formNotSubmitted:visible a');
+        
+        // Sometimes this method may be invoked and the links may not have been updated yet
+        // so exclude the current unsubmitted form and use the next one if there is one.
+        if (unsubmittedFormLinks.length > 1 &&
+            unsubmittedFormLinks[0].onclick.toString().indexOf(pathName) != -1) {
+            
+            unsubmittedFormLinks = $(unsubmittedFormLinks[1]);
+        }
+        // Sometimes this method may be invoked and the links may not have been updated yet
+        // so exclude the current unsubmitted form and return nothing if there are no other
+        // unsubmitted forms.
+        else if (unsubmittedFormLinks.length == 1 &&
+                 unsubmittedFormLinks[0].onclick.toString().indexOf(pathName) != -1) {
+            unsubmittedFormLinks = [];
+        }
+        else if (unsubmittedFormLinks.length > 1) {
+            unsubmittedFormLinks = $(unsubmittedFormLinks[0]);
+        }
+        
+        return unsubmittedFormLinks;
+    }
+
+    function showSuccessMessageAndContinueToNextUnsubmittedForm(baseSuccessMsg) {
+        var nextUnsubmittedFormLink = getNextUnsubmittedFormLink();
+
+        showSuccessMessageAndContinueToLink(baseSuccessMsg, nextUnsubmittedFormLink);
+    }
+    
+    function showSuccessMessageAndContinueToLink(baseSuccessMsg, jQueryLink) {
+        var successMsg = baseSuccessMsg;
+        
+        if (toastr.options.onHidden) {
+            toastr.options.onHidden = null;
+        }
+
+        if (jQueryLink && jQueryLink.length > 0) {
+            successMsg += 'You will now be taken to ' + jQueryLink[0].text;
+
+            toastr.options.onHidden = function() { 
+                jQueryLink.click();
+            }
+        }
+
+        toastr.options.positionClass = 'toast-top-center';
+        toastr.options.progressBar = true;
+        toastr.options.timeOut = 3000;
+        toastr.success(successMsg);
+    }
+    
+    function showSuccessMessageAndContinueToURL(successMsg, url) {
+        if (toastr.options.onHidden) {
+            toastr.options.onHidden = null;
+        }
+
+        toastr.options.onHidden = function() { 
+            window.open(url, '_self');
+        }
+
+        toastr.options.positionClass = 'toast-top-center';
+        toastr.options.progressBar = true;
+        toastr.options.timeOut = 3000;
+        toastr.success(successMsg);
+    }
+    
+    function appendAndContinueToSubmitButtonIfAnotherUnsubmittedForm() {
+        var confirmButton = $("#confirmButton");
+        var nextUnsubmittedFormLink = getNextUnsubmittedFormLink();
+        var confirmButtonText = confirmButton.val();
+        var andContinue = ' & Continue';
+        
+        if (nextUnsubmittedFormLink && nextUnsubmittedFormLink.length > 0 &&
+            confirmButtonText.includes(andContinue) == false) {
+            confirmButton.val(confirmButtonText + andContinue);
+        }
+    }
+    
+
+// LF 12/2017: This JQuery extension is used to implement sticky positioned elements.
+(function ($) {
+
+    $.fn.afStickIt = function () {
+
+        $(this).each(function (index, element) {
+            var $w = $(window);
+            var sticky = element.offsetTop;
+
+            $w.scroll(function () {
+
+                if (window.pageYOffset >= sticky) {
+                    element.classList.add("af-sticky")
+                } else {
+                    element.classList.remove("af-sticky");
+                }
+            });
+        });
+    };
+
+})(jQuery);
+</script>
+
+</apex:component>

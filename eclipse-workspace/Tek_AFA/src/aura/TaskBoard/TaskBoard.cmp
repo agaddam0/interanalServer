@@ -1,0 +1,268 @@
+<aura:component implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" controller="TaskBoardController">
+	<aura:attribute name="TaskBoard" type="TaskBoardController.TaskBoard" />
+	<aura:attribute name="SelectedTask" type="TaskBoardController.Task" />
+	<aura:attribute name="ProjectToLoadId" type="Id" />
+	<aura:attribute name="ProjectFilter" type="String" />
+	<aura:attribute name="ShowRecordLinks" type="Boolean" default="false" />
+	<aura:attribute name="SortByMenuItem" type="Object" />
+	
+	<aura:attribute name="DraggedTaskId" type="String" access="private" />
+	<aura:attribute name="NewTaskName" type="String" access="private" />
+	<aura:attribute name="NewChecklistItemName" type="String" access="private" />
+	<aura:attribute name="ShowEditTaskModal" type="Boolean" access="private" default="false" />
+	<aura:attribute name="ShowDeleteTaskFileModal" type="Boolean" access="private" default="false" />
+	<aura:attribute name="TaskFileToDeleteId" type="String" access="private" />
+	<aura:attribute name="TaskToUpdate" type="Task__c" access="private" default="{ sobjectType: 'Task__c' }" />
+	<aura:attribute name="TaskFilter" type="String" access="private" />
+	<aura:attribute name="RoleTaskFilter" type="String" access="private" />
+	<aura:attribute name="SortByFieldValue" type="Object" access="private" />
+	
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+	<aura:handler name="fieldSetFormLoaded" event="c:OnFieldSetFormLoaded"  action="{!c.onFieldSetFormLoaded}" />
+	<aura:handler name="change" value="{! v.ProjectToLoadId }" action="{! c.loadProject }" />
+	<aura:handler name="change" value="{! v.ProjectFilter }" action="{! c.filterTasksByProjectFilter }" />
+	<aura:handler name="change" value="{! v.SortByMenuItem }" action="{! c.sortByChanged }" />
+	
+	<div class="slds-text-heading_medium af-header slds-is-relative">
+	    {! v.TaskBoard.ProjectName ? v.TaskBoard.ProjectName : 'No Tasks Found' }
+	    <span class="af-header-project-percent-complete">{! v.TaskBoard.ProjectPercentComplete ? ' - ' + v.TaskBoard.ProjectPercentComplete + ' Complete' : '' }</span>
+	    
+	    <div class="slds-clearfix af-task-board-filter-menu-container slds-is-absolute slds-m-right--small">
+		    <div class="slds-float_right">
+		        <ui:menu class="slds-is-relative">
+			        <ui:menuTriggerLink aura:id="trigger" class="af-task-board-menu">
+			            Filter: {! and(!v.TaskFilter, !v.RoleTaskFilter) ? 'None' : ''} {! v.TaskFilter } {! and(v.TaskFilter, v.RoleTaskFilter) ? ', ' + v.RoleTaskFilter : v.RoleTaskFilter }
+			            <lightning:buttonIcon alternativeText="Filter" iconName="utility:down" class="slds-m-left_medium" />
+			        </ui:menuTriggerLink>
+			        <ui:menuList class="af-filter-menu-container " aura:id="actionMenu" visible="false">
+			            <ui:actionMenuItem label="All Tasks" click="{! c.filterTasks }" class="af-filter-menuitem" />
+			            <ui:actionMenuItem label="My Tasks" click="{! c.filterTasks }" class="af-filter-menuitem" />
+			            <ui:actionMenuItem label="Unassigned Tasks" click="{! c.filterTasks }" class="af-filter-menuitem" />
+			            <ui:actionMenuItem label="Upcoming Tasks" click="{! c.filterTasks }" class="af-filter-menuitem" />
+			            <ui:actionMenuItem label="Overdue Tasks" click="{! c.filterTasks }" class="af-filter-menuitem" />
+
+                        <ui:actionMenuItem label="ROLE" disabled="true" class="af-filter-menuitem" />
+                        <aura:iteration items="{! v.TaskBoard.TaskRoles }" var="taskRole">
+                            <ui:actionMenuItem label="{! taskRole }" click="{! c.filterTasksByRole }" class="af-filter-menuitem slds-p-left_medium" />
+                        </aura:iteration>
+                    </ui:menuList>
+			    </ui:menu>
+		    </div>
+	    </div>
+	    
+        <aura:if isTrue="{! v.SortByMenuItem }">
+	    <div class="slds-text-heading_small slds-clear">
+	        {! v.SortByMenuItem.FieldLabel }: {! v.SortByFieldValue }
+	    </div>
+	    </aura:if>
+	</div>
+	
+	
+	<lightning:layout horizontalAlign="space" class="af-task-board-body-container">
+	    <lightning:layoutitem >
+		    <lightning:layout horizontalAlign="spread" class="af-tasklists-container">
+		    <aura:iteration items="{! v.TaskBoard.TaskLists }" var="taskList">
+	        <lightning:layoutItem flexibility="grow" padding="around-small">
+	            <div aura:id="tasklistBodyContainer" ondrop="{!c.drop}" ondragover="{!c.allowDrop}" data-status-id="{# taskList.TaskStatusId }" class="af-tasklist-body-container">
+			        <lightning:card class="af-onboarding-tasklist">
+			            <aura:set attribute="title">
+			               {# taskList.Status }
+			               
+			               <span class="af-task-list-counter slds-float_right">{# taskList.Tasks.length }</span>
+			            </aura:set>
+			        
+				        <aura:iteration items="{! taskList.Tasks }" var="task">
+				            <div aura:id="{! task.Task.Id }" id="{! task.Task.Id }" draggable="true"
+				                 onclick="{! c.taskSelected }" ondrag="{! c.drag }" data-task-id="{! task.Task.Id }"
+				                 ondblclick="{! c.taskSelectedForEditing }"
+				                 style="{! and(task.Task.Overdue__c, taskList.OverdueTaskColor) ? 'background-color:' + taskList.OverdueTaskColor : '' }"
+				                 class="{! and(v.SelectedTask != null, v.SelectedTask.Task.Id == task.Task.Id) ? 'highlightedTask' : '' }">
+				            <lightning:card class="af-onboarding-task">
+				                <aura:set attribute="title">
+					                <span class="af-task-header slds-text-body_regular" data-task-id="{! task.Task.Id }">{# task.Task.Name }</span>
+					            </aura:set>
+					            
+					            <div data-task-id="{! task.Task.Id }">
+					            
+					                <lightning:layout horizontalAlign="spread" class="slds-text-body_small slds-p-top_small">
+					                    <lightning:layoutItem size="4">
+							            <aura:if isTrue="{! task.TaskChecklistItemsCount > 0 }">
+							            <div class="af-task-checklist-items-counter-container" title="{! task.TaskChecklistItemsCompletedCount + '/' + task.TaskChecklistItemsCount + ' checklist items completed' }">
+							               <lightning:icon alternativeText="task checklist icon" iconName="utility:task" size="x-small" />
+							               <span class="af-num-task-checklist-items-completed-text slds-text-body_small">{! task.TaskChecklistItemsCompletedCount }/{! task.TaskChecklistItemsCount }</span>
+							            </div>
+							            </aura:if>
+							            </lightning:layoutItem>
+							            
+							            <lightning:layoutItem size="6">
+							            <aura:if isTrue="{! task.Task.Due_Date__c }">
+							            <div class="af-task-due-date-container">
+							                <span title="Due Date"><ui:outputDate format="MM/dd/yyyy" value="{! task.Task.Due_Date__c }" /></span>
+							            </div>
+							            </aura:if>
+							            </lightning:layoutItem>
+
+                                        <lightning:layoutItem size="2">
+						                <div class="af-task-assignee slds-media-right" >
+						                    <aura:if isTrue="{! task.Task.Assignee__c != null }">
+											    <span title="{! 'Assignee: ' + task.Task.Assignee__r.Name }">{! task.Task.Assignee_Display_Name__c }</span>
+											    
+											    <aura:set attribute="else">
+											        <lightning:icon alternativeText="unassigned" iconName="utility:resource_absence" size="x-small" title="Unassigned" />
+											    </aura:set>
+											</aura:if>
+						                </div>
+						                </lightning:layoutItem>
+						            </lightning:layout>
+				                </div>
+				            
+				                
+				            </lightning:card>
+				            </div>
+				        </aura:iteration>
+
+                        <aura:if isTrue="{! !taskList.CompletedStatus }">
+                        <div class="af-add-task-container">
+                            <lightning:input aura:id="newTask" type="text" value="" class="af-add-task-input" maxlength="80" placeholder="Add a Task..." label="   " />
+                            <button class="slds-button slds-button--neutral af-add-task-button" onclick="{! c.addNewTaskLocal }" data-status-id="{# taskList.TaskStatusId }">Add</button>
+                        </div>
+                        </aura:if>
+				    </lightning:card>
+			    </div>
+	        </lightning:layoutItem>
+		    </aura:iteration>
+		    </lightning:layout>
+		</lightning:layoutitem>
+		
+		<lightning:layoutItem flexibility="grow" padding="around-small" class="{! v.SelectedTask != null ? 'slds-visible' : 'slds-hidden' }">
+		  <div>
+		    <lightning:card class="af-task-details">
+		        <aura:set attribute="title">
+		            <span class="af-detail-task-header">{! v.SelectedTask.Task.Name }</span>
+		        </aura:set>
+		        <aura:set attribute="actions">
+		            <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeTaskDetail }" iconName="utility:close" size="x-small" class="slds-m-left_small" title="Close Task" />
+		        </aura:set>
+		        <div class="af-task-detail-body-container">
+			        <!-- buttons -->
+			        <div class="af-task-detail-buttons-container">
+			            <aura:if isTrue="{! v.SelectedTask.Task.Status__r.Completed__c == false }">
+			                <lightning:buttonIcon alternativeText="Complete Task" iconName="utility:check" title="Complete Task" class="af-detail-task-complete-button" onclick="{! c.completeTaskClicked }" />
+			            </aura:if>
+			        </div>
+
+                    <div class="slds-p-horizontal_medium">
+	                    <c:FieldSetForm fieldSetName="Task_Details"
+	                                    objectName="Task__c"
+	                                    record="{! v.TaskToUpdate }"
+	                                    loadOnInit="false"
+	                                    aura:id="taskDetailsFieldSetForm" />
+
+                        <button class="slds-button slds-button_brand slds-m-top_small" onclick="{! c.saveSelectedTask }">Save</button>
+                    </div>
+			        
+			        <!-- Checklist -->
+			        <div class="af-task-detail-checklist-container slds-text-heading_small">
+			            <div><lightning:icon alternativeText="task checklist icon" iconName="utility:check" size="x-small" /> Checklist</div>
+			            
+			            <aura:iteration items="{! v.SelectedTask.Task.Task_Checklist_Items__r }" var="checklistItem">
+			                <div class="slds-text-body_regular af-task-detail-checklist-item">
+			                    <input type="checkbox" checked="{! checklistItem.Status__c == 'Completed' }" onclick="{! c.taskChecklistItemClick }" data-checklist-item-id="{! checklistItem.Id }" />
+			                    <span class="{! checklistItem.Status__c == 'Completed' ? 'af-task-detail-checklist-item-name af-task-detail-checklist-item-completed' : 'af-task-detail-checklist-item-name' }">{! checklistItem.Label__c }</span>
+			                </div>
+			            </aura:iteration>
+			            
+			            <div class="af-task-detail-new-checklist-item-container">
+			                <lightning:input aura:id="newChecklistItem" type="text" value="{! v.NewChecklistItemName }" class="af-add-checklist-item" maxlength="255" placeholder="New Checklist Item..." label="   " />
+                               <button class="slds-button slds-button--neutral af-add-checklist-item-button" onclick="{! c.addChecklistItem }">Add</button>
+			            </div>
+			        </div>
+			        
+			        
+			        <!-- files -->
+			        <div class="af-task-detail-files-container">
+			            <div class="slds-text-heading_small"><lightning:icon alternativeText="task files icon" iconName="utility:file" size="x-small" /> Files</div>
+			            
+			            <div class="af-task-detail-files-list-container">
+			                <aura:iteration items="{! v.SelectedTask.Task.ContentDocumentLinks }" var="contentDocumentLink">
+			                    <div class="af-task-detail-file-item">
+			                        <a href="{!'/sfc/servlet.shepherd/version/download/' + contentDocumentLink.ContentDocument.LatestPublishedVersionId + '?asPdf=false'}">{! contentDocumentLink.ContentDocument.Title }</a>
+			                        <lightning:buttonIcon alternativeText="Delete File" class="slds-m-left_xx-large" iconName="utility:delete" title="Delete File" onclick="{! c.deleteFileConfirmation }" size="x-small" value="{! contentDocumentLink.ContentDocumentId }" />
+			                    </div>
+			                </aura:iteration>
+			            </div>
+			            
+			            <div class="slds-align_absolute-center af-task-detail-file-upload-container" ondrop="{!c.dropAndUploadFile}" ondragover="{!c.allowDrop}">
+			                <lightning:icon alternativeText="task checklist icon" iconName="utility:upload" size="x-small" />
+			                Drop files here to upload...
+			            </div>
+			            
+			        </div>
+		        
+		        </div>
+		    </lightning:card>
+		  </div>
+		</lightning:layoutItem>
+	</lightning:layout>
+	
+	<aura:if isTrue="{! v.ShowRecordLinks }">
+	<div class="slds-m-left_small slds-p-bottom_small af-taskboard-detail-links">
+	   <aura:if isTrue="{! v.TaskBoard.EnrollmentOpportunityId }">
+		   <a href="{! '/' + v.TaskBoard.EnrollmentOpportunityId }" target="_blank">Go to Enrollment Opportunity Record</a>
+		   
+		   <aura:if isTrue="{! v.TaskBoard.EnrollmentFormId }">
+		       <a href="{! '/' + v.TaskBoard.EnrollmentFormId }" class="slds-p-left_medium" target="_blank">Go to Enrollment Form Record</a>
+		   </aura:if>
+
+           <aura:if isTrue="{! v.TaskBoard.ProjectId }">
+               <a href="{! '/' + v.TaskBoard.ProjectId }" class="slds-p-left_medium" target="_blank">Go to Project Record</a>
+           </aura:if>
+	   </aura:if>
+	</div>
+	</aura:if>
+	
+	
+    <div class="{! v.ShowEditTaskModal ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeEditTaskModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Edit {! v.SelectedTask.Task.Name }</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <c:FieldSetForm fieldSetName="Task_Details"
+                                    objectName="Task__c"
+                                    record="{! v.TaskToUpdate }"
+                                    loadOnInit="false"
+                                    aura:id="taskDetailsFieldSetForm" />
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeEditTaskModal }">Cancel</button>
+                    <button class="slds-button slds-button_brand" onclick="{! c.saveSelectedTask }">Save</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+    
+    <div class="{! v.ShowDeleteTaskFileModal ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeDeleteFileModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Delete File Confirmation</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    Are you sure you want to delete the file?
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeDeleteFileModal }">Cancel</button>
+                    <button class="slds-button slds-button_brand" onclick="{! c.deleteFile }">Delete</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+</aura:component>

@@ -1,0 +1,25 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId,force:hasSObjectName" 
+                controller="RelatedDetailsComponentController" >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <aura:attribute name="ObjectName" type="String" />
+    <aura:attribute name="RecordType" type="String" />
+    <aura:attribute name="LatestRecord" type="String" />
+    <aura:attribute name="RelatedRecordId" type="String" />
+    
+    <div aura:id="wait" role="status" class="slds-spinner slds-spinner_medium slds-is-relative">
+        <span class="slds-assistive-text">Loading</span>
+        <div class="slds-spinner__dot-a"></div>
+        <div class="slds-spinner__dot-b"></div>
+    </div>
+    
+    <aura:renderIf isTrue="{!v.RelatedRecordId != null}">
+        <div aura:id="recordDiv" class="slds-assistive-text">
+            <force:recordView recordId="{!v.RelatedRecordId}" />
+        </div>
+        <aura:set attribute="else">
+        	You do not have a Latest Record of this type. Please view the list below for all available records.
+        </aura:set>
+    </aura:renderIf>
+    
+</aura:component>

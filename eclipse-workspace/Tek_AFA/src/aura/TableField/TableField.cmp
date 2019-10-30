@@ -1,0 +1,40 @@
+<aura:component >
+    
+    <aura:attribute name="field" required="true" type="Field"/>
+    
+    <aura:if isTrue="{!v.field.Type == 'DATE'}">
+        
+        <ui:outputDate value="{!v.field.FieldValue}" format="MM/dd/YYYY"/>
+        
+        <aura:set attribute="else">
+            
+            <aura:if isTrue="{!v.field.Type == 'CURRENCY'}">
+                
+                <ui:outputCurrency value="{!v.field.FieldValue}" />
+                
+                <aura:set attribute="else">
+                    
+                    <aura:if isTrue="{!v.field.Type == 'DATETIME'}">
+                        <ui:outputDateTime value="{!v.field.FieldValue}" />
+                    
+                        <aura:set attribute="else">
+                            
+                            <aura:if isTrue="{!v.field.Type == 'BOOLEAN'}">
+                                <c:CheckboxInput value="{!v.field.FieldValue}" disabled="true" showLabelFirst="true"/>
+                                
+                                <aura:set attribute="else">
+                                    <div class="slds-truncate">{! v.field.FieldValue }</div>
+                                </aura:set>
+                                
+                            </aura:if> <!-- Field Type = Checkbox -->
+                            
+                        </aura:set>
+                    </aura:if> <!-- Field Type = DATETIME -->
+                    
+                </aura:set>                
+            </aura:if> <!-- Field Type = CURRENCY -->
+            
+        </aura:set>         
+    </aura:if> <!-- Field Type = DATE -->
+    
+</aura:component>

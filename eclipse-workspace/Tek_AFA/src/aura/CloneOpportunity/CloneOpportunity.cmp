@@ -1,0 +1,50 @@
+<aura:component controller="CloneEnrollmentOpportunityComponentCTRL" 
+                implements="force:appHostable,force:lightningQuickActionWithoutHeader,force:hasRecordId">
+    <ltng:require styles="{!$Resource.SLDSv23 + '/assets/styles/salesforce-lightning-design-system.css'}"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:attribute name="newOpportunity" type="Opportunity" default="{'sobjectType' : 'Opportunity'}"/>
+    <aura:attribute name="openEnrollmentOpportunities" type="Opportunity[]" access="private" />
+    <aura:attribute name="showEnrollmentForm" type="Boolean" access="private" default="false" />
+    
+    <header class="slds-modal__header header">
+        <h2 class="slds-text-heading_medium slds-hyphenate">Enrollment Setup</h2>
+    </header>
+    <br/>
+    <div class="container slds-is-relative">
+        
+        <aura:if isTrue="{! and(v.openEnrollmentOpportunities.length > 0, !v.showEnrollmentForm) }">
+            <p>{! $Label.c.Clone_Enrollment_Component_Instructions }</p>
+            
+            <aura:iteration items="{! v.openEnrollmentOpportunities }" var="openEnrollmentOpp">
+                <div class="slds-m-top_x-small">
+                    <a href="{! '/' + openEnrollmentOpp.Id }" >{! openEnrollmentOpp.Name }</a><br /> 
+                    Enrollment Dates: <lightning:formattedDateTime value="{! openEnrollmentOpp.Enrollment_Start_Date__c }" year="numeric" month="numeric" day="numeric" /> -
+                    <lightning:formattedDateTime value="{! openEnrollmentOpp.Enrollment_End_Date__c }" year="numeric" month="numeric" day="numeric" /> <br />
+                    Owner: {! openEnrollmentOpp.Owner.Name } <br />
+                    Created Date: <lightning:formattedDateTime value="{! openEnrollmentOpp.CreatedDate }" year="numeric" month="numeric" day="numeric" /> 
+                </div>
+                <hr class="slds-m-bottom_none slds-m-top_x-small" />
+            </aura:iteration>
+            
+            <div class="slds-m-top_x-small">
+                <a onclick="{! c.createEnrollmentOpportunity }">Create Enrollment Opportunity</a>
+            </div>
+        </aura:if>
+        
+        <div class="{! or(v.openEnrollmentOpportunities.length == 0, v.showEnrollmentForm) ? 'slds-show' : 'slds-hide' }">
+            <c:FieldSetForm fieldSetName="Clone_Opportunity_Dialog_Fields" 
+                            record="{! v.newOpportunity}"
+                            objectName="Opportunity"
+                            aura:Id="cloneOpportunityFields"/>
+        </div>
+        
+        <lightning:spinner aura:id="mySpinner" />
+    </div>
+    <footer class="slds-modal__footer footer">
+        <ui:button label="Cancel" press="{!c.handleCancel}" class="slds-button slds-button--neutral" />              
+        <ui:button label="Continue" press="{!c.submitForm}" class="slds-button slds-button--brand" />
+    </footer>
+    
+</aura:component>

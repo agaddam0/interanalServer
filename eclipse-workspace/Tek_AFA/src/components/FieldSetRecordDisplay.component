@@ -1,0 +1,50 @@
+<apex:component controller="EnrollmentSectionFormController">
+    <apex:attribute name="fieldSetName" description="The name of the field set to use" type="String" required="true" assignTo="{! ObjectFieldSetName }" />
+    <apex:attribute name="record" description="The record that is being bound to in the form." type="SObject" required="true" assignTo="{! BoundRecord }" />
+    <apex:attribute name="numberOfLayoutColumns" description="Enter the number of desired layout columns. You have to enter at least 1." type="Integer" assignTo="{! NumberOfTableLayoutColumns }" /> 
+    <apex:attribute name="layout" description="Options: vertical or horizontal  Determines where your value will fall" type="String" />
+    
+    <apex:outputPanel rendered="{!layout=='vertical'}">
+        <table style="width:100%">
+            <apex:repeat value="{! Table.Rows }" var="row">
+                <tr>
+                    <apex:repeat value="{! row.Columns }" var="column">
+                        <td class="fieldLabel" style="vertical-align: top;">
+                            <span af-data-input-field-label-container="{! column.APIFieldName }">
+                                {! column.Label }<c:cHelp helpText="{! column.HelpText }"/>
+                            </span>
+                        </td>
+                    </apex:repeat>
+                </tr>
+                <tr>
+                    <apex:repeat value="{! row.Columns }" var="column">    
+                        <td class="fieldValue" af-data-input-field-container="{! column.APIFieldName }">
+                            <apex:outputField value="{! record[column.APIFieldName] }" />
+                        </td>
+                    </apex:repeat>
+                </tr>
+            </apex:repeat>
+        </table>
+    </apex:outputPanel>
+    
+    <apex:outputPanel rendered="{!layout == 'horizontal'}">
+        <table>
+            <apex:repeat value="{! Table.Rows }" var="row">
+                <tr>
+                    <apex:repeat value="{! row.Columns }" var="column">
+                        <td>
+                            {! column.Label }:
+                        </td>
+                        <td>
+                            <apex:outputField value="{! record[column.APIFieldName] }" />
+                        </td>
+                    </apex:repeat>
+                </tr>
+            </apex:repeat>
+            
+        </table>
+        
+    </apex:outputPanel>
+    
+    
+</apex:component>

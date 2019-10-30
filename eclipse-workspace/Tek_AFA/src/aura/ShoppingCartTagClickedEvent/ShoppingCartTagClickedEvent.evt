@@ -1,0 +1,3 @@
+<aura:event type="APPLICATION" description="Fires when a tag is clicked from the Search Results component" >
+    <aura:attribute name="TagClicked" type="String" />
+</aura:event>

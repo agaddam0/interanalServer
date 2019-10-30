@@ -1,0 +1,1679 @@
+<apex:page sidebar="false" standardStylesheets="true" showHeader="false" Controller="Section125CTRL_v2" docType="html-5.0">
+    <head> 
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"/>
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"/>
+        <apex:includeScript value="{!URLFOR($Resource.bootstrap3, 'js/bootstrap.min.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.bootstrapExtra, 'bootstrap-3.3.1/js/tab.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.datepicker, 'datepicker/js/bootstrap-datepicker.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.jQueryNumeric, 'js/jquery.numeric.min.js')}"/>
+        
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.css')}"/>
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.min.css')}"/>
+        <apex:stylesheet value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css"/>
+        
+        <!--------------- Include StyleSheet ---------------------------->     
+        <apex:include pageName="SetupFormsStyleSheet"/>
+        <style>
+            .nav {
+                margin-bottom: 0px;
+            }
+
+            .navButtons {
+                display:block;
+                float:left;
+                color: #FFF !important;
+                width: 66px;
+                text-align: center;
+            }
+
+            .billModesContainer .multiSelectPicklistTable {
+                border-collapse: collapse;
+            }
+
+            .billModesContainer .multiSelectPicklistTable td {
+                border: none;
+                padding: 0px;
+            }
+            
+            .billModesContainer .multiSelectPicklistTable td:empty {
+                display: none;
+            }
+            
+            .addBillModeBtn {
+                margin-bottom: 1rem;
+            }
+
+            .fsaBillModesContainer {
+                margin-left: 1rem;
+            }
+            
+            .header-tabs2 {
+                margin-top: 5px;
+            }
+        </style> 
+    </head>
+    <body>
+        <apex:pageBlock id="thePageBlock">
+            <apex:form id="theForm">
+                <apex:outputPanel id="thePage">
+                    <script>
+                    
+                    // Luke Freeland: Added this so Salesforce won't automatically set
+                    // focus to a date field.
+                    function setFocusOnLoad() {}
+                    
+                    $(document).ready(function ($) {
+                        //$("#plan{!section125s[0].Id}tab").click();
+                        // get rid of unused tabs
+                        
+                        setupTabs();
+                        
+                        console.log('**** document ready');
+                        // hide previous button
+                        $("#prevTabButton").hide();
+                        $("#previousFormButton").hide();
+                        $("#nextFormButton").hide();
+                        $('#nextTabButton').hide();
+                        $('#submitAndContinueButton').hide();
+                        
+                        var submitAndContinueBtn = $("#submitAndContinueButton");
+                        var confirmButton = $("#confirmButton");
+                        appendAndContinueToSubmitButtonIfAnotherUnsubmittedForm();
+
+                        submitAndContinueBtn.hide();
+
+                        // Do the same click as the confirm button click
+                        submitAndContinueBtn.click(function() {
+                            $('#confirmButton').click();
+                        });
+
+                        submitAndContinueBtn.html(confirmButton.val());
+                        
+                        openFirstAvailableTab();
+
+                        //$(".af-header").afStickIt();
+                    });
+                    
+                    function reopenCurrentTab() {
+                        var topTab = '{!topTabParam}';
+                        var tabParam = '{!tabParam}';
+                        
+                        var openTopTab = currentForm;
+                        var openSubTab = currentTab;
+
+                        if (topTab && tabParam) {
+	                        $('#' + topTab).click();
+	                        $('#' + tabParam).click();
+                        }
+                        else if (openTopTab && openSubTab) {
+                            $('#' + openTopTab).click();
+                            $('#' + openSubTab).click();
+                        }
+                        else {
+                            openFirstAvailableTab();
+                        }
+                    }
+
+                    function openFirstAvailableTab() {
+                        $('#tabs > li:first-child').find('a').click();
+                        openFirstAvailableSubTab();
+                    }
+
+                    function openFirstAvailableSubTab() {
+                        $('#tabs2 > li:first-child').find('a').click();
+                    }
+
+                    $( ".helpButton" ).hover(
+                        function() {
+                            $(this).addClass("helpButtonOn");
+                            $(this).removeClass("helpButton");
+                            $(this).children('span.spanText').css("display", "inline");
+                        }, function() {
+                            $(this).removeClass("helpButtonOn");
+                            $(this).addClass("helpButton");
+                            $(this).children('span.spanText').css("display", "none");
+                        }
+                    );
+                    
+                    function setupTabs() {
+	                    $('#tabs2 > li').each(function(i, val) {
+	                        var anchor = this.firstChild;
+	                        var tabId = $(anchor).attr("id");
+	                        console.log($(anchor));
+	                        if ( !{!showS125tab} && (tabId.indexOf("s125TabLink") == 0 || tabId.indexOf("qualifiedbenefitsTabLink") == 0))
+	                            $(val).remove();
+	                        if ( !{!showHSAtab} && tabId.indexOf("HSATabLink") == 0) 
+	                            $(val).remove();
+	                        if ( !{!showFSAtab} && tabId.indexOf("FSATabLink") == 0) 
+	                            $(val).remove();
+	                    });
+                    
+                        // Sub-tabs on click binding
+	                    $('#tabs2 a').on('show.bs.tab', function(){
+	                        var currentSubTab = $(this).parent();
+	                        showHideNavButtons(currentSubTab, null);
+	
+	                        currentTab=$(this).attr('id');
+	                        console.log('**** tab: '+currentTab);
+	                    });
+	                    
+	                    // Top tabs on click binding
+	                    $('#tabs a').on('show.bs.tab', function(){
+	                        var currentFormTab = $(this).parent();
+	                        showHideNavButtons(null, currentFormTab);
+	                        showHidePlanSubTabs(currentFormTab);
+	                        
+	                        currentForm=$(this).attr('id');
+	                        console.log('**** form: '+currentForm);
+	                    });
+                    }
+                    
+                    // tab event handler.  Use to enable/disable buttons. Needs to be here due to rerendering of tabPanel  
+                    
+                    var currentTab;
+                    var currentForm;
+                    
+                    function getLastFormTab() {
+                        return $("#tabs > li:not([class*='createNewPlanButtonContainer'])").last();
+                    }
+                    
+                    function nextTab() {
+                        $('#tabs2 > .active').next('li').find('a').click();
+                    } 
+                    
+                    function  prevTab() {
+                        $('#tabs2 > .active').prev('li').find('a').click();
+                    } 
+                    
+                    function  nextForm(){
+                        $('#tabs > .active').next('li').find('a').click();
+                        $('#tabs2 > li:first-child').find('a').click();
+                    }
+                    
+                    function  prevForm() {
+                        $('#tabs > .active').prev('li').find('a').click();
+                        $('#tabs2 > li:last-child').find('a').click();
+                    }
+                    
+                    function showHidePlanSubTabs(currentFormTab) {
+                        var s125Id = currentFormTab.attr('data-s125-id');
+                        
+                        $('.header-tabs2').hide();
+                        $('.af-header-subtab-' + s125Id).show();
+                    }
+
+                    function showHideNavButtons(currentSubTab, currentFormTab) {
+                        if (!currentSubTab) {
+                            // Luke Freeland: If someone clicked on a different form tab, aka top-tab,
+                            // the currentSubTab will be blank so determine the current sub-tab
+                            // using the selected currentFormTab.
+                            var s125Id = currentFormTab.attr('data-s125-id');
+                        
+                            currentSubTab = $('#plan' + s125Id + ' #tabs2 > li.active');
+                        }
+
+                        if (!currentFormTab) {
+                            currentFormTab = $('#tabs:visible > li.active');
+                        }
+
+                        // Luke Freeland: Hide all the buttons and then
+                        // show the ones as needed. This removes the hiding
+                        // buttons logic from the rest of the show logic and greatly
+                        // simplifies the logic.
+
+                        $("#submitAndContinueButton").hide();
+                        $('#nextTabButton').hide();
+                        $('#prevTabButton').hide();
+                        $("#nextFormButton").hide();
+                        $("#previousFormButton").hide();
+
+                        var lastParentTab = getLastFormTab();
+
+                        var isLastFormTabTheCurrentOne = lastParentTab[0] == currentFormTab[0];
+
+                        // If on last sub-tab
+                        if (currentSubTab.is(':last-child'))
+                        {
+                            if(isLastFormTabTheCurrentOne) {
+                                if ({!formIsSubmitted == false}) {
+                                    $("#submitAndContinueButton").show();
+                                }
+                            }
+                            // Not Last Form Tab
+                            else {
+                                $("#nextFormButton").show();
+                            }
+                        }
+                        // Not Last Sub-Tab
+                        else
+                        {
+                            $("#nextTabButton").show();
+                        }
+
+                        // On First Sub-Tab
+                        if (currentSubTab.is(':first-child'))
+                        {
+                            var firstFormTab = $("#tabs:visible > :first-child");
+
+                            if(currentFormTab[0] != firstFormTab[0])
+                                $("#previousFormButton").show();
+                        }
+                        // Not On First Sub-Tab
+                        else
+                        {
+                            $("#prevTabButton").show();
+                        }
+                    }
+                    </script>
+                    <div class="container af-container">
+                        <div class="af-header">
+                            <c:SetupFormsNavBar formName="servicesSetup" efId="{!enrollmentForm.Id}" submitLabel="Submit Services Setup"/>
+                    
+	                        <div class="header-tabs">
+	                            <apex:outputPanel id="outerTabs">
+	                                <ul id="tabs" class="nav nav-tabs">
+	                                    <apex:repeat value="{!wrapS125s}" var="s">
+	                                        <li data-s125-id="{!s.Section125.Id}"><a href="#plan{!s.Section125.Id}" data-toggle="tab" id="plan{!s.Section125.Id}tab" style="{!if(s.AllTabsComplete, 'color:black', 'color:red')}">
+	                                            Plan {!s.Section125.Sec125PlanNumber__c}</a></li>
+	                                    </apex:repeat>
+	                                    <li class="createNewPlanButtonContainer"><input id="addSection125Plan" type="button" class="gbtn gbtnGreen" value="+ Section 125" onclick="createNewPlan();"/></li>
+	                                </ul>
+	                            </apex:outputPanel>
+	                        </div> <!-- end header-tabs -->
+                        
+                            <apex:repeat value="{!wrapS125s}" var="sw">
+                                <div class="header-tabs2 af-header-subtab-{! sw.Section125.Id }">
+                                    <apex:outputPanel id="tabPanel">
+                                        <ul class="nav nav-tabs" id="tabs2"  style="margin-bottom:0px;">
+                                            <li data-s125-id="{!sw.Section125.Id}"><a id="s125TabLink{!sw.Section125.Id}" data-toggle="tab" href="#s125tab{!sw.Section125.Id}" style="{!if(sw.Section125TabComplete ,'color:black;','color:red;')} {!if(showS125tab, '', ' display:none;')}">
+                                                Section 125</a></li>
+                                            <li data-s125-id="{!sw.Section125.Id}"><a id="qualifiedbenefitsTabLink{!sw.Section125.Id}" data-toggle="tab" href="#qualbentab{!sw.Section125.Id}" style="{!if(sw.QualifiedBenefitsTabComplete , 'color:black;', 'color:red;')} {!if(showS125tab, '', ' display:none;')}">
+                                                Qualified Benefits</a></li>
+                                            <li data-s125-id="{!sw.Section125.Id}"><a id="FSATabLink{!sw.Section125.Id}" data-toggle="tab" href="#FSAtab{!sw.Section125.Id}" style="{!if(sw.FlexibleSpendingTabComplete , 'color:black;', 'color:red;')} {!if(showFSAtab, '', ' display:none;')}">
+                                                Flexible Spending Account</a></li>
+                                            <li data-s125-id="{!sw.Section125.Id}"><a id="HSATabLink{!sw.Section125.Id}" data-toggle="tab" href="#HSAtab{!sw.Section125.Id}" style="{!if(sw.HealthSavingsTabComplete , 'color:black;', 'color:red;')} {!if(showHSAtab, '', ' display:none;')}">
+                                                Health Savings Account</a></li>
+                                        </ul> 
+                                    </apex:outputPanel>
+                                </div> <!-- end header-tabs2 -->
+                            </apex:repeat>
+                        </div>
+                        <div id="my-tab-content" class="tab-content">
+                            <apex:repeat value="{!wrapS125s}" var="sw">
+                                <div class="tab-pane" id="plan{!sw.Section125.Id}">
+                                    
+                                    <div class="content">
+                                        <apex:outputPanel id="messages">
+				                            <apex:pageMessages rendered="{!showErrorMessages==true}"/>
+				                        </apex:outputPanel>
+				                    
+				                        <span id="submitmessage" style="margin-left:10px;font-size:16pt;color:red; vertical-align:bottom;display:none;"></span>
+                                    
+                                        <apex:outputPanel id="allTabs">
+                                            <div class="tab-content">
+                                                
+                                                <!-------------------------------------------- SECTION 125 TAB  ------------------------------------------->
+                                                <!-------------------------------------------- SECTION 125 TAB  ------------------------------------------->
+                                                <!-------------------------------------------- SECTION 125 TAB  ------------------------------------------->
+                                                <!-------------------------------------------- SECTION 125 TAB  ------------------------------------------->
+                                                
+                                                <div class="tab-pane active" id="s125tab{!sw.Section125.Id}" style="padding-left:30px">
+                                                    <apex:outputPanel id="s125Panel">
+                                                        <apex:outputPanel rendered="{!wrapS125s.size > 1}">
+                                                            <input type="button" class="gbtn gbtnSecondary" value="Remove Plan" onclick="removePlan('{!sw.Section125.Id}');"/>
+                                                            <br/>
+                                                        </apex:outputPanel>
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125BusinessEntityType__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125BusinessEntityType__c')]}"/></div></td>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec_125_S125_Plan_Document_Needed_By__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec_125_S125_Plan_Document_Needed_By__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.Sec125BusinessEntityType__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td><apex:inputFIeld value="{!sw.Section125.Sec_125_S125_Plan_Document_Needed_By__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>                                   
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PrincipalBusinessActivity__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125PrincipalBusinessActivity__c')]}"/></div></td>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125EffDatesThisplanisintended__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125EffDatesThisplanisintended__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.Sec125PrincipalBusinessActivity__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td><apex:inputFIeld value="{!sw.Section125.Sec125EffDatesThisplanisintended__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>                                   
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PlanNumber__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125PlanNumber__c')]}"/></div></td>
+                                                                <apex:outputPanel rendered="{!formType == 'AFES'}">
+                                                                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125BranchOffice__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125BranchOffice__c')]}"/></td>
+                                                                </apex:outputPanel>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.Sec125PlanNumber__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <apex:outputPanel rendered="{!formType == 'AFES'}">
+                                                                    <td><apex:inputFIeld value="{!sw.Section125.Sec125BranchOffice__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                </apex:outputPanel>
+                                                            </tr>
+                                                        </table>
+                                                        <div class="sectionHeader">
+                                                            <apex:outputText styleclass="sectionLabel" value="Effective Dates"/>
+                                                        </div>
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125EffDate__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125EffDate__c')]}"/></div></td>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125EffDatescurplanyrwillbegin__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125EffDatescurplanyrwillbegin__c')]}"/></div></td>
+                                                                
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.Sec125EffDate__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td><apex:inputField value="{!sw.Section125.Sec125EffDatescurplanyrwillbegin__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125EffDatesAFAProviderEffDate__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125EffDatesAFAProviderEffDate__c')]}"/></div></td>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125EffDatescurplanyrwillend__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125EffDatescurplanyrwillend__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputFIeld value="{!sw.Section125.Sec125EffDatesAFAProviderEffDate__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>                                   
+                                                                <td><apex:inputFIeld value="{!sw.Section125.Sec125EffDatescurplanyrwillend__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>                                     
+                                                            </tr>
+                                                        </table>
+                                                        <div class="sectionHeader">
+                                                            <apex:outputText styleclass="sectionLabel" value="Plan Eligibility"/>
+                                                        </div>
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PlanEligPlanEligibility__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125PlanEligPlanEligibility__c')]}"/></div></td>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125MinagereqforemployeeElig__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125MinagereqforemployeeElig__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField style="width:63%;" value="{!sw.Section125.Sec125PlanEligPlanEligibility__c}" onchange="setEligibilityVisiblity(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td><apex:inputField value="{!sw.Section125.Sec125MinagereqforemployeeElig__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>                                     
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="planEligDays{!sw.Section125.Id} fieldLabel" style="display:none;"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PlanEligPlanEligDays__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125PlanEligPlanEligDays__c')]}"/></div></td>
+                                                                <td class="planEligMonths{!sw.Section125.Id} fieldLabel" style="display:none;"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PlanEligPlanEligMonths__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125PlanEligPlanEligMonths__c')]}"/></div></td>
+                                                                <td class="planEligOther{!sw.Section125.Id} fieldLabel" style="display:none;">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PlanEligPlanEligOtherplsexp__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125PlanEligPlanEligOtherplsexp__c')]}"/></td>
+                                                                <td class="planEligEmpty{!sw.Section125.Id}"></td>
+                                                                <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125AreretiredemployeesElig__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125AreretiredemployeesElig__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="planEligDays{!sw.Section125.Id}" style="display:none;"><apex:inputField value="{!sw.Section125.Sec125PlanEligPlanEligDays__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="planEligMonths{!sw.Section125.Id}" style="display:none;"><apex:inputField value="{!sw.Section125.Sec125PlanEligPlanEligMonths__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="planEligOther{!sw.Section125.Id}" style="display:none;"><apex:inputField style="width:60%;" value="{!sw.Section125.Sec125PlanEligPlanEligOtherplsexp__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="planEligEmpty{!sw.Section125.Id}"></td>
+                                                                <td><apex:inputField value="{!sw.Section125.Sec125AreretiredemployeesElig__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>                                      
+                                                            </tr>
+                                                            
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125NbrofhrsEligforSec125__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125NbrofhrsEligforSec125__c')]}"/></div></td>
+                                                                <td class="fieldLabel"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField style="width:63%;" value="{!sw.Section125.Sec125NbrofhrsEligforSec125__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td></td>
+                                                            </tr>
+                                                            
+                                                            
+                                                        </table>
+                                                        <div class="sectionHeader">
+                                                            <apex:outputText styleclass="sectionLabel" value="Contributions"/>
+                                                        </div>
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125NonelecContNonelecCont__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125NonelecContNonelecCont__c')]}"/></div></td>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125ElectiveContributions__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125ElectiveContributions__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.Sec125NonelecContNonelecCont__c}" onchange="showNoElect(this.value, '{!sw.Section125.Id}');saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td><apex:inputField value="{!sw.Section125.Sec125ElectiveContributions__c}" onchange="showContributionOptions(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>                                    
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $Label.S125OptOut_c }<c:cHelp helpText="{!hMap[LOWER('S125OptOut__c')]}"/></div></td>
+                                                                <td class="amount{!sw.Section125.Id} fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125ElectiveContributionsPerPlan__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125ElectiveContributionsPerPlan__c')]}"/></td>
+                                                                <td class="percentage{!sw.Section125.Id} fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125ElectiveContributionsPercent__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125ElectiveContributionsPercent__c')]}"/></td>
+                                                                <td class="notToExc{!sw.Section125.Id} fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125ElectiveContributionsPerPlanNot__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125ElectiveContributionsPerPlanNot__c')]}"/></td>
+                                                                <td class="contribEmpty{!sw.Section125.Id}"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.S125OptOut__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="amount{!sw.Section125.Id}" style="vertical-align:top;"><apex:inputField value="{!sw.Section125.Sec125ElectiveContributionsPerPlan__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="percentage{!sw.Section125.Id}" style="vertical-align:top;"><apex:inputField value="{!sw.Section125.Sec125ElectiveContributionsPercent__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="notToExc{!sw.Section125.Id}" style="vertical-align:top;"><apex:inputField value="{!sw.Section125.Sec125ElectiveContributionsPerPlanNot__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="contribEmpty{!sw.Section125.Id}"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="emptyNoElect{!sw.Section125.Id}"></td>
+                                                                <td class="requiredNoElect{!sw.Section125.Id} fieldLabel" style="display:none;"><div class="requiredLabel">Provide non-elective contribution information<c:cHelp helpText="{!hMap[LOWER('Sec125Non_elecContributionInformation__c')]}"/></div></td>
+                                                                <td class="notToExc{!sw.Section125.Id} fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125ElectiveContributionsNotToExceed__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125ElectiveContributionsNotToExceed__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="emptyNoElect{!sw.Section125.Id}"></td>
+                                                                <td class="requiredNoElect{!sw.Section125.Id}" style="display:none;"><apex:inputField style="width:60%;" value="{!sw.Section125.Sec125Non_elecContributionInformation__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="notToExc{!sw.Section125.Id}" style="vertical-align:top;"><apex:inputField value="{!sw.Section125.Sec125ElectiveContributionsNotToExceed__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>                                     
+                                                            </tr>
+                                                        </table>
+                                                        <apex:outputPanel id="relatedEmployers" rendered="{! sw.Section125.Primary__c = true }">
+                                                            <div class="sectionHeader">
+                                                                <apex:outputText styleclass="sectionLabel" value="Related Employers"/>
+                                                            </div>
+                                                            <table class="formtable" style="width:100%;">
+                                                                <tr>
+                                                                    <td><input type="button" class="gbtn gbtnSecondary" value="+ Related Employer" onclick="AddRelatedEmployer('{!sw.Section125.Id}');"/></td>
+                                                                </tr>
+                                                            </table>
+                                                            <apex:variable var="reCount" value="{!1}"/>
+                                                            <!-- Luke Freeland 8/8/2017: Steph requested that the related employers between the Section 125 and Customer Setup form have the same fields
+                                                                 and behave the same. If any changes need to be made below, it's likely it has to be done in the Customer Setup form too. Check with Steph
+                                                                 or the project manager to confirm. -->
+                                                            <apex:repeat value="{!sw.Section125.Common_Ownership_Forms__r}" var="e">
+                                                                <table class="formtable" style="width:100%">
+		                                                            <tr> 
+		                                                                <td  class="fieldLabel"><div class="requiredLabel" >New or Existing?
+                                                                           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                                           <a href="#" onclick="RemoveRelatedEmployer('{!e.Id}');" >[Remove]</a></div></td>
+		                                                                <td  class="fieldLabel"><div class="requiredLabel" style="{!if(e.New_Or_Existing__c != 'Existing','display:none','')}">MCP#</div> </td>
+		                                                            </tr>
+		                                                            <tr>
+		                                                                <td><apex:inputField id="CommonNewOrExist" value="{!e.New_Or_Existing__c}" >
+		                                                                      <apex:actionSupport event="onchange" action="{!updateRENewOrExisting}" rerender="relatedEmployers, allTabs, tabPanel, outerTabs"
+                                                                                        oncomplete="$(currentTab).click();">
+                                                                                  
+                                                                                  <apex:param name="benefit" assignTo="{!BenefitID}" value="{!e.Id}" />
+                                                                              </apex:actionSupport></apex:inputField></td>
+		                                                                <td><apex:inputField value="{!e.MCP_Number__c}"  onchange="updateRE('{!e.Id}', 'MCP_Number__c', this.value);" rendered="{!e.New_Or_Existing__c == 'Existing'}" /></td>
+		                                                            </tr>
+                                                                    <tr>
+                                                                        <td class="fieldLabel"><div class="requiredLabel"  style="{!if(e.New_Or_Existing__c = 'Existing','display:none','')}">Legal Name</div></td>
+                                                                        <td class="fieldLabel">Will this common ownership be a related employer under the Section 125 Plan?</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><apex:inputField value="{!e.Legal_Name__c}" onchange="updateRE('{!e.Id}', 'Legal_Name__c', this.value);" rendered="{!e.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                        <td><apex:inputField value="{!e.Related_Employer_under_S125_Plan__c}" onchange="updateRE('{!e.Id}', 'Related_Employer_under_S125_Plan__c', this.value);" /></td>                                   
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="fieldLabel"><div style="{!if(e.New_Or_Existing__c = 'Existing','display:none','')}">DBA Name</div></td>
+                                                                        <td class="fieldLabel"><div style="{!if(e.New_Or_Existing__c = 'Existing','display:none','')}">Contact Name</div></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><apex:inputField value="{!e.DBA_Name__c}" onchange="updateRE('{!e.Id}', 'DBA_Name__c', this.value);" rendered="{!e.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                        <td><apex:inputField value="{!e.Contact_Name__c}" onchange="updateRE('{!e.Id}', 'Contact_Name__c', this.value);" rendered="{!e.New_Or_Existing__c != 'Existing'}"/></td>                                   
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="fieldLabel"><div style="{!if(e.New_Or_Existing__c = 'Existing','display:none','')}">Employer Tax ID#</div></td>
+                                                                        <td class="fieldLabel"><div style="{!if(e.New_Or_Existing__c = 'Existing','display:none','')}">Contact Phone</div></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><apex:inputField value="{!e.Employer_Tax_ID_Number__c}" onchange="updateRE('{!e.Id}', 'Employer_Tax_ID_Number__c', this.value);" rendered="{!e.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                        <td><apex:inputField value="{!e.Contact_Phone_Number__c}" onchange="updateRE('{!e.Id}', 'Contact_Phone_Number__c', this.value);" rendered="{!e.New_Or_Existing__c != 'Existing'}"/></td>                                     
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="fieldLabel"><div class="requiredLabel" style="{!if(e.New_Or_Existing__c = 'Existing','display:none','')}">Address Line 1</div></td>
+                                                                        <td class="fieldLabel"><div style="{!if(e.New_Or_Existing__c = 'Existing','display:none','')}">Contact Email</div></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><apex:inputField value="{!e.Address_Line_1__c}" onchange="updateRE('{!e.Id}', 'Address_Line_1__c', this.value);" rendered="{!e.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                        <td><apex:inputField value="{!e.Contact_Email__c}" onchange="updateRE('{!e.Id}', 'Contact_Email__c', this.value);" rendered="{!e.New_Or_Existing__c != 'Existing'}"/></td>                                     
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="fieldLabel"><div style="{!if(e.New_Or_Existing__c = 'Existing','display:none','')}">Address Line 2</div></td>
+                                                                        <td class="fieldLabel"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><apex:inputField value="{!e.Address_Line_2__c}" onchange="updateRE('{!e.Id}', 'Address_Line_2__c', this.value);" rendered="{!e.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                        <td></td>                                     
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="fieldLabel"><div class="requiredLabel"  style="{!if(e.New_Or_Existing__c = 'Existing','display:none','')}">City</div></td>
+                                                                        <td class="fieldLabel"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><apex:inputField value="{!e.City__c}" onchange="updateRE('{!e.Id}', 'City__c', this.value);" rendered="{!e.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                        <td></td>                                     
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="fieldLabel"><div class="requiredLabel"  style="{!if(e.New_Or_Existing__c = 'Existing','display:none','')}">State</div></td>
+                                                                        <td class="fieldLabel"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><apex:inputField value="{!e.State_Picklist__c}" onchange="updateRE('{!e.Id}', 'State_Picklist__c', this.value);" rendered="{!e.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                        <td></td>                                     
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="fieldLabel"><div class="requiredLabel" style="{!if(e.New_Or_Existing__c = 'Existing','display:none','')}">Zip</div></td>
+                                                                        <td class="fieldLabel"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><apex:inputField value="{!e.ZipCode__c}" onchange="updateRE('{!e.Id}', 'ZipCode__c', this.value);" rendered="{!e.New_Or_Existing__c != 'Existing'}"/></td>
+                                                                        <td></td>                                     
+                                                                    </tr>
+                                                                </table>
+                                                                <div style="display:{!if(reCount == sw.Section125.Common_Ownership_Forms__r.size, 'none', '')}" class="sectionHeader">
+                                                                    <apex:outputText styleclass="sectionLabel" value=""/>
+                                                                </div>
+                                                                <apex:variable var="reCount" value="{!reCount+1}"/>
+                                                            </apex:repeat>
+                                                        </apex:outputPanel>
+                                                        <div class="sectionHeader">
+                                                            <apex:outputText styleclass="sectionLabel" value="Section 79 Life Insurance"/>
+                                                        </div>
+                                                        <table class="formtable" style="width:100%">
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125Sec79LifeInsIfGrpter__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125Sec79LifeInsIfGrpter__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.Sec125Sec79LifeInsIfGrpter__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125Sec79LifeInsAccthave__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125Sec79LifeInsAccthave__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.Sec125Sec79LifeInsAccthave__c}" onchange="showGroupTermYes(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="grpTermYes{!sw.Section125.Id} fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125Sec79LifeInsIfyesdoe__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125Sec79LifeInsIfyesdoe__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="grpTermYes{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.Sec125Sec79LifeInsIfyesdoe__c}" onchange="showFaceAmount(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="faceAmount{!sw.Section125.Id} fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125Sec79LifeInsIfyeswha__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125Sec79LifeInsIfyeswha__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="faceAmount{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.Sec125Sec79LifeInsIfyeswha__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                        </table>
+                                                        <div class="sectionHeader">
+                                                            <apex:outputText styleclass="sectionLabel" value="Comments"/>
+                                                        </div>
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125elecContNotesandInst__c.Label }<c:cHelp helpText="{!hMap[LOWER('Sec125elecContNotesandInst__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputTextarea value="{!sw.Section125.Sec125elecContNotesandInst__c}" style="width:75%" rows="4" onchange="saveRecord('plan{!sw.Section125.Id}tab', 's125TabLink{!sw.Section125.Id}');"/></td>                                   
+                                                            </tr>
+                                                        </table>
+                                                        
+                                                        <script>
+                                                        
+                                                        // Plan Eligibility
+                                                        
+                                                        setEligibilityVisiblity('{!sw.Section125.Sec125PlanEligPlanEligibility__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function setEligibilityVisiblity(eligSelection, sectionId)
+                                                        {
+                                                            if(eligSelection == 'First day of the month following days')
+                                                            {
+                                                                $('.planEligDays' + sectionId).show();
+                                                                $('.planEligMonths' + sectionId).hide();
+                                                                $('.planEligOther' + sectionId).hide();
+                                                                $('.planEligEmpty' + sectionId).hide();
+                                                            }
+                                                            else if(eligSelection == 'First day of the month following months')
+                                                            {
+                                                                $('.planEligDays' + sectionId).hide();
+                                                                $('.planEligMonths' + sectionId).show();
+                                                                $('.planEligOther' + sectionId).hide();
+                                                                $('.planEligEmpty' + sectionId).hide();
+                                                            }
+                                                                else if(eligSelection == 'Other')
+                                                                {
+                                                                    $('.planEligDays' + sectionId).hide();
+                                                                    $('.planEligMonths' + sectionId).hide();
+                                                                    $('.planEligOther' + sectionId).show();
+                                                                    $('.planEligEmpty' + sectionId).hide();
+                                                                }
+                                                                    else
+                                                                    {
+                                                                        $('.planEligDays' + sectionId).hide();
+                                                                        $('.planEligMonths' + sectionId).hide();
+                                                                        $('.planEligOther' + sectionId).hide();
+                                                                        $('.planEligEmpty' + sectionId).show();
+                                                                    }
+                                                        }
+                                                        
+                                                        //  Contributions //
+                                                        
+                                                        showNoElect('{!sw.Section125.Sec125NonelecContNonelecCont__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showNoElect(value, sectionId)
+                                                        {
+                                                            if(value == 'Yes')
+                                                            {
+                                                                $(".emptyNoElect" + sectionId).hide();
+                                                                $(".requiredNoElect" + sectionId).show();
+                                                            }
+                                                            else
+                                                            {
+                                                                $(".emptyNoElect" + sectionId).show();
+                                                                $(".requiredNoElect" + sectionId).hide();
+                                                            }
+                                                        }
+                                                        
+                                                        showContributionOptions('{!sw.Section125.Sec125ElectiveContributions__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showContributionOptions(value, sectionId)
+                                                        {
+                                                            if(value == 'Per Plan Year')
+                                                            {
+                                                                $(".amount" + sectionId).show(); 
+                                                                $(".percentage" + sectionId).hide();
+                                                                $(".notToExc" + sectionId).hide();
+                                                                $(".contribEmpty" + sectionId).hide();
+                                                            }
+                                                            else if(value == 'Percent of Compensation')
+                                                            {
+                                                                $(".amount" + sectionId).hide(); 
+                                                                $(".percentage" + sectionId).show();
+                                                                $(".notToExc" + sectionId).hide();
+                                                                $(".contribEmpty" + sectionId).hide();
+                                                            }
+                                                                else if(value == 'Per Plan Year not to exceed')
+                                                                {
+                                                                    $(".amount" + sectionId).hide(); 
+                                                                    $(".percentage" + sectionId).hide();
+                                                                    $(".notToExc" + sectionId).show();
+                                                                    $(".contribEmpty" + sectionId).hide();
+                                                                }
+                                                                    else
+                                                                    {
+                                                                        $(".amount" + sectionId).hide(); 
+                                                                        $(".percentage" + sectionId).hide();
+                                                                        $(".notToExc" + sectionId).hide();
+                                                                        $(".contribEmpty" + sectionId).show();
+                                                                    }
+                                                        }
+                                                        
+                                                        // Section 79 //
+                                                        
+                                                        showGroupTermYes('{!sw.Section125.Sec125Sec79LifeInsAccthave__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showGroupTermYes(value, sectionId)
+                                                        {
+                                                            if(value == 'Yes')
+                                                                $(".grpTermYes" + sectionId).show();
+                                                            else
+                                                            {
+                                                                $(".grpTermYes" + sectionId).hide();
+                                                                $(".faceAmount" + sectionId).hide();
+                                                            }
+                                                        } 
+                                                        
+                                                        showFaceAmount('{!sw.Section125.Sec125Sec79LifeInsIfyesdoe__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showFaceAmount(value, sectionId)
+                                                        {
+                                                            if(value == 'Yes')
+                                                                $(".faceAmount" + sectionId).show();
+                                                            else
+                                                                $(".faceAmount" + sectionId).hide();
+                                                        }
+                                                        </script>
+                                                    </apex:outputPanel> <!-- end s125Panel -->
+                                                </div> <!-- end s125tab -->
+                                                
+                                                <!-------------------------------------------- QUALIFIED BENEFITS TAB  ------------------------------------------->
+                                                <!-------------------------------------------- QUALIFIED BENEFITS TAB  ------------------------------------------->
+                                                <!-------------------------------------------- QUALIFIED BENEFITS TAB  ------------------------------------------->
+                                                <!-------------------------------------------- QUALIFIED BENEFITS TAB  ------------------------------------------->
+                                                
+                                                <div class="tab-pane" id="qualbentab{!sw.Section125.Id}" style="padding-left:30px">
+                                                    <apex:outputPanel id="qualbenPanel">
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.QualBenAnyQualBenOffered__c.Label }<c:cHelp helpText="{!hMap[LOWER('QualBenAnyQualBenOffered__c')]}"/></div></td>
+                                                                <td class="fieldLabel"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.QualBenAnyQualBenOffered__c}" onchange="showBenefitsTable(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 'qualifiedbenefitsTabLink{!sw.Section125.Id}');"/></td>
+                                                                <td></td>                                     
+                                                            </tr>
+                                                        </table>
+                                                        <div id="qualifiedBenefitsTable{!sw.Section125.Id}">                                
+                                                            <div class="sectionHeader">
+                                                                <apex:outputText styleclass="sectionLabel" value="Qualified Benefits"/>
+                                                            </div>
+                                                            <table class="formtable" style="width:100%">
+                                                                <tr>
+                                                                    <td>
+                                                                        <b>Please use current information. If carrier changes are made prior to the plan year, we will send corrected 
+                                                                            page.</b> If eligibility requirements for products are different than 125 plan eligibility, please list. 
+                                                                        For product descriptions, enter Policy#, Contract#, C-9 and subsequent policies, 5yr R and C, etc. 
+                                                                        Also, if disability premiums are paid on a pre-tax basis, benefits received are taxable to employee.<br/><br/>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><input type="button" value="+ Add Benefit"  onclick="AddBenefit('{!sw.Section125.Id}', 'plan{!sw.Section125.Id}tab', 'qualifiedbenefitsTabLink{!sw.Section125.Id}');" class="gbtn gbtnSecondary" /></td>
+                                                                </tr>
+                                                            </table>
+                                                            <br/>
+                                                            <apex:outputPanel id="qualifiedBenefitsPanel">
+                                                                <table style="margin-top:15px;width:85%" class="table table-bordered">
+                                                                    <thead style="background-color:#2989d8; color:#FFF">
+                                                                        <tr>
+                                                                            <th class="removeProduct"></th>
+                                                                            <th>Benefit Type</th>
+                                                                            <th>Plan Name</th>
+                                                                            <th>Carrier</th>
+                                                                            <th>Eligibility</th>
+                                                                            <th>Product Description</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <apex:repeat value="{!sw.Section125.Qualitfied_Benefits_Form__r}" var="qb">
+                                                                            <tr>
+                                                                                <td class="removeProduct" style="padding-top:20px;">
+                                                                                    <a onclick="deleteBenefit('{!qb.Id}', 'plan{!sw.Section125.Id}tab', 'qualifiedbenefitsTabLink{!sw.Section125.Id}');">[Remove]</a>
+                                                                                </td>
+                                                                                <td style="padding-right:10px;vertical-align:top;width:27%;">
+                                                                                    <span class="requiredLabel"><apex:inputField value="{!qb.Add_Benefit__c}" onchange="updateBenefit('{!qb.Id}', 'Add_Benefit__c', this.value, 'plan{!sw.Section125.Id}tab', 'qualifiedbenefitsTabLink{!sw.Section125.Id}');" style="width:95%"/></span>
+                                                                                </td>
+                                                                                <td style="padding-right:10px;vertical-align:top;">
+                                                                                    <apex:inputField value="{!qb.Plan_Name__c}" onchange="updateBenefit('{!qb.Id}', 'Plan_Name__c', this.value, 'plan{!sw.Section125.Id}tab', 'qualifiedbenefitsTabLink{!sw.Section125.Id}');" style="width:90%"/>
+                                                                                </td>
+                                                                                <td style="padding-right:10px;vertical-align:top;width:20%;">
+                                                                                    <span class="requiredLabel"><apex:inputField value="{!qb.Carrier__c}" onchange="updateBenefit('{!qb.Id}', 'Carrier__c', this.value, 'plan{!sw.Section125.Id}tab', 'qualifiedbenefitsTabLink{!sw.Section125.Id}');" style="width:87%"/></span>
+                                                                                </td>
+                                                                                <td style="padding-right:10px;vertical-align:top;">
+                                                                                    <apex:inputField value="{!qb.Eligibility__c}" onchange="updateBenefit('{!qb.Id}', 'Eligibility__c', this.value, 'plan{!sw.Section125.Id}tab', 'qualifiedbenefitsTabLink{!sw.Section125.Id}');" style="width:90%"/>
+                                                                                </td>
+                                                                                <td style="width:25%;">
+                                                                                    <apex:inputTextarea value="{!qb.Product_Description__c}" onchange="updateBenefit('{!qb.Id}', 'Product_Description__c', this.value, 'plan{!sw.Section125.Id}tab', 'qualifiedbenefitsTabLink{!sw.Section125.Id}');" rows="2" style="width:90%"/>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </apex:repeat>
+                                                                    </tbody>
+                                                                </table>
+                                                            </apex:outputPanel>
+                                                        </div>
+                                                        <script>
+                                                        
+                                                        // Qualified Benefits //
+                                                        
+                                                        showBenefitsTable('{!sw.Section125.QualBenAnyQualBenOffered__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showBenefitsTable(value, sectionId)
+                                                        {
+                                                            if(value == 'Yes')
+                                                            {
+                                                                if({!sw.Section125.Qualitfied_Benefits_Form__r.size} < 1)
+                                                                    AddBenefit('{!sw.Section125.Id}', 'plan{!sw.Section125.Id}tab', 'qualifiedbenefitsTabLink{!sw.Section125.Id}');
+                                                                
+                                                                $('#qualifiedBenefitsTable' + sectionId).show();
+                                                            }
+                                                            else
+                                                                $('#qualifiedBenefitsTable' + sectionId).hide();
+                                                        }
+                                                        
+                                                        </script>
+                                                    </apex:outputPanel> <!-- end qualbenPanel -->
+                                                </div> <!-- end qualbentab -->
+                                                
+                                                <!-------------------------------------------- FSA TAB  ------------------------------------------->
+                                                <!-------------------------------------------- FSA TAB  ------------------------------------------->
+                                                <!-------------------------------------------- FSA TAB  ------------------------------------------->
+                                                <!-------------------------------------------- FSA TAB  ------------------------------------------->
+                                                
+                                                <div id="FSAtab{!sw.Section125.Id}"  style="padding-left:30px" class="tab-pane">
+                                                    <apex:outputPanel id="FSApanel">
+                                                        <div class="sectionHeader">
+                                                            <apex:outputText styleclass="sectionLabel" value="Health FSA"/>
+                                                        </div>
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctGroupAddingHealthFSA__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctGroupAddingHealthFSA__c')]}"/></div></td>
+                                                                <td class="fieldLabel healthFSA{!sw.Section125.Id}">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexSpendAcctEli__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctHlthFlexSpendAcctEli__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:outputField value="{!sw.Section125.FlexSpendAcctGroupAddingHealthFSA__c}" /></td>
+                                                                <td class="healthFSA{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctHlthFlexSpendAcctEli__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                      
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel healthFSA{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexMin__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctHlthFlexMin__c')]}"/></div></td>
+                                                                <td class="fieldLabel healthFSA{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDebitCardWillEmpl__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctDebitCardWillEmpl__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="healthFSA{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctHlthFlexMin__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="healthFSA{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctDebitCardWillEmpl__c}" onchange="showFlexCardFee(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                     
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel healthFSA{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexMax__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctHlthFlexMax__c')]}"/></div></td>
+                                                                <td class="fieldLabel debitFee{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDebitCardFee__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctDebitCardFee__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="healthFSA{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctHlthFlexMax__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="debitFee{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctDebitCardFee__c}" onchange="showFlexCardFeeOther(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                      
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"></td>
+                                                                <td class="fieldLabel debitFeeOther{!sw.Section125.Id}">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDebitCardIfOther__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctDebitCardIfOther__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="healthFSA{!sw.Section125.Id}"></td>
+                                                                <td class="debitFeeOther{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctDebitCardIfOther__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                      
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel healthFSA{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexWho__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctHlthFlexWho__c')]}"/></div></td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="healthFSA{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctHlthFlexWho__c}" onchange="showRecordKeeperOther(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td></td>                                    
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel recordKeeperOther{!sw.Section125.Id}" style="display:none;">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexIfOther__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctHlthFlexIfOther__c')]}"/></td>
+                                                                <td class="fieldLabel"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="recordKeeperOther{!sw.Section125.Id}" style="display:none;"><apex:inputField value="{!sw.Section125.FlexSpendAcctHlthFlexIfOther__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td></td>                                    
+                                                            </tr>
+                                                        </table>
+                                                        <div class="sectionHeader">
+                                                            <apex:outputText styleclass="sectionLabel" value="Dependent Daycare FSA"/>
+                                                        </div>
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctGroupAddingDDCFSA__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctGroupAddingDDCFSA__c')]}"/></div></td>
+                                                                <td class="fieldLabel daycare{!sw.Section125.Id}">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDepDaycareReimbElig__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctDepDaycareReimbElig__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:outputField value="{!sw.Section125.FlexSpendAcctGroupAddingDDCFSA__c}"/></td>
+                                                                <td class="daycare{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctDepDaycareReimbElig__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                     
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel daycare{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDepDaycareReimbMin__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctDepDaycareReimbMin__c')]}"/></div></td>
+                                                                <td class="fieldLabel daycare{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDepDaycareReimbWho__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctDepDaycareReimbWho__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="daycare{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctDepDaycareReimbMin__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="daycare{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctDepDaycareReimbWho__c}" onchange="showDDCRecordKeeperOther(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                      
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel daycare{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDepDaycareReimbMax__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctDepDaycareReimbMax__c')]}"/></div></td>
+                                                                <td class="fieldLabel DDCRecordKeepOther{!sw.Section125.Id}">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDepDaycareReimbOth__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctDepDaycareReimbOth__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="daycare{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctDepDaycareReimbMax__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="DDCRecordKeepOther{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctDepDaycareReimbOth__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                      
+                                                            </tr>
+                                                        </table>
+                                                        <div class="sectionHeader">
+                                                            <apex:outputText styleclass="sectionLabel" value="FSA Billing"/>
+                                                        </div>
+                                                        <table class="formtable" style="width: 500px;">
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFlexBillinfoFirstFSARed__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctFlexBillinfoFirstFSARed__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.FlexSpendAcctFlexBillinfoFirstFSARed__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Flex_Billing_Same_as_Product_Billing__c.Label }<c:cHelp helpText="{!hMap[LOWER('Flex_Billing_Same_as_Product_Billing__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.Flex_Billing_Same_as_Product_Billing__c}" onchange="updateFlexProductBilling('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}','{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                        </table>
+
+                                                        <apex:outputPanel id="billModesPanel" layout="block" styleClass="fsaBillModes{! sw.Section125.Id } fsaBillModesContainer">
+
+                                                        <div class="sectionHeader">
+                                                            <div class="sectionLabel" style="margin-top: 10px;">Bill Modes</div>
+                                                        </div>
+
+                                                        <apex:outputPanel style="margin-top: 10px;" layout="block" rendered="{! IsBlank(billModesErrorMessage) = false && billModesErrorMessage != '' }">
+                                                            <apex:pageMessage severity="Error" summary="{! billModesErrorMessage }"  />
+                                                        </apex:outputPanel>
+
+                                                        <apex:outputText value="{! $Label.Billing_Modes_Disclaimer }" escape="false" styleClass="af-section-note" />
+
+
+			                                            <table style="margin-top:15px; width:60%" class="table table-bordered billModesContainer">
+                                                            <thead style="background-color:#2989d8; color:#FFF">
+                                                                <tr>
+                                                                    <th />
+                                                                    <apex:repeat value="{! $ObjectType.Bill_Mode__c.FieldSets.Flex_Billing }" var="f">
+                                                                    <th><div class="{! If(f.required, 'requiredLabel', '') }">{! f.Label }</div></th>
+                                                                    </apex:repeat>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <apex:repeat value="{! sw.Section125.Bill_Modes__r }" var="billMode">
+                                                                    <tr>
+                                                                        <td><a href="#" onclick="var deleteConfirmResult = confirm('Are you sure?'); if (deleteConfirmResult) { removeBillMode('{! billMode.Id }')}">[Remove]</a></td>
+                                                                    <apex:repeat value="{! $ObjectType.Bill_Mode__c.FieldSets.Flex_Billing }" var="f">
+                                                                        <td><apex:inputField value="{! billMode[f] }"
+                                                                                             onchange="updateBillMode('{! billMode.Id }')" /></td>
+                                                                    </apex:repeat>
+                                                                    </tr>
+                                                                </apex:repeat>
+                                                            </tbody>
+                                                        </table>
+			                                            
+                                                        <input type="button" id="addCommon" value="+ Add Bill Mode"
+                                                               class="gbtn gbtnSecondary addBillModeBtn" onclick="insertBillMode('{! sw.Section125.Id }');"/>
+                                                        
+                                                        <script>
+
+                                                        showFSABillModes('{!sw.Section125.Flex_Billing_Same_as_Product_Billing__c}', '{!sw.Section125.Id}');
+
+                                                        function showFSABillModes(value, sectionId) {
+                                                            if (value == 'No') {
+                                                                $(".fsaBillModes" + sectionId).show();
+                                                            }
+                                                            else {
+                                                                $(".fsaBillModes" + sectionId).hide();
+                                                            }
+                                                        }
+
+                                                        </script>
+
+                                                        </apex:outputPanel>
+			                                                   
+                                                        <table class="formtable" style="width: 500px;">
+                                                            <tr>
+                                                                <apex:outputPanel layout="none" rendered="{! sw.Section125.FlexSpendAcctFlexBillinfoPayMode__c != null && sw.Section125.FlexSpendAcctFlexBillinfoPayMode__c != '' }">
+                                                                <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFlexBillinfoPayMode__c.Label }</td>
+                                                                </apex:outputPanel>
+                                                                <td class="fieldLabel AWDonly"><div class="requiredLabel">{! $Label.FlexSpendAcctFlexBillinfoDoesrela_c }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctFlexBillinfoDoesrela__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <apex:outputPanel layout="none" rendered="{! sw.Section125.FlexSpendAcctFlexBillinfoPayMode__c != null && sw.Section125.FlexSpendAcctFlexBillinfoPayMode__c != '' }">
+                                                                <td><apex:outputField value="{!sw.Section125.FlexSpendAcctFlexBillinfoPayMode__c}" /></td>
+                                                                </apex:outputPanel>
+                                                                <td class="AWDonly"><apex:inputField value="{!sw.Section125.FlexSpendAcctFlexBillinfoDoesrela__c}" onchange="showAWDFlexBilling(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                    
+                                                            </tr>
+                                                            <tr>
+                                                                <apex:outputPanel layout="none" rendered="{!sw.Section125.FlexSpendAcctFlexBillinfoNumRemCont__c != null}">
+                                                                <td class="fieldLabel">{! $Label.FlexSpendAcctFlexBillinfoNumRemCont_c }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctFlexBillinfoNumRemCont__c')]}"/></td>
+                                                                </apex:outputPanel>
+
+                                                                <td class="fieldLabel sepFlex{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFlexBillinfoIfyesEm__c.Label }:<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctFlexBillinfoIfyesEm__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <apex:outputPanel layout="none" rendered="{!sw.Section125.FlexSpendAcctFlexBillinfoNumRemCont__c != null}">
+                                                                <td><apex:outputField value="{!sw.Section125.FlexSpendAcctFlexBillinfoNumRemCont__c}" /></td>
+                                                                </apex:outputPanel>
+
+                                                                <td class="sepFlex{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctFlexBillinfoIfyesEm__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                     
+                                                            </tr>
+                                                            <tr>
+                                                                <apex:outputPanel layout="none" rendered="{!sw.Section125.FlexSpendAcctFlexBillinfoMonthsSk__c != null && sw.Section125.FlexSpendAcctFlexBillinfoMonthsSk__c != ''}">
+                                                                <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFlexBillinfoMonthsSk__c.Label }</td>
+                                                                </apex:outputPanel>
+
+                                                                <td class="fieldLabel sepFlex{!sw.Section125.Id}"><div class="requiredLabel">{! $Label.FlexSpendAcctFlexBillinfoFirstPay_c }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctFlexBillinfoFirstPay__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <apex:outputPanel layout="none" rendered="{!sw.Section125.FlexSpendAcctFlexBillinfoMonthsSk__c != null && sw.Section125.FlexSpendAcctFlexBillinfoMonthsSk__c != ''}">
+                                                                <td><apex:outputField value="{!sw.Section125.FlexSpendAcctFlexBillinfoMonthsSk__c}" /></td>
+                                                                </apex:outputPanel>
+                                                                
+                                                                <td class="sepFlex{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctFlexBillinfoFirstPay__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                    
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel sepFlex{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFlexBillinfoIfSepar__c.Label }:<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctFlexBillinfoIfSepar__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="sepFlex{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctFlexBillinfoIfSepar__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                     
+                                                            </tr>
+                                                        </table>
+                                                        
+                                                        
+                                                        <div class="sectionHeader">
+                                                            <apex:outputText styleclass="sectionLabel" value="FSA Details"/>
+                                                        </div>
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td width="50%" class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFSAEffectiveDate__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctFSAEffectiveDate__c')]}"/></div></td>
+                                                                <td width="50%" class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Is_there_Employer_Paid_Flex__c.Label }<c:cHelp helpText="{!hMap[LOWER('Is_there_Employer_Paid_Flex__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.FlexSpendAcctFSAEffectiveDate__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td><apex:inputField value="{!sw.Section125.Is_there_Employer_Paid_Flex__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}'); showEmployerPaidFlex(this.value, '{!sw.Section125.Id}')"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctAdminFeeAdminFeeWho__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctAdminFeeAdminFeeWho__c')]}"/></div></td>
+                                                                <td class="fieldLabel employerPaidFlex{!sw.Section125.Id}" style="display:none;"><div class="requiredLabel">{! $Label.Does_the_same_amount_apply_to_all_employees_c }<c:cHelp helpText="{!hMap[LOWER('Does_the_same_amount_apply_to_employees__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.FlexSpendAcctAdminFeeAdminFeeWho__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="employerPaidFlex{!sw.Section125.Id}" style="display:none;"><apex:inputField value="{!sw.Section125.Does_the_same_amount_apply_to_employees__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctAdminFeeAdminFeeCost__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctAdminFeeAdminFeeCost__c')]}"/></div></td>
+                                                                <td class="fieldLabel employerPaidFlex{!sw.Section125.Id}" style="display:none;"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexSpendAcctEmp__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctHlthFlexSpendAcctEmp__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.FlexSpendAcctAdminFeeAdminFeeCost__c}" onchange="showAdminFeeOther(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="employerPaidFlex{!sw.Section125.Id} " style="display:none;"><apex:inputField value="{!sw.Section125.FlexSpendAcctHlthFlexSpendAcctEmp__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel adminFeeOther{!sw.Section125.Id}">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctAdminFeeIfOther__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctAdminFeeIfOther__c')]}"/></td>
+                                                                <td class="adminFeeOtherPlaceholder{!sw.Section125.Id}"></td>
+                                                                <td class="fieldLabel employerPaidFlex{!sw.Section125.Id}" style="display:none;"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Employer_FSA_Contribution__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctHlthFlexSpendAcctEmp__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="adminFeeOther{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctAdminFeeIfOther__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="adminFeeOtherPlaceholder{!sw.Section125.Id}"></td>
+                                                                <td class="employerPaidFlex{!sw.Section125.Id} " style="display:none;"><apex:inputField value="{!sw.Section125.Employer_FSA_Contribution__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}'); showFSAContributionFields(this.value, '{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctGRACEPERIstheEmpl__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctGRACEPERIstheEmpl__c')]}"/></div></td>
+                                                                <td class="fieldLabel employerPaidFlex{!sw.Section125.Id}" style="display:none;">
+                                                                    <div class="requiredLabel employerPaidContribution{!sw.Section125.Id}">{! $ObjectType.Section_125_Setup_Form__c.Fields.Contribution_up_to__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctHlthFlexSpendAcctEmp__c')]}"/></div>
+                                                                    <div class="requiredLabel employerPaidOtherContribution{!sw.Section125.Id}">{! $ObjectType.Section_125_Setup_Form__c.Fields.Other_Contribution_Details__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctHlthFlexSpendAcctEmp__c')]}"/></div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td style="vertical-align: top;"><apex:inputField value="{!sw.Section125.FlexSpendAcctGRACEPERIstheEmpl__c}" onchange="showCarryoverMax(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="employerPaidFlex{!sw.Section125.Id}" style="display:none;">
+                                                                    <apex:inputField styleClass="employerPaidContribution{!sw.Section125.Id}" value="{!sw.Section125.Contribution_up_to__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/>
+                                                                    <apex:inputField styleClass="employerPaidOtherContribution{!sw.Section125.Id}" value="{!sw.Section125.Other_Contribution_Details__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel carryMax{!sw.Section125.Id}">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctCarryoverProvMax__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctCarryoverProvMax__c')]}"/></td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="carryMax{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctCarryoverProvMax__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td></td>                                   
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctUniformCoverageRisk__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctUniformCoverageRisk__c')]}"/>
+                                                                    <img src="/img/alohaSkin/help_grey.png" id="assumeRiskHelp" data-toggle="popover"   style="vertical-align:middle" /></div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.FlexSpendAcctUniformCoverageRisk__c}" onchange="showAFArisk(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel AFArisk{!sw.Section125.Id}">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctForAFESPremium__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctForAFESPremium__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="AFArisk{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctForAFESPremium__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            
+                                                            
+                                                            
+                                                            <tr>
+                                                                <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDebitCardlimPurpose__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctDebitCardlimPurpose__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.FlexSpendAcctDebitCardlimPurpose__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHEARTACTIstheEmpl__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctHEARTACTIstheEmpl__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.FlexSpendAcctHEARTACTIstheEmpl__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel">{! $Label.FlexSpendAcctDebitCardAreThereRes_c }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctDebitCardAreThereRes__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputField value="{!sw.Section125.FlexSpendAcctDebitCardAreThereRes__c}" onchange="showEligibleExpense(this.value, '{!sw.Section125.Id}'); saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="eligExp{!sw.Section125.Id} fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDebitCardIfYeswhat__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctDebitCardIfYeswhat__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="eligExp{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.FlexSpendAcctDebitCardIfYeswhat__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>
+                                                            </tr>
+                                                        </table>
+                                                        <div class="sectionHeader">
+                                                            <apex:outputText styleclass="sectionLabel" value="Comments"/>
+                                                        </div>
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctSpecialInstPertain__c.Label }<c:cHelp helpText="{!hMap[LOWER('FlexSpendAcctSpecialInstPertain__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputTextarea value="{!sw.Section125.FlexSpendAcctSpecialInstPertain__c}" style="width:75%" rows="4" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'FSATabLink{!sw.Section125.Id}');"/></td>                                   
+                                                            </tr>
+                                                        </table>
+                                                        
+                                                        <script>
+                                                        
+                                                        // Health FSA //
+                                                        
+                                                        showFlexCardFeeOther('{!sw.Section125.FlexSpendAcctDebitCardFee__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showFlexCardFeeOther(value, sectionId)
+                                                        {
+                                                            if(value == 'Other')
+                                                                $(".debitFeeOther" + sectionId).show();
+                                                            else
+                                                                $(".debitFeeOther" + sectionId).hide();                                                                
+                                                        }
+                                                        
+                                                        showFlexCardFee('{!sw.Section125.FlexSpendAcctDebitCardWillEmpl__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showFlexCardFee(value, sectionId)
+                                                        {
+                                                            if(value == 'Yes')
+                                                            {
+                                                                $(".debitFee" + sectionId).show();
+                                                                if($(".debitFee" + sectionId).children("select").val() == 'Other')
+                                                                    $(".debitFeeOther" + sectionId).show();
+                                                            }
+                                                            else
+                                                            {
+                                                                $(".debitFee" + sectionId).hide();
+                                                                $(".debitFeeOther" + sectionId).hide();
+                                                            }
+                                                        }
+                                                        
+                                                        showRecordKeeperOther('{!sw.Section125.FlexSpendAcctHlthFlexWho__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showRecordKeeperOther(value, sectionId)
+                                                        {
+                                                            if(value == 'Other') {
+                                                                $(".recordKeeperOther" + sectionId).show();
+                                                                $(".recordKeeperOtherPlaceHolder" + sectionId).hide();
+                                                            }
+                                                            else {
+                                                                $(".recordKeeperOther" + sectionId).hide();
+                                                                $(".recordKeeperOtherPlaceHolder" + sectionId).show();
+                                                            }
+                                                        }
+                                                        
+                                                        showHealthFSA('{!sw.Section125.FlexSpendAcctGroupAddingHealthFSA__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showHealthFSA(value, sectionId)
+                                                        {
+                                                            if(value == 'Yes')
+                                                                $(".healthFSA" + sectionId).show();
+                                                            else
+                                                            {
+                                                                $(".healthFSA" + sectionId).hide();
+                                                                $(".recordKeeperOther" + sectionId).hide();
+                                                                $(".debitFee" + sectionId).hide();
+                                                                $(".debitFeeOther" + sectionId).hide();
+                                                            }
+                                                        }
+                                                        
+                                                        // Dependent Daycare FSA //
+                                                        
+                                                        showDDCRecordKeeperOther('{!sw.Section125.FlexSpendAcctDepDaycareReimbWho__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showDDCRecordKeeperOther(value, sectionId)
+                                                        {
+                                                            if(value == 'Other')
+                                                                $(".DDCRecordKeepOther" + sectionId).show();
+                                                            else
+                                                                $(".DDCRecordKeepOther" + sectionId).hide();   
+                                                        }
+                                                        
+                                                        showDependentDaycare('{!sw.Section125.FlexSpendAcctGroupAddingDDCFSA__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showDependentDaycare(value, sectionId)
+                                                        {
+                                                            if(value == 'Yes')
+                                                                $(".daycare" + sectionId).show();
+                                                            else
+                                                            {
+                                                                $(".daycare" + sectionId).hide();
+                                                                $(".DDCRecordKeepOther" + sectionId).hide();
+                                                            }
+                                                        }
+                                                        
+                                                        // FSA Details //
+                                                        
+                                                        showAFArisk('{!sw.Section125.FlexSpendAcctUniformCoverageRisk__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showAFArisk(value, sectionId)
+                                                        {
+                                                            if(value == 'AFA (Trust Subscription Agreement)')
+                                                                $('.AFArisk' + sectionId).show();
+                                                            else
+                                                                $('.AFArisk' + sectionId).hide();
+                                                        }
+                                                        
+                                                        showCarryoverMax('{!sw.Section125.FlexSpendAcctGRACEPERIstheEmpl__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showCarryoverMax(value, sectionId)
+                                                        {
+                                                            if(value == 'Carryover Provision')
+                                                                $(".carryMax" + sectionId).show();
+                                                            else
+                                                                $(".carryMax" + sectionId).hide();
+                                                        }
+                                                        
+                                                        
+                                                        showAdminFeeOther('{!sw.Section125.FlexSpendAcctAdminFeeAdminFeeCost__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showAdminFeeOther(value, sectionId)
+                                                        {
+                                                            if(value == 'Other')
+                                                            {
+                                                                $(".adminFeeOther" + sectionId).show();
+                                                                $(".adminFeeOtherPlaceholder" + sectionId).hide();
+                                                            }
+                                                            else
+                                                            {
+                                                                $(".adminFeeOther" + sectionId).hide();
+                                                                $(".adminFeeOtherPlaceholder" + sectionId).show();
+                                                            }
+                                                        }
+                                                        
+                                                        showEligibleExpense('{!sw.Section125.FlexSpendAcctDebitCardIfYeswhat__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showEligibleExpense(value, sectionId)
+                                                        {
+                                                            if(value == 'Yes')
+                                                                $(".eligExp" + sectionId).show();
+                                                            else
+                                                                $(".eligExp" + sectionId).hide();
+                                                        }
+                                                        
+                                                        // Flex Billing //
+                                                        
+                                                        if('{!formType}' == 'AWD')
+                                                            $(".AWDonly").show();
+                                                        else
+                                                            $(".AWDonly").hide();
+                                                        
+                                                        showAWDFlexBilling('{!sw.Section125.FlexSpendAcctFlexBillinfoDoesrela__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showAWDFlexBilling(value, sectionId)
+                                                        {
+                                                            if('{!formType}' == 'AWD' && value == 'Yes')
+                                                                $(".sepFlex" + sectionId).show();
+                                                            else
+                                                                $(".sepFlex" + sectionId).hide();
+                                                        }
+                                                        
+                                                        // Employer Paid Flex //
+                                                        
+                                                        showEmployerPaidFlex('{!sw.Section125.Is_there_Employer_Paid_Flex__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showEmployerPaidFlex(value, sectionId) {
+                                                            if (value == 'Yes') {
+                                                                $(".employerPaidFlex" + sectionId).show();
+                                                            }
+                                                            else {
+                                                                $(".employerPaidFlex" + sectionId).hide();
+                                                            }
+                                                        }
+                                                        
+                                                        showFSAContributionFields('{!sw.Section125.Employer_FSA_Contribution__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showFSAContributionFields(value, sectionId) {
+                                                            if (value == 'Dollar for Dollar Match') {
+                                                                $(".employerPaidContribution" + sectionId).show();
+                                                            }
+                                                            else {
+                                                                $(".employerPaidContribution" + sectionId).hide();
+                                                            }
+                                                            
+                                                            if (value == 'Other') {
+                                                                $(".employerPaidOtherContribution" + sectionId).show();
+                                                            }
+                                                            else {
+                                                                $(".employerPaidOtherContribution" + sectionId).hide();
+                                                            }
+                                                        }
+                                                        
+                                                        </script>
+                                                    </apex:outputPanel> <!-- end FSApanel -->
+                                                </div> <!-- end FSAtab -->
+                                                
+                                                <!-------------------------------------------- HSA TAB  ------------------------------------------->
+                                                <!-------------------------------------------- HSA TAB  ------------------------------------------->
+                                                <!-------------------------------------------- HSA TAB  ------------------------------------------->
+                                                <!-------------------------------------------- HSA TAB  ------------------------------------------->
+                                                
+                                                <div id="HSAtab{!sw.Section125.Id}"  style="padding-left:30px" class="tab-pane">
+                                                    <apex:outputPanel id="HSApanel">
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctDoesEmployerpart__c.Label }<c:cHelp helpText="{!hMap[LOWER('HlthSvgsAcctDoesEmployerpart__c')]}"/></div></td>
+                                                                <td class="fieldLabel addingHSA{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctContributionMethod__c.Label }<c:cHelp helpText="{!hMap[LOWER('HlthSvgsAcctContributionMethod__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:outputField value="{!sw.Section125.HlthSvgsAcctDoesEmployerpart__c}"/></td>
+                                                                <td class="addingHSA{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.HlthSvgsAcctContributionMethod__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'HSATabLink{!sw.Section125.Id}');"/></td>                                     
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel addingHSA{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctChargeMonthlyMaint__c.Label }<c:cHelp helpText="{!hMap[LOWER('HlthSvgsAcctChargeMonthlyMaint__c')]}"/></div></td>
+                                                                <td class="fieldLabel addingHSA{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctDateofFirstHSAContribution__c.Label }<c:cHelp helpText="{!hMap[LOWER('HlthSvgsAcctDateofFirstHSAContribution__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="addingHSA{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.HlthSvgsAcctChargeMonthlyMaint__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'HSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="addingHSA{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.HlthSvgsAcctDateofFirstHSAContribution__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'HSATabLink{!sw.Section125.Id}');"/></td>                                     
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="fieldLabel addingHSA{!sw.Section125.Id}">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctlimpurpMedReimbExp__c.Label }<c:cHelp helpText="{!hMap[LOWER('HlthSvgsAcctlimpurpMedReimbExp__c')]}"/></td>
+                                                                <td class="fieldLabel addingHSA{!sw.Section125.Id}"><div class="requiredLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctDateofFirstHSAPayrollDed__c.Label }<c:cHelp helpText="{!hMap[LOWER('HlthSvgsAcctDateofFirstHSAPayrollDed__c')]}"/></div></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="addingHSA{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.HlthSvgsAcctlimpurpMedReimbExp__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'HSATabLink{!sw.Section125.Id}');"/></td>
+                                                                <td class="addingHSA{!sw.Section125.Id}"><apex:inputField value="{!sw.Section125.HlthSvgsAcctDateofFirstHSAPayrollDed__c}" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'HSATabLink{!sw.Section125.Id}');"/></td>                                   
+                                                            </tr>
+                                                        </table>
+                                                        <div class="sectionHeader">
+                                                            <apex:outputText styleclass="sectionLabel" value="Comments"/>
+                                                        </div>
+                                                        <table class="formtable" style="width:100%;">
+                                                            <tr>
+                                                                <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctSpecialInstPertain__c.Label }<c:cHelp helpText="{!hMap[LOWER('HlthSvgsAcctSpecialInstPertain__c')]}"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><apex:inputTextarea value="{!sw.Section125.HlthSvgsAcctSpecialInstPertain__c}" style="width:75%" rows="4" onchange="saveRecord('plan{!sw.Section125.Id}tab', 'HSATabLink{!sw.Section125.Id}');"/></td>                                    
+                                                            </tr>
+                                                        </table>
+                                                        
+                                                        <script>
+                                                        
+                                                        // HSA //
+                                                        
+                                                        showAddingHSA('{!sw.Section125.HlthSvgsAcctDoesEmployerpart__c}', '{!sw.Section125.Id}');
+                                                        
+                                                        function showAddingHSA(value, sectionId)
+                                                        {
+                                                            if(value == 'Yes')
+                                                                $(".addingHSA" + sectionId).show();
+                                                            else
+                                                                $(".addingHSA" + sectionId).hide();
+                                                        }
+                                                        
+                                                        </script>
+                                                        
+                                                    </apex:outputPanel> <!-- end HSApanel -->
+                                                </div> <!-- end HSAtab -->
+                                            </div> <!-- end tab-content -->
+                                            
+                                            
+                                            <script>
+                                            // page setup script
+                                            $('#org.ajax4jsf.oncomplete.pre').hide();
+                                            // must run in area that is rerendered ("page")
+                                            
+                                            // setup numeric plugin - prevents alpha characters
+                                            $("input.numeric3").numeric(",");    
+                                            $("input.numeric").numeric();  
+                                            
+                                            // show required field indicators  
+                                            $('.requiredLabel').css('visibility' , 'visible');
+                                            
+                                            // get rid of error messages
+                                            $('[Id$=thePage]').click(function() {
+                                                $('#submitmessage').empty();
+                                                $('#submitmessage').hide();
+                                            });
+                                            
+                                            $( ".helpButton" ).hover(
+                                                function() {
+                                                    $(this).addClass("helpButtonOn");
+                                                    $(this).removeClass("helpButton");
+                                                    $(this).children('span.spanText').css("display", "inline");
+                                                }, function() {
+                                                    $(this).removeClass("helpButtonOn");
+                                                    $(this).addClass("helpButton");
+                                                    $(this).children('span.spanText').css("display", "none");
+                                                }
+                                            ); 
+                                            
+                                            //Status Indicator
+                                            if ({!!formIsSubmitted})
+                                                $("#status").attr("style", "color:red;");
+                                            else
+                                                $("#status").attr("style", "color:#0B0;");
+                                            
+                                            setFormColor("color", "#54698D");  //dk blue 
+                                            
+                                            setupPopover(); // for Who is going to assume the risk question
+                                            
+                                            //When form has been submitted, lock down form - allow no changes - 
+                                            // Add to this code as necessary
+                                            
+                                            if ({!formIsSubmitted && IsUnlocked == false})
+                                            {                 
+                                                setFormColor("background-color","#EAECEC");
+                                                $('.af-header').addClass('af-header-submitted');
+                                                $('html').css('background-color', '#EAECEC');
+                                                
+                                                
+                                                $("input[type='button']").each(function() {
+                                                    $(this).attr({
+                                                        'disabled': 'disabled'
+                                                    });
+                                                });
+                                                
+                                                
+                                                /* jhicks 10/2016 removed comment here */
+                                                $('select').each(function() {
+                                                    $(this).attr({
+                                                        'disabled': 'disabled'
+                                                    });
+                                                });
+                                                
+                                                $('textarea').each(function() {
+                                                    $(this).attr({
+                                                        'disabled': 'disabled'
+                                                    });
+                                                });
+                                                
+                                                $('input').each(function() {
+                                                    $(this).attr({
+                                                        'disabled': 'disabled'
+                                                    });
+                                                });
+                                                
+                                                if ({!!RequestEdit}){        
+                                                    $('#requestEdit').show();
+                                                    $('#requestEdit').prop('disabled',false);
+                                                }
+                                                
+                                                $('.requiredLabel').toggleClass('noshow', true);
+                                                $('#confirmButton').hide();
+                                                
+                                                $('#addSection125Plan').hide();
+                                                
+                                                if ({! $Permission.Unlock_Setup_Forms }) {
+                                                    $('#unlockBtn').show();
+                                                    $('#unlockBtn').prop('disabled',false);
+                                                }
+                                            }  
+                                            
+                                            else {
+                                                $('.requiredLabel').css('visibility' , 'visible');
+                                                
+                                                if ({! !formIsSubmitted}) {
+                                                    $('#confirmButton').show();
+                                                    $('#confirmButton').prop('disabled',false);
+                                                }
+
+                                                setFormColor("background-color","white");
+                                                $('.af-header').removeClass('af-header-submitted');
+                                                $('html').css('background-color', 'white');
+                                            }
+                                            
+                                            if ({! formIsSubmitted && IsUnlocked }) {
+                                                $('#lockBtn').show();
+                                            }
+                                            
+			                                function showSubmitMessage(msg) {
+			                                    var submitMsgEle = document.getElementById("submitmessage");
+			                                
+			                                    submitMsgEle.innerHTML = msg;
+			                                    submitMsgEle.style.display = '';
+			                                }
+                                            
+                                            function submitForm() 
+                                            {
+                                                var errorForms = $("#tabs a[style*='color:red']");
+                                                var errorSubTabs = $("#tabs2 a[style*='color:red']");
+                                            
+                                                if(errorForms.length > 0 && errorSubTabs.length > 0) {
+                                                    errorForms.first().click();
+                                                    errorSubTabs.first().click();
+                                                    showSubmitMessage('Submit Failed.  Check all required fields.');
+                                                }
+                                                else if('{!enrollmentForm.Status__c}' != 'Confirmed') {
+                                                    showSubmitMessage('The General Information form must be confirmed before this form can be submitted.');
+                                                }
+                                                else {
+                                                    console.log('**** calling Controller to submitForm');
+                                                    submitFormCTRL();
+                                                }  
+                                            }
+                                            
+                                            function onSuccessfulSubmit() {
+                                                var successMsg = 'The services setup was submitted. ';
+                                                showSuccessMessageAndContinueToNextUnsubmittedForm(successMsg);
+                                            }
+                                            /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+                                            
+                                            
+                                            function setFormColor(attr,color) {
+                                                $("html body .bPageBlock, body #bodyCell .bResource .secondaryPalette, body .secondaryPalette.bPageBlock, body .individualPalette .secondaryPalette.bPageBlock," +
+                                                  "body .bodyDiv .genericTable, body .genericPageBlockTable, body .bodyDiv .bSubBlock, body .bComponentBlock .bPageBlock, body .bMyDashboard .bPageBlock," + 
+                                                  " body.rlHoverFrame .bPageBlock, body.subjectSelectionPopup div.choicesBox, body.lookupTab .secondaryPalette.bPageBlock, body.popupTab .secondaryPalette.bPageBlock, body.UserTagStatsPage .secondaryPalette.bPageBlock" +
+                                                  " .header-cont")
+                                                .css(attr, color);
+                                            }
+                                            /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+                                            function setupPopover() {
+                                                
+                                                $('#assumeRiskHelp').popover({
+                                                    html: true,
+                                                    trigger: "click hover",
+                                                    placement: "top",
+                                                    title: 'Who is going to assume the risk?',
+                                                    content : "Please indicate who will assume the risk and have the employer complete and sign the appropriate agreement. " +
+                                                    "About the Risk: If AFA is insuring the employer's Health Flexible Spending Account (Health FSA) risk, the maximum amount " +
+                                                    "available for reimbursement under the terms of the policy is prorated for those participants participating in the plan for " +
+                                                    "less than 12 months (including new hires). If AFA insures the risk, the only election change allowed is termination of " +
+                                                    "employment as explained in the Summary of Provisions. The risk can be paid by the Employer only. Maximum must be established " +
+                                                    "prior to enrollment."
+                                                });  
+                                                
+                                                // setup close popover
+                                                $('#assumeRiskHelp').on('click', function (e) {
+                                                    //did not click a popover toggle or popover
+                                                    if ($(e.target).data('toggle') !== 'popover'
+                                                        && $(e.target).parents('.popover.in').length === 0) { 
+                                                        $('[data-toggle="popover"]').popover('hide');
+                                                    }
+                                                });
+                                                
+                                            }
+                                            
+			                                function reloadThePage2() {
+			                                    // Don't reload the page if there are any errors.
+			                                    if ({! HasErrorMessages == false }) {
+			                                        reloadThePage();
+			                                    }
+			                                }
+                                            </script>
+                                        </apex:outputPanel> <!-- end allTabs -->
+                                    </div> <!-- end content -->
+                                </div> <!-- end plan{!sw.Section125.Sec125PlanNumber__c} -->
+                            </apex:repeat> <!-- end section125s repeater -->
+                            
+                            <c:UnlockRequest efId="{! If(enrollmentForm != null, enrollmentForm.Id, null) }" />
+                        </div> <!-- end my-tab-content -->
+                        <!-- Prev/Next Tab Buttons -->
+                        <div style="width:500px; margin: 15px auto;">
+                            <a class="gbtn gbtnSecondary navButtons" href="#" id="prevTabButton"  onclick="prevTab();">❮ Previous</a>
+                            <a class="gbtn gbtnSecondary navButtons" href="#" id="previousFormButton" onclick="prevForm();">❮ Previous</a>
+                            <a class="gbtn gbtnSecondary navButtons" href="#" id="nextTabButton"  onclick="nextTab();" style="margin-left: 30px;">Next ❯</a>
+                            <a class="gbtn gbtnSecondary navButtons" href="#" id="nextFormButton" onclick="nextForm();" style="margin-left: 30px;">Next ❯</a>
+                            <a class="gbtn gbtnSecondary navButtons" id="submitAndContinueButton" style="margin-left: 30px; width: auto;" href="#"></a>
+                        </div>
+                    </div> <!-- end container -->
+                </apex:outputPanel> <!-- end thePage -->
+                
+                
+                <!--------------------------- General Form Actions ------------------------------> 
+                <apex:ActionFunction name="checkRequiredFieldsAndDisplay"  action="{!checkRequiredFieldsAndDisplay}" oncomplete="reopenCurrentTab();submitForm();" rerender="allTabs, tabPanel, outerTabs" status="sts"/>
+                <apex:ActionFunction name="submitFormCTRL" action="{!submitForm}" rerender="thePage, navBarOutputPanel" status="sts" oncomplete="$('#servicesSetup').addClass('formSubmitted');reopenCurrentTab(); onSuccessfulSubmit();"/>
+                <apex:ActionFunction name="saveRecord" action="{!updateSection125s}" rerender="" oncomplete="setTabs('{!topTabParam}', '{!tabParam}'); ">
+                    <apex:param name="tabName" assignTo="{!tabParam}" value=""/>
+                    <apex:param name="topTabName" assignTo="{!topTabParam}" value=""/>
+                </apex:ActionFunction>
+                <apex:ActionFunction name="setTabs" action="{!setTabColors}" rerender="tabPanel, outerTabs" onComplete="$('#{!topTabParam}').click(); $('#{!tabParam}').click();">
+                    <apex:param name="tabName" assignTo="{!tabParam}" value=""/>
+                    <apex:param name="topTabName" assignTo="{!topTabParam}" value=""/>
+                </apex:ActionFunction>      
+                <apex:ActionFunction name="createNewPlan" action="{!createNewPlan}" rerender="thePage" status="sts" oncomplete="openFirstAvailableTab();" />
+                <apex:ActionFunction name="removePlan" action="{!deletePlan}" rerender="thePage" status="sts" oncomplete="openFirstAvailableTab();">
+                    <apex:param name="idToDelete" value="" assignTo="{!idToDelete}"/>    
+                </apex:ActionFunction>
+                <apex:ActionFunction name="updateEnrollmentForm" action="{!updateEnrollmentForm}" rerender="thePage, navBarOutputPanel" onComplete="$('#servicesSetup').removeClass('formSubmitted'); $('#servicesSetup').addClass('formNotSubmitted');reopenCurrentTab();" status="sts" >
+                    <apex:param name="name" assignTo="{!fieldName}" value="" />
+                    <apex:param name="value" assignTo="{!fieldValue}" value="" />
+                </apex:ActionFunction>
+                <!--------------------------- Related Employer Actions ------------------------------>
+                <apex:actionFunction name="updateRE" action="{!updateRE}" rerender="tabPanel, outerTabs">
+                    <apex:param name="benefit" value="" assignTo="{!BenefitID}"/>
+                    <apex:param name="name" assignTo="{!fieldName}" value="" />
+                    <apex:param name="value" assignTo="{!fieldValue}" value="" />
+                </apex:actionFunction>
+                <apex:actionFunction name="AddRelatedEmployer" action="{!insertRelatedEmployer}" oncomplete="initRE();" status="sts">
+                    <apex:param name="form" value="" assignTo="{!formToAdd}"/>
+                </apex:actionFunction>
+                <apex:ActionFunction name="RemoveRelatedEmployer" action="{!deleteRE}" oncomplete="initRE();" status="sts">
+                    <apex:param name="REIdToDelete" value="" assignTo="{!REIdToDelete}"/>
+                </apex:ActionFunction>
+                <apex:actionFunction name="initRE" action="{!init}" rerender="relatedEmployers" status="sts"/>
+                <!--------------------------- Qualified Benefit Actions ------------------------------>      
+                <apex:actionFunction name="updateBenefit" action="{!updateBenefit}" rerender="" oncomplete="setTabs('{!topTabParam}', '{!tabParam}'); ">
+                    <apex:param name="benefit" value="" assignTo="{!BenefitID}"/>
+                    <apex:param name="name" assignTo="{!fieldName}" value="" />
+                    <apex:param name="value" assignTo="{!fieldValue}" value="" />
+                    <apex:param name="tabName" assignTo="{!tabParam}" value=""/>
+                    <apex:param name="topTabName" assignTo="{!topTabParam}" value=""/>
+                </apex:actionFunction>
+                <apex:actionFunction name="AddBenefit" action="{!AddBenefit}" oncomplete="initBenefits(); setTabs('{!topTabParam}', '{!tabParam}');" status="sts">
+                    <apex:param name="form" value="" assignTo="{!formToAdd}"/>
+                    <apex:param name="tabName" assignTo="{!tabParam}" value=""/>
+                    <apex:param name="topTabName" assignTo="{!topTabParam}" value=""/>
+                </apex:actionFunction>
+                <apex:ActionFunction name="deleteBenefit" action="{!deleteBenefit}" oncomplete="initBenefits(); setTabs('{!topTabParam}', '{!tabParam}');" status="sts">
+                    <apex:param name="BenefitIdToDelete" value="" assignTo="{!BenefitIdToDelete}"/>
+                    <apex:param name="tabName" assignTo="{!tabParam}" value=""/>
+                    <apex:param name="topTabName" assignTo="{!topTabParam}" value=""/>
+                </apex:ActionFunction>
+                <apex:ActionFunction name="initBenefits" action="{!init}" rerender="qualifiedBenefitsPanel" status="sts"/>
+                
+                <apex:ActionFunction name="insertBillMode" action="{! insertBillMode }" rerender="messages,tabPanel,outerTabs,billModesPanel" oncomplete="reopenCurrentTab();" status="sts">
+                    <apex:param name="form" assignTo="{!formToAdd}" value="" />
+                </apex:ActionFunction>
+                <apex:ActionFunction name="removeBillMode" action="{! removeBillMode }" rerender="messages,tabPanel,outerTabs,billModesPanel" oncomplete="reopenCurrentTab();" status="sts">
+                    <apex:param name="billModeId" assignTo="{!BillModeIdToRemove}" value="" />
+                </apex:ActionFunction>
+                <apex:ActionFunction name="updateBillMode" action="{! updateBillMode }" rerender="messages,tabPanel,outerTabs" oncomplete="reopenCurrentTab();">
+                    <apex:param name="billModeId" assignTo="{!BillModeIdToUpdate}" value="" />
+                </apex:ActionFunction>
+                
+                <apex:ActionFunction name="updateFlexProductBilling" action="{!updateFSAProductBilling}" rerender="messages,tabPanel,outerTabs,billModesPanel" oncomplete="reopenCurrentTab();">
+                    <apex:param name="tabName" assignTo="{!tabParam}" value=""/>
+                    <apex:param name="topTabName" assignTo="{!topTabParam}" value=""/>
+                    <apex:param name="s125Id" assignTo="{!formToAdd}" value=""/>
+                </apex:ActionFunction>
+                
+                <apex:ActionFunction name="reloadThePage" action="{!reloadPage}" />
+
+                <apex:ActionFunction name="createUnlockRequest" action="{! createUnlockRequest }" rerender="messages,tabPanel,outerTabs,billModesPanel" status="sts" oncomplete="reloadThePage2();">
+                    <apex:param name="unlockReason" assignTo="{! UnlockReason }" value="" />
+                </apex:ActionFunction>
+
+                <apex:ActionFunction name="lockSetupForms" action="{! completeUnlockRequest }" rerender="messages,tabPanel,outerTabs,billModesPanel" status="sts" oncomplete="reloadThePage2();" />
+                
+                <apex:actionstatus id="sts">
+                    <apex:facet name="start">
+                        <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; height:150%;opacity:0.65;width:100%;">
+                            <div class="waitingHolder" style="top: 130px; width: 91px;">
+                                <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                                <span class="waitingDescription">Please Wait...</span>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionstatus>
+            </apex:form> <!-- end theForm -->
+        </apex:pageBlock> <!-- end thePageBlock -->
+    </body>
+</apex:page>

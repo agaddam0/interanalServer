@@ -1,0 +1,1032 @@
+<apex:page standardController="Policyholder__c" extensions="PolicyholderChangeRequestEXT">
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"/>
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js" />
+    
+    <apex:stylesheet value="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css"/>
+    
+    <apex:slds />
+    
+    <style>
+        .SFButton{
+        font-size: .9em !important;
+        font-family: Arial,Helvetica,sans-serif !important;
+        }
+        .errorClass{
+        font-weight: bold;
+        color: red;
+        display: block !important;
+        margin: auto !important;
+        text-align: center;
+        }
+        .lookup-input{
+        background-color: #fff;
+        color: #16325c;
+        border: 1px solid #d8dde6;
+        border-radius: .25rem;
+        width: 90%;
+        transition: border .1s linear,background-color .1s linear;
+        display: inline-block;
+        padding: 0 1rem 0 .75rem;
+        line-height: 1.875rem;
+        min-height: calc(1.875rem + (1px * 2));
+        }
+        a.lookup-input {
+        border: 0px;
+        }
+        .date-input{
+        background-color: #fff;
+        color: #16325c;
+        border: 1px solid #d8dde6;
+        border-radius: .25rem;
+        width: 75% !important;
+        transition: border .1s linear,background-color .1s linear;
+        display: inline-block;
+        padding: 0 1rem 0 .75rem;
+        line-height: 1.875rem;
+        min-height: calc(1.875rem + (1px * 2));
+        }
+        .slds-media__body .apexp{
+        margin-top: -40px;
+        }
+        .date-input[disabled]{
+        background-color: #e0e5ee;
+        border-color: #a8b7c7;
+        cursor: not-allowed;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        }
+        .lookup-input[disabled]{
+        background-color: #e0e5ee;
+        border-color: #a8b7c7;
+        cursor: not-allowed;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        }
+        .error{
+        background-color: white;
+        border-color: #c23934;
+        box-shadow: #c23934 0 0 0 1px inset;
+        background-clip: padding-box;
+        }
+        #toast-container > .toast-success {
+        background-color: #04844b;
+        font-size: 1rem;
+        min-width: 600px;
+        }
+        
+    </style>
+    <apex:remoteObjects jsNamespace="RemoteObjectModel">
+        <apex:remoteObjectModel name="Account" fields="Id,MCP_Number__c,Name"/>
+        <apex:remoteObjectModel name="Purchased_Product__c" fields="Id,Account__c"/>
+    </apex:remoteObjects>
+    <script type="text/javascript">
+    var $ = jQuery.noConflict();
+    
+    
+    $(document).ready(function ($) {
+        
+        addPermissions();
+        
+        $('.slds-tabs_default__item').on('click', function(){
+            $(this).addClass('slds-is-active');
+            $(this).find('a').attr('aria-selected', true);
+            var $contentToShow = $('#'+$(this).find('a').attr('aria-controls'));
+            $contentToShow.removeClass('slds-hide');
+            $contentToShow.addClass('slds-show');
+            
+            $(this).siblings().removeClass('slds-is-active');
+            $(this).siblings().find('a').attr('aria-selected', false);
+            $contentToShow.siblings('.slds-tabs_default__content').removeClass('slds-show');
+            $contentToShow.siblings('.slds-tabs_default__content').addClass('slds-hide');
+        });
+        
+        if("{!ConservationRequest}" == "") 
+        	$('.slds-tabs_default__link')[{!activeTabNum}].click();
+        
+        getOldMCP();
+        
+        if('{!lastFormSubmitted}' != '')
+        {
+            var submitMessage = 'Your request has been submitted.';
+            
+            toastr.options.positionClass = 'toast-top-center';
+            toastr.options.timeOut = 4800;
+            toastr.success(submitMessage);
+        }
+        
+        if({!AddressChangeSubmitted})
+        {
+            $('#Address_Change :input').each(function(){
+                $(this).attr('disabled','disabled');
+            });
+        }
+        
+        if({!ContactChangeSubmitted})
+        {
+            $('#Phone_Email_Change :input').each(function(){
+                $(this).attr('disabled','disabled');
+            });
+        }
+        
+        if({!EmployerTransferSubmitted})
+        {
+            $('#Employer_Transfer :input').each(function(){
+                $(this).attr('disabled','disabled');
+            });
+            $('#Employer_Transfer :select').each(function(){
+                $(this).attr('disabled','disabled');
+            });
+        }
+        
+        if({!BeneficiaryChangeSubmitted})
+        {
+            $('#Beneficiary_Change :input').each(function(){
+                $(this).attr('disabled','disabled');
+            });
+        }
+        
+        if({!ConservationRequestSubmitted})
+        {
+            $('#Conservation :input').each(function(){
+                $(this).attr('disabled','disabled');
+            });
+            $('#Conservation :select').each(function(){
+                $(this).attr('disabled','disabled');
+            });
+        }
+    });
+    
+    function copyAddressFields(elem)
+    {
+        if(elem.checked)
+        {
+            $('input[id$="mstreet"]').val($('input[id$="pstreet"]').val());
+            $('input[id$="mstreet2"]').val($('input[id$="pstreet2"]').val());
+            $('input[id$="mcity"]').val($('input[id$="pcity"]').val());
+            $('select[id$="mstate"]').val($('select[id$="pstate"]').val());
+            $('input[id$="mzip"]').val($('input[id$="pzip"]').val());
+        }
+        else
+        {
+            $('input[id$="mstreet"]').val('');
+            $('input[id$="mstreet2"]').val('');
+            $('input[id$="mcity"]').val('');
+            $('select[id$="mstate"]').val('');
+            $('input[id$="mzip"]').val('');
+        }
+    }
+    
+    function getOldMCP()
+    {
+        var accountId = $('input[id$="oldAcct_lkid"]').val();
+        var acct = new RemoteObjectModel.Account();
+        acct.retrieve(
+            {where:{Id: {eq: accountId}}},
+            function(err, accts){
+                if(err){
+                }else{
+                    accts.forEach(function(a){
+                        $('span[id$="oldMCP"]').html(a.get("MCP_Number__c"));
+                    });
+                }
+            });
+    }
+    
+    function getNewMCP()
+    {
+        var accountId = $('input[id$="newAcct_lkid"]').val();
+        var acct = new RemoteObjectModel.Account();
+        acct.retrieve(
+            {where:
+             {Id: {eq: accountId}}},
+            function(err, accts){
+                if(err){
+                }else{
+                    accts.forEach(function(a){
+                        $('span[id$="newMCP"]').html(a.get("MCP_Number__c"));
+                    });
+                }
+            });
+    }
+    
+    function setFocusOnLoad(){}
+    
+    function cancel(id)
+    {    		
+        if( (typeof sforce != 'undefined') && (sforce != null) ) {
+            sforce.one.navigateToURL('/'+id);
+        }
+        else {
+            window.location = '/'+id;
+        }
+    }
+    
+    var removeJobId = '';
+    
+    function addPermissions() {
+        console.log('In add method');
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.PolicyholderChangeRequestEXT.addUserToPublicGroup}',
+            function(result, event) {
+                removeJobId = result;
+            });    
+    }
+    
+    
+    function removePermissions() {
+        console.log('In remove method');
+        Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.PolicyholderChangeRequestEXT.removePermissions}',
+            removeJobId,
+            function(result, event) {
+                // Nothing needs to happen in the callback
+            });
+    }
+    
+    </script>
+    <apex:form >
+        <div class="slds-scope">            
+            <div class="slds-page-header">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <span class="slds-icon_container slds-icon-custom-custom14" title="Description of icon when needed">
+                            <svg class="slds-icon" aria-hidden="true">
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/custom-sprite/svg/symbols.svg#custom14')}"></use>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="slds-media__body">
+                        <p class="slds-text-title_caps slds-line-height_reset">Policyholder</p>
+                        <a class="slds-card__header-link" href='/{!holder.Id}'>
+                            <h1 class="slds-page-header__title slds-m-right_small slds-align-middle slds-truncate" title="{!holder.First_Name__c + ' ' + holder.Last_Name__c}">{!holder.First_Name__c + ' ' + holder.Last_Name__c}</h1>
+                        </a>
+                        <apex:pageBlock mode="maindetail">
+                            <apex:pageBlockButtons location="top">
+                                <div class="slds-button-group slds-float_right" role="group">
+                                    <apex:outputPanel rendered="{!ConservationRequest == null && (selectedTypes != null && selectedTypes.size > 1)}">
+                                        <apex:commandButton styleClass="slds-button slds-button_neutral" disabled="{!disableSubmitButton}" id="saveAllButton" value="Save All" action="{!saveAll}"/>
+                                        <apex:commandButton styleClass="slds-button slds-button_neutral" disabled="{!disableSubmitButton}" id="submitAllButton" value="Submit All" action="{!submitAll}"/>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!ConservationRequest != null || selectedTypes.size == 1}">
+                                        <apex:commandButton styleClass="slds-button slds-button_neutral" disabled="{!disableSubmitButton}" id="saveButton" value="Save" action="{!saveAll}"/>
+                                        <apex:commandButton styleClass="slds-button slds-button_neutral" disabled="{!disableSubmitButton}" id="submitButton" value="Submit" action="{!submitAll}"/>
+                                    </apex:outputPanel>
+                                    <apex:outputPanel rendered="{!EmployerTransfer != null}">
+                                        <apex:commandButton styleClass="slds-button slds-button_neutral" disabled="{!EmployerTransfer.Status__c == 'Pending' }" id="TransferPDF" value="Employer Transfer PDF" 
+                                                            onclick="window.open('/apex/EmployerTransferPDF?id={!EmployerTransfer.Id}', '_blank', 'height=800,width=600'); return false;"/>
+                                    </apex:outputPanel>
+                                    <apex:commandButton styleClass="slds-button slds-button_neutral" id="cancelButton" value="Cancel" onclick="removePermissions(); cancel('{!holder.Id}'); return false;"/>
+                                </div>
+                            </apex:pageBlockButtons>
+                        </apex:pageBlock>
+                    </div>
+                </div>
+                <ul class="slds-grid slds-page-header__detail-row">
+                    <li class="slds-page-header__detail-block">
+                        <p class="slds-text-title slds-truncate slds-m-bottom_xx-small" title="Customer Number">Customer Number</p>
+                        <p class="slds-text-body_regular slds-truncate" title="">{!holder.Customer_Number__c}</p>
+                    </li>
+                    <li class="slds-page-header__detail-block">
+                        <p class="slds-text-title slds-truncate slds-m-bottom_xx-small" title="Primary Phone">Primary Phone</p>
+                        <p class="slds-text-body_regular slds-truncate" title="">{!holder.Primary_Phone__c}</p>
+                    </li>
+                </ul>
+            </div>
+            
+            <!----------- Dynamic Tabs ------------>
+            <apex:outputPanel rendered="{!ConservationRequest == null}">
+                <div class="slds-tabs_default">
+                    
+                    <ul class="slds-tabs_default__nav" role="tablist">
+                        <apex:repeat value="{!selectedTypes}" var="r">
+                            <li class="slds-tabs_default__item" role="presentation">
+                                <a class="slds-tabs_default__link" href="javascript:void(0);" role="tab" tabindex="0" aria-selected="false" aria-controls="{!r.rt.DeveloperName}" id="{!r.rt.DeveloperName + '__item'}">{!r.rt.Name}</a>
+                            </li>
+                        </apex:repeat>
+                    </ul>
+                    
+                    <!-- Address Change Panel -->
+                    <div id="Address_Change" class="slds-tabs_default__content" role="tabpanel" aria-labelledby="Address_Change__item" style='padding-left:20px; width:80%'>
+                        <apex:outputPanel rendered="{!AddressChange != null}">
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Address Details">Current Policy Holder Address Details</span>
+                                </h3>
+                                <div aria-hidden="false" class="slds-section__content">
+                                    <div class="slds-form slds-form_compound" style="width:80%">
+                                        
+                                        <fieldset class="slds-form-element">
+                                            <div class="slds-form-element__group">
+                                                <div class="slds-form-element__row">
+                                                    <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                                        <label class="slds-form-element__label">Physical Address</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:outputPanel rendered="{!holder.Physical_Street_Address_2__c != null}">
+                                                                {!holder.Physical_Street_Address__c}<br/>
+                                                                {!holder.Physical_Street_Address_2__c}<br/>
+                                                                {!holder.Physical_City__c},&nbsp;{!holder.Physical_State__c}&nbsp;{!holder.Physical_Zip_Code__c}
+                                                            </apex:outputPanel>
+                                                            <apex:outputPanel rendered="{!holder.Physical_Street_Address_2__c == null}">
+                                                                {!holder.Physical_Street_Address__c}<br/>
+                                                                {!holder.Physical_City__c},&nbsp;{!holder.Physical_State__c}&nbsp;{!holder.Physical_Zip_Code__c}
+                                                            </apex:outputPanel>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                                        <label class="slds-form-element__label">Mailing Address</label>
+                                                        <div class="slds-form-element__control">
+                                                            <apex:outputPanel rendered="{!holder.Mailing_Street_Address_2__c != null}">
+                                                                {!holder.Mailing_Street_Address__c}<br/>
+                                                                {!holder.Mailing_Street_Address_2__c}<br/>
+                                                                {!holder.Mailing_City__c},&nbsp;{!holder.Mailing_State__c}&nbsp;{!holder.Mailing_Zip_Code__c}
+                                                            </apex:outputPanel>
+                                                            <apex:outputPanel rendered="{!holder.Mailing_Street_Address_2__c == null}">
+                                                                {!holder.Mailing_Street_Address__c}<br/>
+                                                                {!holder.Mailing_City__c},&nbsp;{!holder.Mailing_State__c}&nbsp;{!holder.Mailing_Zip_Code__c}
+                                                            </apex:outputPanel>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Address Details">New Address Request Details</span>
+                                </h3>
+                                <div aria-hidden="false" class="slds-section__content">
+                                    <div class="slds-form slds-form_compound" style="width:80%">
+                                        
+                                        <fieldset class="slds-form-element">
+                                            <div class="slds-form-element__group">
+                                                <div class="slds-form-element__row">
+                                                    <div class="slds-form-element slds-size_1-of-2">
+                                                        <div class="slds-form slds-form_compound">
+                                                            
+                                                            <fieldset class="slds-form-element" style="padding-right:20px">
+                                                                <legend class="slds-form-element__label slds-text-title_caps">Physical Address</legend>
+                                                                <div class="slds-form-element__group">
+                                                                    <div class="slds-form-element__row">
+                                                                        <div class="slds-form-element slds-size_1-of-1">
+                                                                            &nbsp;
+                                                                        </div>                                             
+                                                                    </div>
+                                                                    <div class="slds-form-element__row">
+                                                                        <div class="slds-form-element slds-size_1-of-1">
+                                                                            <label class="slds-form-element__label" for="pstreet">Street</label>
+                                                                            <apex:inputField id="pstreet" styleClass="slds-input" value="{!AddressChange.Physical_Street__c}" taborderhint="10"/>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element__row">
+                                                                        <div class="slds-form-element slds-size_1-of-1">
+                                                                            <label class="slds-form-element__label" for="pstreet2">Street 2</label>
+                                                                            <apex:inputField id="pstreet2" styleClass="slds-input" value="{!AddressChange.Physical_Street_2__c}" taborderhint="11"/>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element__row">
+                                                                        <div class="slds-form-element slds-size_1-of-2">
+                                                                            <label class="slds-form-element__label" for="pcity">City</label>
+                                                                            <apex:inputField id="pcity" styleClass="slds-input" value="{!AddressChange.Physical_City__c}" taborderhint="12"/>
+                                                                        </div>
+                                                                        <div class="slds-form-element slds-size_1-of-2">
+                                                                            <label class="slds-form-element__label" for="pstate">State</label>
+                                                                            <apex:inputField id="pstate" styleClass="slds-select" value="{!AddressChange.Physical_State__c}" taborderhint="13"/>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-form-element__row">
+                                                                        <div class="slds-form-element slds-size_1-of-2">
+                                                                            <label class="slds-form-element__label" for="pzip">ZIP Code</label>
+                                                                            <apex:inputField id="pzip" styleClass="slds-input" value="{!AddressChange.Physical_Zip__c}" taborderhint="14"/>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </fieldset> 
+                                                            
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="slds-form-element slds-size_1-of-2">
+                                                        <div class="slds-form-element slds-size_1-of-2">
+                                                            <div class="slds-form slds-form_compound">
+                                                                
+                                                                <fieldset class="slds-form-element" style="padding-right:20px">
+                                                                    <legend class="slds-form-element__label slds-text-title_caps">Mailing Address</legend>
+                                                                    <div class="slds-form-element__group">
+                                                                        <div class="slds-form-element__row">
+                                                                            <div class="slds-form-element slds-size_1-of-1">
+                                                                                <span class="slds-checkbox">
+                                                                                    <input type="checkbox" name="options" id="checkbox-10" value="on" onclick="copyAddressFields(this);"/>
+                                                                                    <label class="slds-checkbox__label" for="checkbox-10">
+                                                                                        <span class="slds-checkbox_faux"></span>
+                                                                                        <span class="slds-form-element__label">Same as Physical</span>
+                                                                                    </label>
+                                                                                </span>
+                                                                            </div>                                             
+                                                                        </div>
+                                                                        <div class="slds-form-element__row">
+                                                                            <div class="slds-form-element slds-size_1-of-1">
+                                                                                <label class="slds-form-element__label" for="mstreet">Street</label>
+                                                                                <apex:inputField id="mstreet" styleClass="slds-input" value="{!AddressChange.Mailing_Street__c}" taborderhint="16"/>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="slds-form-element__row">
+                                                                            <div class="slds-form-element slds-size_1-of-1">
+                                                                                <label class="slds-form-element__label" for="mstreet2">Street 2</label>
+                                                                                <apex:inputField id="mstreet2" styleClass="slds-input" value="{!AddressChange.Mailing_Street_2__c}" taborderhint="17"/>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="slds-form-element__row">
+                                                                            <div class="slds-form-element slds-size_1-of-2">
+                                                                                <label class="slds-form-element__label" for="mcity">City</label>
+                                                                                <apex:inputField id="mcity" styleClass="slds-input" value="{!AddressChange.Mailing_City__c}" taborderhint="18"/>
+                                                                            </div>
+                                                                            <div class="slds-form-element slds-size_1-of-2">
+                                                                                <label class="slds-form-element__label" for="mstate">State</label>
+                                                                                <apex:inputField id="mstate" styleClass="slds-select" value="{!AddressChange.Mailing_State__c}" taborderhint="19"/>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="slds-form-element__row">
+                                                                            <div class="slds-form-element slds-size_1-of-2">
+                                                                                <label class="slds-form-element__label" for="mzip">ZIP Code</label>
+                                                                                <apex:inputField id="mzip" styleClass="slds-input" value="{!AddressChange.Mailing_Zip__c}" taborderhint="20"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </fieldset> 
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Address Details">Additional Information</span>
+                                </h3>
+                                <div class="slds-form slds-form_stacked">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="addInfo">Additional Info</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:inputField id="addInfo" value="{!AddressChange.Additional_Info__c}" styleClass="slds-textarea" style="width:80%" taborderhint="21"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Address Details">System Information</span>
+                                </h3>
+                                <div class="slds-form slds-form_compound" style="width:80%">
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Status</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!AddressChange.Status__c}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Date of Request</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!AddressChange.Date_of_Request__c}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Last Modified By</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!AddressChange.LastModifiedById}" />
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Last Modified Date</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!AddressChange.LastModifiedDate}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                </div>
+                            </div>
+                            
+                            <apex:pageBlock mode="maindetail">
+                                <apex:pageBlockButtons location="bottom">
+                                    <apex:commandButton disabled="{!AddressChangeSubmitted}" value="Save" styleClass="slds-button slds-button_brand" action="{!saveAddressChange}"/>
+                                    <apex:commandButton disabled="{!AddressChangeSubmitted}" value="Submit" styleClass="slds-button slds-button_brand" action="{!SaveAndSubmitAddressChange}"/>
+                                </apex:pageBlockButtons>
+                            </apex:pageBlock>
+                        </apex:outputPanel>
+                        
+                    </div>
+                    
+                    <!-- Employer Transfer Tab -->
+                    <div id="Employer_Transfer" class="slds-tabs_default__content" role="tabpanel" aria-labelledby="Employer_Transfer__item" style='padding-left:20px; width:80%'>
+                        <apex:outputPanel rendered="{!EmployerTransfer != null}">
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Employer Transfer Info">Employer Transfer Request Details</span>
+                                </h3>
+                                <div class="slds-form slds-form_compound" style="width:80%">
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">
+                                                        <abbr class="slds-required">*</abbr>Account Name</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:inputField id="oldAcct" styleClass="lookup-input" value="{!EmployerTransfer.Account_Name__c}" onchange="getOldMCP();"/>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">
+                                                        <abbr class="slds-required">*</abbr>New Account Name</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:inputField id="newAcct" styleClass="lookup-input" value="{!EmployerTransfer.New_Account_Name__c}" onchange="getNewMCP();"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Old Account MCP Number</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputText label="Old Account MCP Number" value="{!EmployerTransfer.Account_Name__r.MCP_Number__c}" id="oldMCP" />
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">New Account MCP Number</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputText label="New Account MCP Number" id="newMCP" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">
+                                                        <abbr class="slds-required">*</abbr>Last Deduction Date</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:inputField styleClass="date-input" value="{!EmployerTransfer.Last_Deduction_Date__c}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">First Deduction Date</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:inputField styleClass="date-input" value="{!EmployerTransfer.First_Deduction_Date__c}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label">
+                                            <abbr class="slds-required">*</abbr>Group Policy Transfer</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:inputField styleClass="slds-input" value="{!EmployerTransfer.Group_Policy_Transfer__c}" style="width:45%"/>
+                                        </div>
+                                    </div>
+                                    
+                                </div> <!-- end compound form -->
+                            </div>
+                            
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Employer Transfer Info">Select policies for continuing coverage</span>
+                                </h3>
+                                
+                                <apex:outputPanel rendered="{!PurchasedProducts.size == 0}">
+                                    No Active Purchased Products
+                                </apex:outputPanel>
+                                
+                                <apex:outputPanel rendered="{!PurchasedProducts.size > 0}">
+                                    <table class="slds-table slds-table_bordered slds-table_cell-buffer {! if(productsError, 'slds-has-error', '')}">
+                                        <apex:variable var="index" value="{!0}"/>
+                                        <apex:repeat value="{!PurchasedProducts}" var="prod">
+                                            <tr>
+                                                <td>
+                                                    <!--<apex:inputCheckbox styleClass="slds-checkbox" value="{!prod.selected}"/>-->
+                                                    <label class="slds-checkbox">
+                                                        <apex:inputcheckbox styleclass="slds-input" value="{!prod.selected}" />
+                                                        <span class="slds-checkbox--faux"></span>
+                                                        <span class="slds-form-element__label"></span>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    {!prod.PurchasedProduct.Product_Family__c} - {!prod.PurchasedProduct.Product_Description__c} - 
+                                                    <apex:outputText value="{0, Number, Currency} ANNUALLY">
+                                                        <apex:param value="{!prod.PurchasedProduct.Annualized_Premium__c}"/>
+                                                    </apex:outputText><br/>
+                                                </td>
+                                            </tr>
+                                            <apex:variable var="index" value="{!index + 1}"/>
+                                        </apex:repeat>
+                                    </table>
+                                    <apex:outputPanel rendered="{!productsError}">
+                                    	<p class='slds-text-color_error'>
+                                            <b>Error: </b>You must select a policy.
+                                        </p>
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                                
+                                <div class="slds-text-heading_small slds-text-color_error slds-text-align_center">
+                                    <br/>
+                                    Completing the Employer Transfer Request notifies Billing that the coverage needs to be switched to the 
+                                    new bill. However, field colleagues are still responsible for making sure the same coverage is available 
+                                    at the new employer, as well as setting up the payroll deduction with the new employer.
+                                    <br/>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Employer Transfer Info">Additional Information</span>
+                                </h3>
+                                <div class="slds-form slds-form_stacked">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label" for="addInfo">Additional Info</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:inputField id="empTInfo" value="{!EmployerTransfer.Additional_Info__c}" styleClass="slds-textarea" style="width:80%" taborderhint="21"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="System Information">System Information</span>
+                                </h3>
+                                <div class="slds-form slds-form_compound" style="width:80%">
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Status</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!EmployerTransfer.Status__c}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Date of Request</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!EmployerTransfer.Date_of_Request__c}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Last Modified By</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!EmployerTransfer.LastModifiedById}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Last Modified Date</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!EmployerTransfer.LastModifiedDate}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                </div>
+                            </div>
+                            
+                            <apex:pageBlock mode="maindetail">
+                                <apex:pageBlockButtons location="bottom">
+                                    <apex:commandButton disabled="{!EmployerTransferSubmitted}" value="Submit" styleClass="slds-button slds-button_brand" action="{!SaveAndSubmitEmployerTransfer}"/>
+                                </apex:pageBlockButtons>
+                            </apex:pageBlock>
+                        </apex:outputPanel>
+                        
+                    </div>
+                    
+                    <!-- Phone or Email Change Form -->
+                    <div id="Phone_Email_Change" class="slds-tabs_default__content" role="tabpanel" aria-labelledby="Phone_Email_Change__item" style="width: 80%; padding-left: 20px">
+                        <apex:outputPanel rendered="{!ContactChange != null}">
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Employer Transfer Info">Current Policyholder Contact Details</span>
+                                </h3>
+                                <div class="slds-form slds-form_compound" style="width:80%">
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                                    <label class="slds-form-element__label">Primary Phone</label>
+                                                    <div class="slds-form-element__control">
+                                                        {!holder.Primary_Phone__c}
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                                    <label class="slds-form-element__label">Personal Email</label>
+                                                    <div class="slds-form-element__control">
+                                                        {!holder.Personal_Email__c}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                                    <label class="slds-form-element__label">Secondary Phone</label>
+                                                    <div class="slds-form-element__control">
+                                                        {!holder.Secondary_Phone__c}
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                                    <label class="slds-form-element__label">Work Email</label>
+                                                    <div class="slds-form-element__control">
+                                                        {!holder.Work_Email__c}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                </div>
+                            </div>
+                            
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Employer Transfer Info">New Contact Change Request Details</span>
+                                </h3>
+                                <div class="slds-form slds-form_compound" style="width:80%">
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                                    <label class="slds-form-element__label">Primary Phone</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:inputField styleClass="slds-input" value="{!ContactChange.New_Primary_Phone__c}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                                    <label class="slds-form-element__label">Personal Email</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:inputField styleClass="slds-input" value="{!ContactChange.New_Personal_Email__c}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                                    <label class="slds-form-element__label">Secondary Phone</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:inputField styleClass="slds-input" value="{!ContactChange.New_Secondary_Phone__c}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                                    <label class="slds-form-element__label">Work Email</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:inputField styleClass="slds-input" value="{!ContactChange.New_Work_Email__c}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                </div>
+                            </div>
+                            
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small">Additional Information</span>
+                                </h3>
+                                <div class="slds-form slds-form_stacked">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label">Additional Info</label>
+                                        <div class="slds-form-element__control">
+                                            <apex:inputField value="{!ContactChange.Additional_Info__c}" styleClass="slds-textarea" style="width:80%"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="System Information">System Information</span>
+                                </h3>
+                                <div class="slds-form slds-form_compound" style="width:80%">
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Status</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!ContactChange.Status__c}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Date of Request</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!ContactChange.Date_of_Request__c}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    
+                                    <fieldset class="slds-form-element">
+                                        <div class="slds-form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Last Modified By</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!ContactChange.LastModifiedById}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-form-element slds-size_1-of-2">
+                                                    <label class="slds-form-element__label">Last Modified Date</label>
+                                                    <div class="slds-form-element__control">
+                                                        <apex:outputField value="{!ContactChange.LastModifiedDate}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                            
+                            <apex:pageBlock mode="maindetail">
+                                <apex:pageBlockButtons location="bottom">
+                                    <apex:commandButton disabled="{!ContactChangeSubmitted}" value="Save" styleClass="slds-button slds-button_brand" action="{!saveContactChange}"/>
+                                    <apex:commandButton disabled="{!ContactChangeSubmitted}" value="Submit" styleClass="slds-button slds-button_brand" action="{!SaveAndSubmitContactChange}"/>
+                                </apex:pageBlockButtons>
+                            </apex:pageBlock>
+                            
+                        </apex:outputPanel>
+                        
+                    </div>
+                </div> <!-- end tabs_default -->
+            </apex:outputPanel>
+            
+            <!--  Conservation Request --->
+            <apex:outputPanel rendered="{!ConservationRequest != null}">
+                <div id="Conservation" style="width: 80%; padding-left:20px">
+                    <div class="slds-section slds-is-open">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="Employer Transfer Info">Conservation Request Details</span>
+                        </h3>
+                        <div class="slds-form slds-form_compound" style="width:80%">
+                            
+                            <fieldset class="slds-form-element">
+                                <div class="slds-form-element__group">
+                                    <div class="slds-form-element__row">
+                                        <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                            <label class="slds-form-element__label">Last Month Paid by Group</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:inputField styleClass="slds-input" value="{!ConservationRequest.Last_Month_Paid_by_Group__c}"/>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element slds-size_1-of-2" style="padding-right:20px">
+                                            <label class="slds-form-element__label">Reason for Leaving Employment</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:inputField styleClass="slds-input" value="{!ConservationRequest.Reason_for_Leaving_Employment__c}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            
+                            <fieldset class="slds-form-element">
+                                <div class="slds-form-element__group">
+                                    <div class="slds-form-element__row">
+                                        <div class="slds-form-element">
+                                            <label class="slds-checkbox">
+                                                <apex:inputcheckbox id="flexCheck" styleclass="slds-input" value="{!ConservationRequest.Is_customer_a_Flex_participant__c}" />
+                                                <span class="slds-checkbox--faux"></span>
+                                                <span class="slds-form-element__label">Is Customer or a Flex Participant?</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="slds-section slds-is-open">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small">Additional Information</span>
+                        </h3>
+                        <div class="slds-form slds-form_stacked">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label">Additional Info</label>
+                                <div class="slds-form-element__control">
+                                    <apex:inputField value="{!ConservationRequest.Additional_Info__c}" styleClass="slds-textarea" style="width:80%"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-section slds-is-open">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="System Information">System Information</span>
+                        </h3>
+                        <div class="slds-form slds-form_compound" style="width:80%">
+                            
+                            <fieldset class="slds-form-element">
+                                <div class="slds-form-element__group">
+                                    <div class="slds-form-element__row">
+                                        <div class="slds-form-element slds-size_1-of-2">
+                                            <label class="slds-form-element__label">Status</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:outputField value="{!ConservationRequest.Status__c}"/>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element slds-size_1-of-2">
+                                            <label class="slds-form-element__label">Date of Request</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:outputField value="{!ConservationRequest.Date_of_Request__c}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            
+                            <fieldset class="slds-form-element">
+                                <div class="slds-form-element__group">
+                                    <div class="slds-form-element__row">
+                                        <div class="slds-form-element slds-size_1-of-2">
+                                            <label class="slds-form-element__label">Last Modified By</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:outputField value="{!ConservationRequest.LastModifiedById}"/>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element slds-size_1-of-2">
+                                            <label class="slds-form-element__label">Last Modified Date</label>
+                                            <div class="slds-form-element__control">
+                                                <apex:outputField value="{!ConservationRequest.LastModifiedDate}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            
+                        </div>
+                    </div>
+                    
+                    <apex:pageBlock mode="maindetail">
+                        <apex:pageBlockButtons location="bottom">
+                            <apex:commandButton disabled="{!ConservationRequestSubmitted}" value="Save" styleClass="slds-button slds-button_brand" action="{!saveConservation}"/>
+                            <apex:commandButton disabled="{!ConservationRequestSubmitted}" value="Submit" styleClass="slds-button slds-button_brand" action="{!SaveAndSubmitConservation}"/>
+                        </apex:pageBlockButtons>
+                    </apex:pageBlock>
+                </div>
+            </apex:outputPanel>
+            
+        </div>
+    </apex:form>
+</apex:page>

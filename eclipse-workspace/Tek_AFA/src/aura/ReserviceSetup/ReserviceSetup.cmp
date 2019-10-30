@@ -1,0 +1,39 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,force:hasRecordId" controller="ReserviceSetupController" extends="c:ReserviceComponentContainer">
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    <aura:handler event="c:ReserviceNavigationEvent" action="{!c.showPages}" />
+    <aura:handler event="c:FieldSetFormValueChange" action="{!c.saveRecord}"/>
+    <aura:handler name="submitForms" event="c:ReserviceSubmitForms" action="{!c.handleInFormSubmit}"/>
+    
+    <aura:attribute name="EnrollmentForm" type="Enrollment_Form__c" access="private" />
+    <aura:attribute name="Opportunity" type="Opportunity" access="private" />
+    <aura:attribute name="PlatformSetup" type="Platform_Setup__c" access="private" />
+    <aura:attribute name="Account" type="Account" access="private" />
+    
+    <aura:attribute name="showReserviceChanges" type="Boolean" access="private" />
+    <aura:attribute name="showCurrentSetupReview" type="Boolean" default="true" access="private" />
+    <aura:attribute name="showQuickSetup" type="Boolean" access="private" default="false" />
+    <aura:attribute name="changesCreated" type="Boolean" access="private" default="false" />
+    <aura:attribute name="quickSetupCreated" type="Boolean" access="private" default="false" />
+    <aura:attribute name="showConfirmModal" type="Boolean" access="private" default="false" />
+    <aura:attribute name="goToPreEnrollmentMarketingForm" type="Boolean" access="private" default="false" />
+    <aura:attribute name="formIsSubmitted" type="Boolean" access="private" default="false" />
+    
+    <aura:method name="validate" />
+    <div class="{! v.formIsSubmitted ? 'container submitted-state slds-box slds-is-relative' : 'container slds-box slds-is-relative'}">    
+        <c:ReserviceNavigationBar aura:Id="navBar" opportunityId="{!v.recordId}" 
+        validateFormEvent="{!c.validate}" 
+        disableFormEvent="{! c.disableForms }"/>
+        
+        <div class="{! v.showCurrentSetupReview ? 'slds-show' : 'slds-hide'}">
+            <div aura:Id="currentSetupReviewContainer" />
+            
+            <div class="{! v.showReserviceChanges ? 'slds-show' : 'slds-hide'}">
+                <div aura:Id="reserviceChangesContainer" />
+            </div>
+        </div>
+        
+        <div class="{! v.showQuickSetup ? 'slds-show' : 'slds-hide'}">
+            <div aura:Id="quickSetupContainer" />
+        </div>
+    </div>    
+</aura:component>

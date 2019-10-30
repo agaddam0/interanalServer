@@ -1,0 +1,4 @@
+/* Used to show the options that are hidden by inherited CSS */
+.THIS .af-lightning-input-container label {
+    display: unset !important;
+}

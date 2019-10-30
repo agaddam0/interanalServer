@@ -1,0 +1,3 @@
+<aura:event type="APPLICATION" description="Send back an indicator that a job is finished" >
+    <aura:attribute name="PageLoaded" type="String" />
+</aura:event>

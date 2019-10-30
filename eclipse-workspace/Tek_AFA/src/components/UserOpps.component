@@ -1,0 +1,17 @@
+<apex:component controller="findUserOpps" access="global">
+<apex:attribute name="ownerId" type="Id" description="Id of the user" assignTo="{!userId}"/>
+    <apex:dataTable value="{!opportunities}" var="a" border="2" cellspacing="8" cellpadding="5">
+        <apex:column >
+            <apex:facet name="header">Opportunity Name</apex:facet>
+            {!a.Name}
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Type</apex:facet>
+            {!a.Record_Type__c}
+        </apex:column>
+                <apex:column >
+            <apex:facet name="header">Stage</apex:facet>
+            {!a.StageName}
+        </apex:column>
+    </apex:dataTable>
+</apex:component>

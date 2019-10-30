@@ -1,0 +1,21 @@
+.THIS .header {
+    width : 100%;
+    border-bottom : 1px solid lightgray;
+    height : 2.5rem;
+    text-align : center;
+}
+
+.THIS .af-bold {
+    font-weight: bold;
+}
+
+.THIS .footer {
+    width : 100%;
+    border-top : 1px solid lightgray;
+    padding-top : 20px;
+    text-align: right;
+}
+
+.THIS .footer button {
+    font-size : .8125rem;
+}

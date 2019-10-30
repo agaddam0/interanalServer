@@ -1,0 +1,62 @@
+.THIS {
+    background-color: white;
+}
+
+.THIS.announcement-container {
+    border-style: solid;
+    border-color: token(AFAredbrand);
+    border-width: 5px 0px;
+}
+
+.THIS .news-title {
+    color: token(AFAredbrand);
+}
+
+.THIS .announcement-header {
+    color: token(AFAredbrand);
+    font-weight: bold;
+}
+
+.THIS .brandLink {
+    color: #6E6D71;
+    text-decoration: underline;
+}
+
+.THIS .brandLink:hover {
+    color: #A7A9AC;
+}
+
+.THIS .af-modal_container {
+    margin: 100px auto;
+    max-width: 80rem;
+    min-width: 20rem;
+}
+
+.THIS .af-image {
+    width: 168px;
+}
+
+.THIS .chevron-left {
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 3%;
+}
+
+.THIS .chevron-right {
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 3%;
+}
+
+.THIS .slds-carousel__indicator-action.slds-is-active, .THIS .slds-carousel__indicator-action.slds-is-active:hover {
+    background: rgba(162, 24, 31, 1.0);
+    border-color: rgba(162, 24, 31, 1.0);
+}
+
+.THIS .carousel-width {
+    width: 94%;
+}
+
+.THIS .af-marketing-news-icon {
+    height: 120px;
+}

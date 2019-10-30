@@ -1,0 +1,112 @@
+<apex:component controller="UnlockRequestController">
+    <apex:attribute name="efId" description="enrollment form id" type="Id" required="true" assignTo="{! EnrollmentFormId }"/>
+
+    <style>
+        #af-unlockReason {
+            width: 90%;
+            min-height: 250px;
+        }
+    </style>
+
+    <div id="newUnlockRequest" style="display:none">
+        <table class="formtable">
+            <tr>
+                <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Unlock_Request__c.Fields.Unlock_Reason__c.Label }</div></td>
+            </tr>
+            <tr>
+	            <td><textarea id="af-unlockReason" /></td>
+	        </tr>
+	    </table>
+	</div>
+	
+	<div id="otherInProgressUnlockRequests" style="display:none;">
+	   Here are others who have unlocked the setup forms:
+	   
+	   <table class="formtable">
+	       <tr>
+	           <th>Individual</th>
+	           <th>Unlock Reason</th>
+	       </tr>
+	       <apex:repeat value="{! UnlockRequestsByOthers }" var="unlockRequest">
+	       
+	       <tr>
+	           <td><apex:outputField value="{! unlockRequest.CreatedBy.Name }" /></td>
+	           <td><apex:outputField value="{! unlockRequest.Unlock_Reason__c }" /></td>
+	       </tr>
+	       
+	       </apex:repeat>
+	   
+	   </table>
+	</div>
+	
+	<script>
+	   $("#newUnlockRequest").dialog({
+	       autoOpen: false,
+	       resizable: false,
+	       closeOnEscape: false,
+	       height:500,
+	       width:350,
+	       modal: true,
+	       title: "Unlock Request",
+	       position: {my: "center", at: "center", of: window},
+	       classes: {
+	           "ui-dialog" : "dialogFixed",
+	           "ui-dialog-titlebar-close" : "dialogInvisible",
+	           "ui-dialog-titlebar" : "dialogTitle"
+	       },        
+	       open: function() {
+	           
+	           $('.ui-dialog-buttonpane').find('button:contains("Unlock")').addClass('gbtn');
+	           $('.ui-dialog-buttonpane').find('button:contains("Cancel")').addClass('gbtn');
+	           $('#af-unlockReason').removeAttr('disabled');
+	       },
+	       buttons: [
+	       {
+	           text: "Unlock",
+	           classes:{"ui-button" : "highlight"},
+	           click: function() {
+	               var unlockRequestReason = $('#af-unlockReason').val();
+	               
+	               if (unlockRequestReason) {
+	                   $(this).dialog("close");
+	                   createUnlockRequest(unlockRequestReason);
+	               }
+	           }
+	       },
+	       {
+	           text: "Cancel", 
+	           click: function() {
+	               $(this).dialog("close");
+	           }
+	       }]
+	   });
+	   
+       $("#otherInProgressUnlockRequests").dialog({
+           autoOpen: false,
+           resizable: false,
+           closeOnEscape: false,
+           height:500,
+           width:350,
+           modal: true,
+           title: "Other Unlock Requests",
+           position: {my: "center", at: "center", of: window},
+           classes: {
+               "ui-dialog" : "dialogFixed",
+               "ui-dialog-titlebar-close" : "dialogInvisible",
+               "ui-dialog-titlebar" : "dialogTitle"
+           },        
+           buttons: [
+           {
+               text: "Close", 
+               click: function() {
+                   $(this).dialog("close");
+               }
+           }]
+       });
+       
+       if ({! UnlockRequestsByOthers.size > 0 }) {
+           $('#otherInProgressUnlockRequests').dialog('open');
+       }
+	
+	</script>
+</apex:component>

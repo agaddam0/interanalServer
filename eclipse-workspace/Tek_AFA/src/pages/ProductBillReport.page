@@ -1,0 +1,531 @@
+<apex:page controller="ProductBillReportController"
+           showHeader="false" sidebar="false" standardStylesheets="false"
+           showQuickActionVfHeader="false" applyHtmlTag="false"
+           renderAs="{! RenderAs }"
+           action="{! downloadToPDFIfRequested }">
+
+<apex:includeScript value="https://code.jquery.com/jquery-3.3.1.min.js"/>
+
+<html>
+    <head>
+        <script>
+            $(document).ready(function() {
+                if ({! LoadingBills }) {
+                    getBillDetails();
+                }
+            });
+            
+            function filterIfEnterClicked(evt) {
+                // enter pressed to filter
+                if (window.event && window.event.keyCode == 13 || evt.which == 13) {
+                    $('.filterBtn').click();
+
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            function showLoadingBillsAndHideBillDetails() {
+                $("#reportContainer").hide();
+                $(".loadingReportContainer").show();
+            }
+            
+            function downloadToPDFInNewTab() {
+                debugger;
+                var downloadToPDFURL = '{! DownloadToPDFURL }';
+                
+                // Have to append filter options to URL so opened page knows to apply filters
+                var namesInput = $('[id*="namesFilterTextBox"]');
+                var namesFilter = namesInput.val();
+                
+                downloadToPDFURL += '&namesFilter=' + namesFilter;
+                
+                var productsInput = $('[id*="productsFilterTextBox"]');
+                var productsFilter = productsInput.val();
+                
+                downloadToPDFURL += '&productsFilter=' + productsFilter;
+                
+                var productsWithFilterCB = $('input[id*="ProductsWithFilter"]:checked');
+                var productsWithFilter = productsWithFilterCB.val();
+                
+                downloadToPDFURL += '&productsWithFilter=' + productsWithFilter;
+            
+                window.open(downloadToPDFURL,'_blank');
+            }
+        </script>
+        
+        <style type="text/css">
+            * {
+                font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+            }
+        
+            #reportContainer {
+                width: 1200px;
+                margin: 0px auto;
+                padding-bottom: 15px;
+            }
+            
+            .loadingReportContainer {
+                text-align: center;
+                font-size: 3rem;
+            }
+            
+            .hideReport {
+                display: none;
+            }
+            
+            #reportHeader {
+                clear: both;
+            }
+            
+            .logoContainer {
+                float: left;
+            }
+            
+            .accountName {
+                font-size: 20px;
+                font-weight: bold;
+                margin: 10px 0px;
+            }
+            
+            .downloadToPDFContainer {
+                float: right;
+            }
+            
+            .downloadToPDFButton {
+                color: white !important;
+                background-color: #157885 !important;
+                border: 1px solid #157885;
+                font-size: 24px;
+                padding-left: 1rem;
+                padding-right: 1rem;
+                text-align: center;
+                vertical-align: middle;
+                border-radius: .25rem;
+                line-height: 1.875rem;
+                cursor: pointer;
+            }
+            
+            .reportHeaderInfo {
+                clear: both;
+                margin: 16px 0px;
+            }
+            
+            .reportHeaderInfo > div {
+                display: inline-block;
+                vertical-align: top;
+            }
+
+            .middleInfoCol {
+                margin: 0px 96px;
+            }
+            
+            .verticalMargin {
+                margin: 8px 0px;
+            }
+            
+            .symbolHeader {
+                font-weight: bold;
+                text-decoration: underline;
+                padding-left: 50px;
+            }
+            
+            .symbolInfo {
+                vertical-align: top;
+                padding-left: 50px;
+            }
+            
+            .changeCodeLeftPadding {
+                padding-left: 200px;
+            }
+            
+            .topDivider {
+                height: 3px;
+                background-color: #ed022a;
+                border: none;
+            }
+            
+            .bottomDivider {
+                height: 2px;
+                background-color: #ed022a;
+                border: none;
+            }
+            
+            .filterInstructions {
+                margin-bottom: 10px;
+            }
+    
+            .numberCol {
+                text-align: right;
+            }
+
+            .headerColumn {
+                position: sticky;
+                top: -1px;
+                color: rgb(81, 79, 77);
+                background-color: rgb(250, 250, 249) !important;
+            }
+            
+            #detailsTable tr:nth-child(odd) {
+                background-color: rgb(243, 242, 242);
+            }
+            
+            #detailsTable {
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+    
+            #detailsTable,
+            #detailsTable th,
+            #detailsTable td {
+                border: 1px solid black;
+            }
+            
+            #detailsTable th,
+            #detailsTable td {
+                padding: 8px;
+            }
+            
+            .ssnCol {
+                min-width: 110px;
+            }
+            
+            .currencyVal {
+                padding-left: 10px;
+            }
+            
+            .logo {
+                height: 67px;
+                width: 400px;
+            }
+            
+            .productFiltersContainer {
+                display: inline-block;
+                margin-left: 32px;
+            }
+            
+            .filterInput {
+                margin-left: 16px;
+            }
+    
+            .filterBtn,
+            .clearFilterBtn {
+                margin-left: 16px;
+            }
+            
+            .errorMessageContainer {
+                margin-top: 20px;
+                padding-left: 16px;
+            }
+            
+            .footer {
+                display: none;
+            }
+            
+            .firstInfoCol {
+                width: 400px;
+            }
+            
+            @media print {
+                @page {
+                    padding-bottom: 50px;
+                    margin-bottom: 50px;
+                }
+            
+                #reportContainer {
+                    width: 8.5in;
+                    margin: 0px 0.25in;
+                }
+                
+                .accountName {
+                    width: 600px;
+                }
+                                
+                .middleInfoCol {
+                    margin: 0px;
+                    margin-right: 30px;
+                }
+                
+                .firstInfoCol {
+                    display: block !important;
+                    margin-bottom: 20px;
+                    width: auto;
+                }
+                
+                .changeCodeLeftPadding {
+                    padding-left: 5px;
+                }
+                
+                .symbolHeader {
+                    padding-left: 5px;
+                }
+                
+                .symbolInfo {
+                    padding-left: 5px;
+                }
+                
+                #symbolTable,
+                .reportHeaderInfo {
+                    font-size: 13px;
+                }
+                
+                .symbolDescContainer {
+                    width: 50px;
+                }
+                
+                #detailsTable {
+                    font-size: 10px;
+                }
+                
+                #detailsTable th,
+                #detailsTable td {
+                    padding: 4px;
+                }
+                
+                .ssnCol {
+                    max-width: 50px;
+                    min-width: 10px;
+                }
+                
+                .newPremiumAmtCol,
+                .policyNumberCol,
+                .nameCol {
+                    max-width: 50px !important;
+                }
+                
+                .changeCodeCol,
+                .nameCol {
+                    max-width: 25px;
+                }
+                
+                .policyHolderFilterCount {
+                    padding-top: 10px;
+                }
+                
+                .logo {
+                    width: 250px;
+                    height: 50px;
+                }
+                
+                .printDivider {
+                    border-right: 1px solid black;
+                }
+                
+                .downloadToPDFButton {
+                    display: none;
+                }
+            }
+        </style>
+    </head>
+    <body>
+    
+    <apex:form id="billReportForm">
+
+    <apex:outputPanel layout="block" styleClass="loadingReportContainer" style="display: {! IF(LoadingBills, '', 'none')  };">
+        Loading Bill. This may take a few minutes...
+    </apex:outputPanel>
+    
+    <apex:outputPanel layout="block" rendered="{! IsBlank(ErrorMessage) == false }">
+        Encountered the following error:
+        
+        <div class="errorMessageContainer">
+            {! ErrorMessage }
+        </div>
+    </apex:outputPanel>
+
+    <apex:outputPanel layout="none" rendered="{! LoadingBills == false && IsBlank(ErrorMessage) }">
+    <div id="reportContainer">
+        <div id="reportHeader" >
+            <div class="logoContainer">
+                <apex:image styleClass="logo" url="{!$Resource.AFALogo}"/>
+
+                <div class="accountName">
+                    {! CustomerName }
+                </div>
+            </div>
+            
+            <div class="downloadToPDFContainer">
+                <button class="downloadToPDFButton" onclick="downloadToPDFInNewTab(); return false;">Download to PDF</button>
+            </div>
+        </div>
+        
+        <div class="reportHeaderInfo">
+            <div class="firstInfoCol">
+                <apex:outputPanel layout="none" rendered="{! IsBlank(BillingContactInfo) == false }">
+                <div>For questions regarding this bill, please contact:<br />
+                <apex:outputText escape="false" value="{! BillingContactInfo }" /></div>
+                </apex:outputPanel>
+            </div>
+
+            <div class="middleInfoCol">
+                <table>
+                    <tr>
+                        <td>MCP #:</td>
+                        <td>{! CustomerMCP }</td>
+                    </tr>
+                    <tr>
+                        <td class="verticalMargin">Invoice #:</td>
+                        <td>{! InvoiceNumber }</td>
+                    </tr>
+                    <tr>
+                        <td class="verticalMargin">Invoice Date:</td>
+                        <td>{! InvoiceDate }</td>
+                    </tr>
+                    <tr>
+                        <td class="verticalMargin">Bill Period:</td>
+                        <td>{! BillPeriodFrom } - {! IF(BillPeriodTo == 'undefined', '', BillPeriodTo) }</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div>
+                <table>
+                    <tr>
+                        <td>Billed Amount:</td>
+                        <td>
+                            <apex:outputText value="{0, number, currency}" styleClass="currencyVal">
+                                <apex:param value="{! BilledAmount }" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="verticalMargin">Reconciled Amount:</td>
+                        <td>
+                            <apex:outputText value="{0, number, currency}" styleClass="currencyVal">
+                                <apex:param value="{! ReconciledAmount }" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="verticalMargin">Paid Amount:</td>
+                        <td>
+                            <apex:outputText value="{0, number, currency}" styleClass="currencyVal">
+                            <apex:param value="{! PaidAmount }" />
+                        </apex:outputText>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <hr class="topDivider" />
+        
+        <table id="symbolTable">
+           <tr>
+               <td colspan="3" class="symbolHeader changeCodeLeftPadding">*Chg Code (Change Codes)</td>
+           </tr>
+           <tr>
+               <td class="symbolDescContainer"><b>Symbol Descriptions</b></td>
+               <td class="symbolInfo">
+                   A - Add Employee/Coverage<br />
+                   T - Terminate Employee<br />
+                   D - Drop/Cancel Coverage<br />
+                   C - Change Premium
+               </td>
+               <td class="symbolInfo">
+                   F - FMLA/Other Leave<br />
+                   N - Employee Name Change<br />
+                   Z - Other/Deceased<br />
+                   X - Transfer
+               </td>
+           </tr>
+        
+        </table>
+        
+        <hr class="bottomDivider" />
+        
+        <div class="filtersContainer" onkeypress="return filterIfEnterClicked(event);">
+            <h4>Filter Options: {! IF(RenderAS == 'pdf' && !FilterApplied, 'No Filter Applied', '') }</h4>
+            
+            <apex:outputPanel layout="block" rendered="{! RenderAS == '' }">
+                <div class="filterInstructions">{! $Label.Product_Bill_Report_Filter_Instructions }</div>
+            
+                <span>Name(s): <apex:inputText value="{!NamesFilter}" id="namesFilterTextBox" styleClass="filterInput" /></span>
+                
+                <div class="productFiltersContainer">
+                    Product(s): <apex:inputText value="{!ProductsFilter}" id="productsFilterTextBox" styleClass="filterInput" />
+                    
+                    <apex:selectRadio value="{!ProductsWithFilter}" id="ProductsWithFilter">
+                        <apex:selectOption itemValue="true" itemLabel="with"/>
+                        <apex:selectOption itemValue="false" itemLabel="without"/>
+                    
+                        <!--  <apex:selectOptions value="{!items}"/> -->
+                    </apex:selectRadio>
+                </div>
+            
+                <apex:commandButton action="{! filter }" value="Filter" styleClass="filterBtn" onclick="showLoadingBillsAndHideBillDetails();" />
+                <apex:commandButton action="{! clearFilter }" value="Clear" styleClass="clearFilterBtn" onclick="showLoadingBillsAndHideBillDetails();" />
+            </apex:outputPanel>
+            
+            <apex:outputPanel layout="block" rendered="{! RenderAS == 'pdf' && FilterApplied }">
+                <apex:outputPanel layout="block" rendered="{! IsBlank(NamesFilter) == False && NamesFilter != null }">
+                Name(s): {! NamesFilter }
+                </apex:outputPanel>
+                
+                <apex:outputPanel layout="block" rendered="{! IsBlank(ProductsFilter) == False && ProductsFilter != null }">
+                {! IF(ProductsWithFilter, 'With', 'Without') } Product(s): {! ProductsFilter }
+                </apex:outputPanel>
+            </apex:outputPanel>
+            
+            <apex:outputPanel rendered="{! FilterApplied }" layout="block" styleClass="policyHolderFilterCount">
+                {! FilteredPolicyHoldersCount } policyholder(s) found.
+            </apex:outputPanel>
+        </div>
+    
+        <apex:outputPanel rendered="{! PolicyHolderLists != null && PolicyHolderLists.size > 0 }" layout="none">
+        <table id="detailsTable" class="box">
+            <tr class="headerRow">
+                <th class="headerColumn">ID/SSN</th>
+                <th class="headerColumn nameCol">NAME</th>
+                <th class="headerColumn">PRODUCT</th>
+                <th class="headerColumn">MODE</th>
+                <th class="policyNumberCol headerColumn">POLICY NUMBER</th>
+                <th class="headerColumn">PREMIUM</th>
+                <th class="newPremiumAmtCol headerColumn">NEW PREMIUM AMOUNT</th>
+                <th class="headerColumn">TOTAL</th>
+                <th class="changeCodeCol headerColumn">*CHG CODE</th>
+                <th class="headerColumn">REMARKS</th>
+            </tr>
+            <apex:repeat value="{! PolicyHolderLists }" var="phl">
+            <apex:repeat value="{! phl }" var="ph">
+            <apex:repeat value="{! ph.Policies }" var="policy">
+            <tr>
+                <td class="ssnCol">{! IF(policy.Index == 0, ph.SSN, '') }</td>
+                <td class="nameCol">{! IF(policy.Index == 0, ph.Name, '') }</td>
+                <td>{! policy.Product }</td>
+                <td>{! policy.Mode }</td>
+                <td>{! policy.PolicyNumber }</td>
+                <td class="numberCol">
+                    <apex:outputText value="{0, number, currency}" styleClass="currencyVal">
+                        <apex:param value="{! policy.Premium }" />
+                    </apex:outputText>
+                </td>
+                <td class="numberCol newPremiumAmtCol">
+                    <apex:outputText value="{0, number, currency}" styleClass="currencyVal">
+                        <apex:param value="{! policy.NewPremium }" />
+                    </apex:outputText>
+                </td>
+                <td class="numberCol">
+                    <apex:outputText value="{0, number, currency}" styleClass="currencyVal">
+                        <apex:param value="{! IF(policy.Index == (ph.PolicyIndex - 1), ph.PolicyNewPremiumTotal, '')}" />
+                    </apex:outputText>
+                </td>
+                <td>{! policy.ChangeReasonCode }</td>
+                <td>{! policy.Remarks }</td>
+            </tr>
+            </apex:repeat>
+            </apex:repeat>
+            </apex:repeat>
+        </table>
+        </apex:outputPanel>
+    </div>
+    </apex:outputPanel>
+    
+    <apex:ActionFunction name="getBillDetails" action="{! getBillDetails }" rerender="billReportForm" />
+    </apex:form>
+    
+    
+    </body>
+</html>
+</apex:page>

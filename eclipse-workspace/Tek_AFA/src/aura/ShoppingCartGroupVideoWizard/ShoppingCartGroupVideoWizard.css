@@ -1,0 +1,14 @@
+.THIS.af-group-video-container {
+    height: 100px;
+}
+
+.THIS .af-start-now-button {
+    background-color: token(AFAteal6);
+    color: white;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.THIS .af-title {
+    color: token(AFAteal4);
+}

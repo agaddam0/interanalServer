@@ -1,0 +1,5 @@
+({
+    unrender : function() {
+        this.superUnrender();
+    }
+})

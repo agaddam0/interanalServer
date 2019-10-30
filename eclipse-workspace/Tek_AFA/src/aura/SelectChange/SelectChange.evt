@@ -1,0 +1,4 @@
+<aura:event type="COMPONENT" description="Dispatched when a select has changed value">
+    <aura:attribute name="values" type="String[]" description="Selected values" access="global" />
+    <aura:attribute name="fieldName" type="String" description="Field name" access="global"/>
+</aura:event>

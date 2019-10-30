@@ -1,0 +1,12 @@
+<aura:component extends="c:LightningInputContainer">
+    
+    <aura:method name="getInputComponent" />
+
+    <lightning:textArea aura:id="myInput"
+                        value="{! v.value }" label=" "
+                        required="{! v.required }"
+                        onblur="{! c.onValueChange }"
+                        disabled="{! v.disabled }"
+                        messageWhenValueMissing="{! v.messageWhenValueMissing }" />
+	
+</aura:component>

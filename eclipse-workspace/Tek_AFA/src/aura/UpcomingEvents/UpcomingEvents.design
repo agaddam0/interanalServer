@@ -1,0 +1,7 @@
+<design:component >
+    
+    <design:attribute name="displayCount" label="Number of events to display" 
+                      description="Set how many records you want to display on initial load.  Load more will also load in
+                                   chunks based on this number.  Default is 10"
+                      default="10" />
+</design:component>

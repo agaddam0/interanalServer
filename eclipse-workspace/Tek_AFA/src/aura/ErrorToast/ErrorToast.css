@@ -1,0 +1,20 @@
+.THIS.wrapper {
+    width:30rem;
+    height:300px;
+    margin:0 auto;
+    position:fixed;
+    left:50%;
+    top:50%;
+    margin-left:-225px;
+    margin-top:-350px;
+    z-index : 500;
+}
+
+.THIS.container {
+    display: block;
+    position: absolute;
+    width: 30rem;
+    height: 400px;
+    bottom: 0;
+    left: 0;
+}

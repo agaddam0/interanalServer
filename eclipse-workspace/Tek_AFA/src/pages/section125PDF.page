@@ -1,0 +1,805 @@
+<apex:page standardController="Enrollment_Form__c" extensions="Section125PDFExt"
+           standardStylesheets="false" docType="html-5.0" sidebar="false" showHeader="false" 
+           renderAs="PDF" applyBodyTag="false">
+
+<apex:composition template="SetupFormPDFTemplate">
+<apex:define name="body">
+
+    <c:GeneralInformationPDFInfo efId="{! enrollmentForm.Id }" title="General Information" />
+
+    <apex:variable var="planCount" value="{!1}"/>
+    <apex:repeat value="{!Section125s}" var="s">
+        <div>
+            <div class="title">
+                <center>
+                    <h3>
+                        <apex:outputText value="Section 125 Plan Information {!if(Section125s.size > 1, '({0} of {1})', '')}">
+                            <apex:param value="{!planCount}"/>
+                            <apex:param value="{!Section125s.size}"/>
+                        </apex:outputText>
+                    </h3>
+                </center>
+            </div>
+        </div>
+        <!-------------------------------------------- SECTION 125 TAB  ------------------------------------------->
+        <!-------------------------------------------- SECTION 125 TAB  ------------------------------------------->
+        <!-------------------------------------------- SECTION 125 TAB  ------------------------------------------->
+        <!-------------------------------------------- SECTION 125 TAB  ------------------------------------------->
+        <apex:outputPanel id="s125Panel" rendered="{!showS125tab}">
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125BusinessEntityType__c.Label }</td>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec_125_S125_Plan_Document_Needed_By__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125BusinessEntityType__c}" /></td>
+                    <td><apex:outputField value="{!s.Sec_125_S125_Plan_Document_Needed_By__c}" /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PrincipalBusinessActivity__c.Label }</td>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125EffDatesThisplanisintended__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125PrincipalBusinessActivity__c}" /></td>
+                    <td><apex:outputField value="{!s.Sec125EffDatesThisplanisintended__c}" /></td>                                      
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PlanNumber__c.Label }</td>
+                    <td class="fieldLabel" style="display:{!IF(formType == 'AFES', '', 'none')}">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125BranchOffice__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125PlanNumber__c}" /></td>
+                    <td style="display:{!IF(formType == 'AFES', '', 'none')}"><apex:outputField value="{!s.Sec125BranchOffice__c}" /></td>
+                </tr>
+            </table>
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="Effective Dates"/>
+            </div>
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125EffDate__c.Label }</td>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125EffDatesAFAProviderEffDate__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125EffDate__c}" /></td>
+                    <td><apex:outputField value="{!s.Sec125EffDatesAFAProviderEffDate__c}" /></td>                                      
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125EffDatescurplanyrwillbegin__c.Label }</td>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125EffDatescurplanyrwillend__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125EffDatescurplanyrwillbegin__c}" /></td>
+                    <td><apex:outputField value="{!s.Sec125EffDatescurplanyrwillend__c}" /></td>                                    
+                </tr>
+            </table>
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="Plan Eligibility"/>
+            </div>
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PlanEligPlanEligibility__c.Label }</td>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125MinagereqforemployeeElig__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125PlanEligPlanEligibility__c}" /></td>
+                    <td><apex:outputField value="{!s.Sec125MinagereqforemployeeElig__c}" /></td>                                    
+                </tr>
+                <tr>
+                    <td width="50%" class="fieldLabel" style="display:{!IF(s.Sec125PlanEligPlanEligibility__c == 'First day of the month following days', '', 'none')}">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PlanEligPlanEligDays__c.Label }</td>
+                    <td width="50%" class="fieldLabel" style="display:{!IF(s.Sec125PlanEligPlanEligibility__c == 'First day of the month following months','', 'none')}">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PlanEligPlanEligMonths__c.Label }</td>
+                    <td width="50%" class="fieldLabel" style="display:{!IF(s.Sec125PlanEligPlanEligibility__c == 'Other','', 'none')}">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125PlanEligPlanEligOtherplsexp__c.Label }</td>
+                    <td width="50%" style="display:{!IF((s.Sec125PlanEligPlanEligibility__c != 'First day of the month following days' && s.Sec125PlanEligPlanEligibility__c != 'First day of the month following months' && s.Sec125PlanEligPlanEligibility__c != 'Other'),'', 'none')}"></td>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125AreretiredemployeesElig__c.Label }</td>
+                </tr>
+                <tr>
+                    <td style="display:{!IF(s.Sec125PlanEligPlanEligibility__c == 'First day of the month following days', '', 'none')}"><apex:outputField value="{!s.Sec125PlanEligPlanEligDays__c}"/></td>
+                    <td style="display:{!IF(s.Sec125PlanEligPlanEligibility__c == 'First day of the month following months','', 'none')}"><apex:outputField value="{!s.Sec125PlanEligPlanEligMonths__c}" /></td>
+                    <td style="display:{!IF(s.Sec125PlanEligPlanEligibility__c == 'Other','', 'none')}"><apex:outputField value="{!s.Sec125PlanEligPlanEligOtherplsexp__c}" /></td>
+                    <td style="display:{!IF((s.Sec125PlanEligPlanEligibility__c != 'First day of the month following days' && s.Sec125PlanEligPlanEligibility__c != 'First day of the month following months' && s.Sec125PlanEligPlanEligibility__c != 'Other'),'', 'none')}"></td>
+                    <td><apex:outputField value="{!s.Sec125AreretiredemployeesElig__c}" /></td>
+                </tr>
+                <tr>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125NbrofhrsEligforSec125__c.Label }</td>
+                    <td width="50%" class="fieldLabel"></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125NbrofhrsEligforSec125__c}" /></td>
+                    <td></td>
+                </tr>
+            </table>
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="Contributions"/>
+            </div>
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125NonelecContNonelecCont__c.Label }</td>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125ElectiveContributions__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125NonelecContNonelecCont__c}"/></td>
+                    <td><apex:outputField value="{!s.Sec125ElectiveContributions__c}" /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125Non_elecContributionInformation__c.Label }</td>
+                    <td style="display:{!IF(s.Sec125ElectiveContributions__c == 'Per Plan Year','', 'none')}" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125ElectiveContributionsPerPlan__c.Label }</td>
+                    <td style="display:{!IF(s.Sec125ElectiveContributions__c == 'Percent of Compensation','', 'none')}" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125ElectiveContributionsPercent__c.Label }</td>
+                    <td style="display:{!IF(s.Sec125ElectiveContributions__c == 'Per Plan Year not to exceed','', 'none')}" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125ElectiveContributionsPerPlanNot__c.Label }</td>
+                    <td style="display:{!IF((s.Sec125ElectiveContributions__c != 'Per Plan Year' && s.Sec125ElectiveContributions__c != 'Percent of Compensation' && s.Sec125ElectiveContributions__c != 'Per Plan Year not to exceed'),'', 'none')}"></td>
+                    
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125Non_elecContributionInformation__c}" /></td>
+                    <td style="display:{!IF(s.Sec125ElectiveContributions__c == 'Per Plan Year','', 'none')}"><apex:outputField value="{!s.Sec125ElectiveContributionsPerPlan__c}" /></td>
+                    <td style="display:{!IF(s.Sec125ElectiveContributions__c == 'Percent of Compensation','', 'none')}"><apex:outputField value="{!s.Sec125ElectiveContributionsPercent__c}" /></td>
+                    <td style="display:{!IF(s.Sec125ElectiveContributions__c == 'Per Plan Year not to exceed','', 'none')}"><apex:outputField value="{!s.Sec125ElectiveContributionsPerPlanNot__c}" /></td>
+                    <td style="display:{!IF((s.Sec125ElectiveContributions__c != 'Per Plan Year' && s.Sec125ElectiveContributions__c != 'Percent of Compensation' && s.Sec125ElectiveContributions__c != 'Per Plan Year not to exceed'),'', 'none')}"></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $Label.S125OptOut_c }</td>
+                    <td style="display:{!IF(s.Sec125ElectiveContributions__c == 'Per Plan Year not to exceed','', 'none')}" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125ElectiveContributionsNotToExceed__c.Label }</td>
+                    <td style="display:{!IF(s.Sec125ElectiveContributions__c != 'Per Plan Year not to exceed','', 'none')}"></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.S125OptOut__c}" /></td>
+                    <td style="display:{!IF(s.Sec125ElectiveContributions__c == 'Per Plan Year not to exceed','', 'none')}"><apex:outputField value="{!s.Sec125ElectiveContributionsNotToExceed__c}" /></td> 
+                    <td style="display:{!IF(s.Sec125ElectiveContributions__c != 'Per Plan Year not to exceed','', 'none')}"></td>
+                </tr>
+            </table> 
+            <apex:outputPanel id="relatedEmployers" rendered="{!formType == 'AWD'}">
+                <div class="sectionHeader">
+                    <apex:outputText styleclass="sectionLabel" value="Related Employers"/>
+                </div>
+                <apex:variable var="reCount" value="{!1}"/>
+                <apex:repeat value="{!s.Common_Ownership_Forms__r}" var="e">
+                    <table class="formtable" style="width:100%">
+                        <tr>
+                            <td width="50%" class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.Legal_Name__c.Label }</td>
+                            <td width="50%" class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.Contact_Name__c.Label }</td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!e.Legal_Name__c}"/></td>
+                            <td><apex:outputField value="{!e.Contact_Name__c}"/></td>                                   
+                        </tr>
+                        <tr>
+                            <td class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.DBA_Name__c.Label }</td>
+                            <td class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.Contact_Phone_Number__c.Label }</td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!e.DBA_Name__c}"/></td>
+                            <td><apex:outputField value="{!e.Contact_Phone_Number__c}"/></td>                                   
+                        </tr>
+                        <tr>
+                            <td class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.Employer_Tax_ID_Number__c.Label }</td>
+                            <td class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.Contact_Phone_Extension__c.Label }</td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!e.Employer_Tax_ID_Number__c}"/></td>
+                            <td><apex:outputField value="{!e.Contact_Phone_Extension__c}"/></td>                                    
+                        </tr>
+                        <tr>
+                            <td class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.Address_Line_1__c.Label }</td>
+                            <td class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.Contact_Email__c.Label }</td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!e.Address_Line_1__c}"/></td>
+                            <td><apex:outputField value="{!e.Contact_Email__c}"/></td>                                      
+                        </tr>
+                        <tr>
+                            <td class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.Address_Line_2__c.Label }</td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!e.Address_Line_2__c}"/></td>
+                        </tr>
+                        <tr>
+                            <td class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.City__c.Label }</td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!e.City__c}"/></td>
+                        </tr>
+                        <tr>
+                            <td class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.State_Picklist__c.Label }</td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!e.State_Picklist__c}"/></td>
+                        </tr>
+                        <tr>
+                            <td class="fieldLabel">{! $ObjectType.Common_Ownership_Form__c.Fields.ZipCode__c.Label }</td>
+                        </tr>
+                        <tr>
+                            <td><apex:outputField value="{!e.ZipCode__c}"/></td>
+                        </tr>
+                    </table>
+                    <div style="display:{!if(reCount == s.Common_Ownership_Forms__r.size, 'none', '')}" class="sectionHeader">
+                        <apex:outputText styleclass="sectionLabel" value=""/>
+                    </div>
+                    <apex:variable var="reCount" value="{!reCount+1}"/>
+                </apex:repeat>
+            </apex:outputPanel> 
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="Section 79 Life Insurance"/>
+            </div>
+            <table class="formtable" style="width:100%">
+                
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125Sec79LifeInsIfGrpter__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125Sec79LifeInsIfGrpter__c}" /></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125Sec79LifeInsAccthave__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125Sec79LifeInsAccthave__c}" /></td>
+                </tr>
+                <tr style="{!if(s.Sec125Sec79LifeInsAccthave__c == 'Yes', '', 'display:none;')}">
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125Sec79LifeInsIfyesdoe__c.Label }</td>
+                </tr>
+                <tr style="{!if(s.Sec125Sec79LifeInsAccthave__c == 'Yes', '', 'display:none;')}">
+                    <td><apex:outputField value="{!s.Sec125Sec79LifeInsIfyesdoe__c}" /></td>
+                </tr>
+            </table>
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="Comments"/>
+            </div> 
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Sec125elecContNotesandInst__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Sec125elecContNotesandInst__c}" style="width:75%"/></td>                                   
+                </tr>
+            </table>
+        </apex:outputPanel> <!-- end s125Panel -->
+        <!-------------------------------------------- QUALIFIED BENEFITS TAB  ------------------------------------------->
+        <!-------------------------------------------- QUALIFIED BENEFITS TAB  ------------------------------------------->
+        <!-------------------------------------------- QUALIFIED BENEFITS TAB  ------------------------------------------->
+        <!-------------------------------------------- QUALIFIED BENEFITS TAB  ------------------------------------------->
+        
+        <div>
+            <div style="color: rgb(22, 50,92) !important;">
+                <center>
+                    <h3>Qualified Benefits</h3>
+                </center>
+            </div>
+        </div>
+        <apex:outputPanel id="qualbenPanel" rendered="{!showS125tab}">
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.QualBenAnyQualBenOffered__c.Label }</td>
+                    <td class="fieldLabel"></td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.QualBenAnyQualBenOffered__c}"/></td>
+                    <td></td>                                   
+                </tr>
+            </table>
+            <apex:outputPanel rendered="{!s.QualBenAnyQualBenOffered__c == 'Yes'}">                               
+                <div class="sectionHeader">
+                    <apex:outputText styleclass="sectionLabel" value="Qualified Benefits"/>
+                </div>
+                <apex:outputPanel id="qualifiedBenefitsPanel" rendered="{!s.Qualitfied_Benefits_Form__r.size > 0}">
+                    <table style="width:100%;border-collapse: collapse;">
+                        <thead style="background-color:#2989d8; color:#FFF">
+                            <tr>
+                                <th>Benefit Type</th>
+                                <th>{! $ObjectType.Qualified_Benefit_Form__c.Fields.Plan_Name__c.Label }</th>
+                                <th>{! $ObjectType.Qualified_Benefit_Form__c.Fields.Carrier__c.Label }</th>
+                                <th>{! $ObjectType.Qualified_Benefit_Form__c.Fields.Eligibility__c.Label }</th>
+                                <th>{! $ObjectType.Qualified_Benefit_Form__c.Fields.Product_Description__c.Label }</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:repeat value="{!s.Qualitfied_Benefits_Form__r}" var="qb">
+                                <tr>
+                                    <td style="width:25%;border-bottom:.5pt solid gray;">
+                                        <apex:outputField value="{!qb.Add_Benefit__c}" style="width:100%"/>
+                                    </td>
+                                    <td style="border-bottom:.5px solid gray;">
+                                        <apex:outputField value="{!qb.Plan_Name__c}" style="width:90%"/>
+                                    </td>
+                                    <td style="border-bottom:.5px solid gray;">
+                                        <apex:outputField value="{!qb.Carrier__c}" style="width:90%"/>
+                                    </td>
+                                    <td style="border-bottom:.5px solid gray;">
+                                        <apex:outputField value="{!qb.Eligibility__c}" style="width:90%"/>
+                                    </td>
+                                    <td style="width:25%;border-bottom:.5px solid gray;">
+                                        <apex:outputField value="{!qb.Product_Description__c}" style="width:90%"/>
+                                    </td>
+                                </tr>
+                            </apex:repeat>
+                        </tbody>
+                    </table>
+                </apex:outputPanel>
+            </apex:outputPanel>
+        </apex:outputPanel> <!-- end qualbenPanel -->
+        
+        <!-------------------------------------------- FSA TAB  ------------------------------------------->
+        <!-------------------------------------------- FSA TAB  ------------------------------------------->
+        <!-------------------------------------------- FSA TAB  ------------------------------------------->
+        <!-------------------------------------------- FSA TAB  ------------------------------------------->
+        <apex:outputPanel id="FSApanel" rendered="{!showFSAtab}">
+            <div>
+                <div style="color: rgb(22, 50,92) !important;">
+                    <center>
+                        <h3>Flexible Spending Account</h3>
+                    </center>
+                </div>
+            </div>
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="Health FSA"/>
+            </div>
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctGroupAddingHealthFSA__c.Label }</td>
+                    <td width="50%" style="display:{!if(s.FlexSpendAcctGroupAddingHealthFSA__c == 'Yes', '', 'none')}" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexSpendAcctEli__c.Label }</td>
+                    <td width="50%" style="display:{!if(s.FlexSpendAcctGroupAddingHealthFSA__c == 'No', '', 'none')}"></td>
+                </tr>
+                <tr>
+                    <td width="50%"><apex:outputField value="{!s.FlexSpendAcctGroupAddingHealthFSA__c}"/></td>
+                    <td width="50%" style="display:{!if(s.FlexSpendAcctGroupAddingHealthFSA__c == 'Yes', '', 'none')}"><apex:outputField value="{!s.FlexSpendAcctHlthFlexSpendAcctEli__c}"/></td>                                   
+                    <td width="50%" style="display:{!if(s.FlexSpendAcctGroupAddingHealthFSA__c == 'No', '', 'none')}"></td>
+                </tr>
+            </table>
+            <apex:outputPanel rendered="{!s.FlexSpendAcctGroupAddingHealthFSA__c == 'Yes'}">
+                <table class="formtable" width="100%">
+                    <tr>
+                        <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexMin__c.Label }</td>
+                        <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDebitCardWillEmpl__c.Label }</td>
+                    </tr>
+                    <tr>
+                        <td width="50%"><apex:outputField value="{!s.FlexSpendAcctHlthFlexMin__c}"/></td>
+                        <td width="50%"><apex:outputField value="{!s.FlexSpendAcctDebitCardWillEmpl__c}"/></td>                                     
+                    </tr>
+                    <tr>
+                        <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexMax__c.Label }</td>
+                        <td class="fieldLabel" style="display: {!if(s.FlexSpendAcctDebitCardWillEmpl__c == 'Yes', '', 'none')}">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDebitCardFee__c.Label }</td>
+                    </tr>
+                    <tr>
+                        <td><apex:outputField value="{!s.FlexSpendAcctHlthFlexMax__c}"/></td>
+                        <td style="display: {!if(s.FlexSpendAcctDebitCardWillEmpl__c == 'Yes', '', 'none')}"><apex:outputField value="{!s.FlexSpendAcctDebitCardFee__c}"/></td>                                     
+                    </tr>
+                    <tr>
+                        <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexSpendAcctEmp__c.Label } (should be included in the max election indicated above)</td>
+                        <td class="fieldLabel" style="display: {!if(s.FlexSpendAcctDebitCardFee__c == 'Other', '', 'none')}">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDebitCardIfOther__c.Label }</td>
+                    </tr>
+                    <tr>
+                        <td><apex:outputField value="{!s.FlexSpendAcctHlthFlexSpendAcctEmp__c}"/></td>
+                        <td style="display: {!if(s.FlexSpendAcctDebitCardFee__c == 'Other', '', 'none')}"><apex:outputField value="{!s.FlexSpendAcctDebitCardIfOther__c}"/></td>                                    
+                    </tr>
+                    <tr>
+                        <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexWho__c.Label }</td>
+                        <td class="fieldLabel"></td>
+                    </tr>
+                    <tr>
+                        <td><apex:outputField value="{!s.FlexSpendAcctHlthFlexWho__c}"/></td>
+                        <td></td>                                   
+                    </tr>
+                    <tr>
+                        <td class="fieldLabel" style="display: {!if(s.FlexSpendAcctHlthFlexWho__c == 'Other', '', 'none')}">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexIfOther__c.Label }</td>
+                        <td class="fieldLabel"></td>
+                    </tr>
+                    <tr>
+                        <td style="display: {!if(s.FlexSpendAcctHlthFlexWho__c == 'Other', '', 'none')}"><apex:outputField value="{!s.FlexSpendAcctHlthFlexIfOther__c}"/></td>
+                        <td></td>                                   
+                    </tr>
+                </table>
+            </apex:outputPanel>
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="Dependent Daycare FSA"/>
+            </div>
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctGroupAddingDDCFSA__c.Label }</td>
+                    <td width="50%" style="display:{!if(s.FlexSpendAcctGroupAddingDDCFSA__c == 'Yes', '', 'none')}" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDepDaycareReimbElig__c.Label }</td>
+                    <td width="50%" style="display:{!if(s.FlexSpendAcctGroupAddingDDCFSA__c == 'No', '', 'none')}"></td>
+                </tr>
+                <tr>
+                    <td width="50%"><apex:outputField value="{!s.FlexSpendAcctGroupAddingDDCFSA__c}"/></td>
+                    <td width="50%" style="display:{!if(s.FlexSpendAcctGroupAddingDDCFSA__c == 'Yes', '', 'none')}"><apex:outputField value="{!s.FlexSpendAcctDepDaycareReimbElig__c}"/></td>                                   
+                    <td style="display:{!if(s.FlexSpendAcctGroupAddingDDCFSA__c == 'No', '', 'none')}"></td>
+                </tr>
+            </table>
+            <apex:outputPanel rendered="{!s.FlexSpendAcctGroupAddingDDCFSA__c == 'Yes'}">
+                <table class="formtable" style="width:100%">
+                    <tr>
+                        <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDepDaycareReimbMin__c.Label }</td>
+                        <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDepDaycareReimbWho__c.Label }</td>
+                    </tr>
+                    <tr>
+                        <td width="50%"><apex:outputField value="{!s.FlexSpendAcctDepDaycareReimbMin__c}"/></td>
+                        <td width="50%"><apex:outputField value="{!s.FlexSpendAcctDepDaycareReimbWho__c}"/></td>                                    
+                    </tr>
+                    <tr>
+                        <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDepDaycareReimbMax__c.Label }</td>
+                        <td width="50%" class="fieldLabel" style="display: {!if(s.FlexSpendAcctDepDaycareReimbWho__c == 'Other', '', 'none')}">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDepDaycareReimbOth__c.Label }</td>
+                    </tr>
+                    <tr>
+                        <td width="50%"><apex:outputField value="{!s.FlexSpendAcctDepDaycareReimbMax__c}"/></td>
+                        <td width="50%" style="display: {!if(s.FlexSpendAcctDepDaycareReimbWho__c == 'Other', '', 'none')}"><apex:outputField value="{!s.FlexSpendAcctDepDaycareReimbOth__c}"/></td>                                    
+                    </tr>
+                </table>
+            </apex:outputPanel>
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="FSA Billing"/>
+            </div>
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFlexBillinfoFirstFSARed__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.FlexSpendAcctFlexBillinfoFirstFSARed__c}"/></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Flex_Billing_Same_as_Product_Billing__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Flex_Billing_Same_as_Product_Billing__c}"/></td>
+                </tr>
+            </table>
+            
+            <apex:outputPanel id="billModesPanel" layout="none" rendered="{! s.Flex_Billing_Same_as_Product_Billing__c == 'No' }">
+
+            <div class="sectionHeader">
+                <div class="sectionLabel" style="margin-top: 10px;">Bill Modes</div>
+            </div>
+
+            <table class="table table-bordered dataTable">
+                <thead>
+                    <tr>
+                        <apex:repeat value="{! $ObjectType.Bill_Mode__c.FieldSets.Flex_Billing }" var="f">
+                        <th>{! f.Label }</th>
+                        </apex:repeat>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:repeat value="{! s.Bill_Modes__r }" var="billMode">
+                        <tr>
+                        <apex:repeat value="{! $ObjectType.Bill_Mode__c.FieldSets.Flex_Billing }" var="f">
+                            <td><apex:outputField value="{! billMode[f] }" /></td>
+                        </apex:repeat>
+                        </tr>
+                    </apex:repeat>
+                </tbody>
+            </table>
+
+            </apex:outputPanel>
+            
+            <table class="formtable">
+	            <tr>
+	                <apex:outputPanel layout="none" rendered="{! s.FlexSpendAcctFlexBillinfoPayMode__c != null && s.FlexSpendAcctFlexBillinfoPayMode__c != '' }">
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFlexBillinfoPayMode__c.Label }</td>
+                    </apex:outputPanel>
+	                <td width="50%" class="fieldLabel">
+	                    <apex:outputPanel layout="none" rendered="{!formType == 'AWD'}">
+	                    {! $Label.FlexSpendAcctFlexBillinfoDoesrela_c }
+	                    </apex:outputPanel>&nbsp;
+	                </td>
+	            </tr>
+	            <tr>
+	                <apex:outputPanel layout="none" rendered="{! s.FlexSpendAcctFlexBillinfoPayMode__c != null && s.FlexSpendAcctFlexBillinfoPayMode__c != '' }">
+                    <td><apex:outputField value="{!s.FlexSpendAcctFlexBillinfoPayMode__c}" />&nbsp;</td>
+                    </apex:outputPanel>
+                    
+	                <td>
+	                    <apex:outputPanel layout="none" rendered="{!formType == 'AWD'}">
+	                    <apex:outputField value="{!s.FlexSpendAcctFlexBillinfoDoesrela__c}" />
+	                    </apex:outputPanel>&nbsp;
+	                </td>                                    
+	            </tr>
+	            
+	            <tr>
+	                <apex:outputPanel layout="none" rendered="{!s.FlexSpendAcctFlexBillinfoNumRemCont__c != null}">
+                    <td class="fieldLabel">{! $Label.FlexSpendAcctFlexBillinfoNumRemCont_c }</td>
+                    </apex:outputPanel>
+	                <td class="fieldLabel">
+	                    <apex:outputPanel layout="none" rendered="{! formType == 'AWD' && s.FlexSpendAcctFlexBillinfoDoesrela__c == 'Yes' }">
+	                    {! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFlexBillinfoIfyesEm__c.Label }:
+	                    </apex:outputPanel>&nbsp;
+	                </td>
+	            </tr>
+	            <tr>
+	                <apex:outputPanel layout="none" rendered="{!s.FlexSpendAcctFlexBillinfoNumRemCont__c != null}">
+                    <td><apex:outputField value="{!s.FlexSpendAcctFlexBillinfoNumRemCont__c}" />&nbsp;</td>
+                    </apex:outputPanel>
+	                <td>
+	                    <apex:outputPanel layout="none" rendered="{! formType == 'AWD' && s.FlexSpendAcctFlexBillinfoDoesrela__c == 'Yes' }">
+	                    <apex:outputField value="{!s.FlexSpendAcctFlexBillinfoIfyesEm__c}" />&nbsp;
+	                    </apex:outputPanel>&nbsp;
+	                </td>
+	            </tr>
+	            <tr>
+	                <apex:outputPanel layout="none" rendered="{!s.FlexSpendAcctFlexBillinfoMonthsSk__c != null && s.FlexSpendAcctFlexBillinfoMonthsSk__c != ''}">
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFlexBillinfoMonthsSk__c.Label }</td>
+                    </apex:outputPanel>
+                    
+                    <td class="fieldLabel">
+                        <apex:outputPanel layout="none" rendered="{! formType == 'AWD' && s.FlexSpendAcctFlexBillinfoDoesrela__c == 'Yes' }">
+                        {! $Label.FlexSpendAcctFlexBillinfoFirstPay_c }
+                        </apex:outputPanel>&nbsp;
+                    </td>
+	            </tr>
+	            <tr>
+	                <apex:outputPanel layout="none" rendered="{!s.FlexSpendAcctFlexBillinfoMonthsSk__c != null && s.FlexSpendAcctFlexBillinfoMonthsSk__c != ''}">
+                    <td><apex:outputField value="{!s.FlexSpendAcctFlexBillinfoMonthsSk__c}" />&nbsp;</td>
+                    </apex:outputPanel>
+                    
+	                <td>
+	                    <apex:outputPanel layout="none" rendered="{! formType == 'AWD' && s.FlexSpendAcctFlexBillinfoDoesrela__c == 'Yes' }">
+	                    <apex:outputField value="{!s.FlexSpendAcctFlexBillinfoFirstPay__c}" />
+	                    </apex:outputPanel>&nbsp;
+	                </td>
+	                
+	            </tr>
+	            <apex:outputPanel layout="none" rendered="{! formType == 'AWD' && s.FlexSpendAcctFlexBillinfoDoesrela__c == 'Yes' }">
+	            <tr>
+	                <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFlexBillinfoIfSepar__c.Label }:</td>
+	            </tr>
+	            <tr>
+	                <td><apex:outputField value="{!s.FlexSpendAcctFlexBillinfoIfSepar__c}" />&nbsp;</td>                                     
+	            </tr>
+	            </apex:outputPanel>
+
+	        </table>
+            
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="FSA Details"/>
+            </div>
+            
+            <apex:variable var="hasEmployerPaidFlex" value="{! s.Is_there_Employer_Paid_Flex__c == 'Yes' }" />
+            <apex:variable var="hasDollarForDollarEmployerFSAContribution" value="{! s.Employer_FSA_Contribution__c == 'Dollar for Dollar Match' }" />
+            <apex:variable var="hasOtherEmployerFSAContribution" value="{! s.Employer_FSA_Contribution__c == 'Other' }" />
+
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctFSAEffectiveDate__c.Label }</td>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Is_there_Employer_Paid_Flex__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.FlexSpendAcctFSAEffectiveDate__c}"/></td>
+                    <td><apex:outputField value="{!s.Is_there_Employer_Paid_Flex__c}"/></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctAdminFeeAdminFeeWho__c.Label }</td>
+                    
+                    <apex:outputPanel layout="none" rendered="{! s.Is_there_Employer_Paid_Flex__c == 'Yes' }" >
+                    <td class="fieldLabel">{! $Label.Does_the_same_amount_apply_to_all_employees_c }</td>
+                    </apex:outputPanel>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.FlexSpendAcctAdminFeeAdminFeeWho__c}"/></td>
+                    
+                    <apex:outputPanel layout="none" rendered="{! hasEmployerPaidFlex }">
+                    <td><apex:outputField value="{!s.Does_the_same_amount_apply_to_employees__c}"/></td>
+                    </apex:outputPanel>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctAdminFeeAdminFeeCost__c.Label }</td>
+
+                    <apex:outputPanel layout="none" rendered="{! hasEmployerPaidFlex }">
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexSpendAcctEmp__c.Label }</td>
+                    </apex:outputPanel>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.FlexSpendAcctAdminFeeAdminFeeCost__c}"/></td>
+                    
+                    <apex:outputPanel layout="none" rendered="{! hasEmployerPaidFlex }">
+                    <td><apex:outputField value="{!s.FlexSpendAcctHlthFlexSpendAcctEmp__c}"/></td>
+                    </apex:outputPanel>
+                </tr>
+                <tr>
+                    <td style="display:{!if(s.FlexSpendAcctAdminFeeAdminFeeCost__c == 'Other', '', 'none')}" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctAdminFeeIfOther__c.Label }</td>
+                    
+                    <td style="display:{!if(s.FlexSpendAcctAdminFeeAdminFeeCost__c != 'Other', '', 'none')}"></td>
+                    
+                    <td class="fieldLabel">
+                        <apex:outputText value="{! $ObjectType.Section_125_Setup_Form__c.Fields.Employer_FSA_Contribution__c.Label }"
+                                         rendered="{! hasEmployerPaidFlex }" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="display:{!if(s.FlexSpendAcctAdminFeeAdminFeeCost__c == 'Other', '', 'none')}"><apex:outputField value="{!s.FlexSpendAcctAdminFeeIfOther__c}"/></td>
+                    
+                    <td style="display:{!if(s.FlexSpendAcctAdminFeeAdminFeeCost__c != 'Other', '', 'none')}"></td>
+                    
+                    <apex:outputPanel layout="none" rendered="{! hasEmployerPaidFlex }">
+                    <td><apex:outputField value="{!s.Employer_FSA_Contribution__c}"/></td>
+                    </apex:outputPanel>
+                </tr>
+                <tr>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctGRACEPERIstheEmpl__c.Label }</td>
+                    
+                    <apex:outputPanel layout="none" rendered="{! hasEmployerPaidFlex }">
+                    <td width="50%" class="fieldLabel">
+                        <apex:outputText value="{! $ObjectType.Section_125_Setup_Form__c.Fields.Contribution_up_to__c.Label }"
+                                         rendered="{! hasDollarForDollarEmployerFSAContribution }" />
+
+                        <apex:outputText value="{! $ObjectType.Section_125_Setup_Form__c.Fields.Other_Contribution_Details__c.Label }"
+                                         rendered="{! hasOtherEmployerFSAContribution }" />
+                    </td>
+                    </apex:outputPanel>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.FlexSpendAcctGRACEPERIstheEmpl__c}"/></td>
+                    
+                    <apex:outputPanel layout="none" rendered="{! hasEmployerPaidFlex }">
+                    <td>
+                        <apex:outputField value="{!s.Contribution_up_to__c}"
+                                          rendered="{! hasDollarForDollarEmployerFSAContribution }"/>
+
+                        <apex:outputField value="{!s.Other_Contribution_Details__c}"
+                                          rendered="{! hasOtherEmployerFSAContribution }"/>
+                    </td>
+                    </apex:outputPanel>
+                </tr>
+                <tr>
+                    <td style="display:{!if(s.FlexSpendAcctGRACEPERIstheEmpl__c == 'Carryover Provision', '', 'none')}" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctCarryoverProvMax__c.Label }</td>
+                </tr>
+                <tr>
+                    <td style="display:{!if(s.FlexSpendAcctGRACEPERIstheEmpl__c == 'Carryover Provision', '', 'none')}"><apex:outputField value="{!s.FlexSpendAcctCarryoverProvMax__c}"/></td>                                      
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctUniformCoverageRisk__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.FlexSpendAcctUniformCoverageRisk__c}"/></td>                                   
+                </tr>
+                <tr>
+                    <td style="display:{!if(s.FlexSpendAcctUniformCoverageRisk__c != 'AFA', '', 'none')}" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctForAFESPremium__c.Label }</td>
+                </tr>
+                <tr>
+                    <td style="display:{!if(s.FlexSpendAcctUniformCoverageRisk__c != 'AFA', '', 'none')}"><apex:outputField value="{!s.FlexSpendAcctForAFESPremium__c}"/></td>                                      
+                </tr>
+                <tr>
+                    <td  class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.Is_there_Employer_Paid_Flex__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.Is_there_Employer_Paid_Flex__c}"/></td>
+                </tr>
+                <tr>
+                    <td style="display:{!if(s.Is_there_Employer_Paid_Flex__c == 'Yes', '', 'none')}" class="fieldLabel">{! $Label.Does_the_same_amount_apply_to_all_employees_c }</td>
+                </tr>
+                <tr>
+                    <td style="display:{!if(s.Is_there_Employer_Paid_Flex__c == 'Yes', '', 'none')}"><apex:outputField value="{!s.Does_the_same_amount_apply_to_employees__c}"/></td>
+                </tr>
+                <tr>
+                    <td style="display:{!if(s.Is_there_Employer_Paid_Flex__c == 'Yes', '', 'none')}" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHlthFlexSpendAcctEmp__c.Label }</td>
+                </tr>
+                <tr>
+                    <td style="display:{!if(s.Is_there_Employer_Paid_Flex__c == 'Yes', '', 'none')}"><apex:outputField value="{!s.FlexSpendAcctHlthFlexSpendAcctEmp__c}"/></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctDebitCardlimPurpose__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.FlexSpendAcctDebitCardlimPurpose__c}"/></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctHEARTACTIstheEmpl__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.FlexSpendAcctHEARTACTIstheEmpl__c}"/></td>
+                </tr>
+                <tr>
+                    <td class="fieldLabel">{! $Label.FlexSpendAcctDebitCardAreThereRes_c }</td>                
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.FlexSpendAcctDebitCardAreThereRes__c}"/></td>                                      
+                </tr>
+            </table>
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="Comments"/>
+            </div>
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.FlexSpendAcctSpecialInstPertain__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.FlexSpendAcctSpecialInstPertain__c}" style="width:75%"/></td>                                      
+                </tr>
+            </table>
+        </apex:outputPanel> <!-- end FSApanel -->
+        <!-------------------------------------------- HSA TAB  ------------------------------------------->
+        <!-------------------------------------------- HSA TAB  ------------------------------------------->
+        <!-------------------------------------------- HSA TAB  ------------------------------------------->
+        <!-------------------------------------------- HSA TAB  ------------------------------------------->
+        <apex:outputPanel id="HSApanel" rendered="{!showHSAtab}">
+            <div>
+                <div style="color: rgb(22, 50,92) !important;">
+                    <center>
+                        <h3>Health Savings Account</h3>
+                    </center>
+                </div>
+            </div>
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctDoesEmployerpart__c.Label }</td>
+                    <td width="50%" style="display={!if(s.HlthSvgsAcctDoesEmployerpart__c == 'Yes', '', 'none')}" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctContributionMethod__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.HlthSvgsAcctDoesEmployerpart__c}"/></td>
+                    <td style="display={!if(s.HlthSvgsAcctDoesEmployerpart__c == 'Yes', '', 'none')}"><apex:outputField value="{!s.HlthSvgsAcctContributionMethod__c}"/></td>                                   
+                </tr>
+            </table>
+            <apex:outputPanel rendered="{!s.HlthSvgsAcctDoesEmployerpart__c == 'Yes'}">
+                <table class="formtable" style="width:100%">
+                    <tr>
+                        <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctChargeMonthlyMaint__c.Label }</td>
+                        <td width="50%" class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctDateofFirstHSAContribution__c.Label }</td>
+                    </tr>
+                    <tr>
+                        <td><apex:outputField value="{!s.HlthSvgsAcctChargeMonthlyMaint__c}"/></td>
+                        <td><apex:outputField value="{!s.HlthSvgsAcctDateofFirstHSAContribution__c}"/></td>                                     
+                    </tr>
+                    <tr>
+                        <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctlimpurpMedReimbExp__c.Label }</td>
+                        <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctDateofFirstHSAPayrollDed__c.Label }</td>
+                    </tr>
+                    <tr>
+                        <td><apex:outputField value="{!s.HlthSvgsAcctlimpurpMedReimbExp__c}"/></td>
+                        <td><apex:outputField value="{!s.HlthSvgsAcctDateofFirstHSAPayrollDed__c}"/></td>                                   
+                    </tr>
+                </table>
+            </apex:outputPanel>
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="HSA Contact"/>
+            </div>
+            <table class="formtable" style="width:100%">
+                <tr>
+                    <td class="fieldLabel">Is HSA contact same as Section 125 contact?</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.HlthSvgsAcctIsHSAcontactsameasS125__c}"/></td>
+                </tr>
+            </table>
+            <apex:outputPanel rendered="{!s.HlthSvgsAcctIsHSAcontactsameasS125__c != 'Yes'}">
+                <table class="formtable" style="width:100%">
+                    <tr>
+                        <td class="fieldLabel">Employer HSA Contact Person</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><apex:outputField value="{!s.HlthSvgsAcctEmployerHSAContact__c}"/></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="fieldLabel">Telephone</td>
+                    </tr>
+                    <tr>
+                        <td><apex:outputField value="{!s.HlthSvgsAcctTelephoneNumber__c}"/></td>
+                    </tr>
+                    <tr>
+                        <td class="fieldLabel">Telephone Ext</td>
+                    </tr>
+                    <tr>
+                        <td><apex:outputField value="{!s.HlthSvgsAcctTelephoneExtension__c}"/></td>
+                    </tr>
+                    <tr>
+                        <td class="fieldLabel">Email Address</td>
+                    </tr>
+                    <tr>
+                        <td><apex:outputField value="{!s.HlthSvgsAcctEmailAddress__c}"/></td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+            <div class="sectionHeader">
+                <apex:outputText styleclass="sectionLabel" value="Comments"/>
+            </div>
+            <table class="formtable" style="width:100%;">
+                <tr>
+                    <td class="fieldLabel">{! $ObjectType.Section_125_Setup_Form__c.Fields.HlthSvgsAcctSpecialInstPertain__c.Label }</td>
+                </tr>
+                <tr>
+                    <td><apex:outputField value="{!s.HlthSvgsAcctSpecialInstPertain__c}" style="width:75%"/></td>                                   
+                </tr>
+            </table>
+        </apex:outputPanel> <!-- end HSApanel -->
+        <div style="page-break-after:{!if(planCount == section125s.size, '', 'always;')}"></div>
+        <apex:variable var="planCount" value="{!planCount+1}"/>
+    </apex:repeat>
+
+</apex:define>       
+</apex:composition>
+</apex:page>

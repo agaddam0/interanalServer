@@ -1,0 +1,139 @@
+<aura:component implements="lightning:isUrlAddressable" controller="EnrollmentSiteWizardController">
+    <aura:attribute name="accountId" type="String" access="private" />
+    <aura:attribute name="account" type="Account" access="private" />
+    <aura:attribute name="opportunityId" type="String" access="private" />
+    <aura:attribute name="enrollmentSites" type="List" access="private" />
+    <aura:attribute name="NewEnrollmentSiteRecord" type="Enrollment_Site__c" access="private" />
+    <aura:attribute name="EditEnrollmentSiteRecord" type="Enrollment_Site__c" access="private" />
+    <aura:attribute name="enrollmentSitesToSchedule" type="Enrollment_Site__c[]" access="private" />
+    <aura:attribute name="NewEnrollmentSiteDateRecord" type="Enrollment_Site_Date__c" access="private" />
+    <aura:attribute name="EditEnrollmentSiteDateRecord" type="Enrollment_Site_Date__c" access="private" />
+    <aura:attribute name="selectedEnrollmentSiteToSchedule" type="Enrollment_Site__c" access="private" />
+    <aura:attribute name="showDeleteEnrollmentSiteDateModal" type="Boolean" default="false" access="private" />
+    <aura:attribute name="enrollmentSiteDateToDelete" type="Enrollment_Site_Date__c" access="private" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <div class="slds-box slds-theme_default oneContent active forceContentWrapper af-enrollment-site-container">
+        <h4 class="slds-text-heading_large slds-m-bottom_medium">Edit Enrollment Sites For {! v.account.Name }</h4>
+                                   
+        <lightning:button variant="neutral"
+                          iconName="utility:add" iconPosition="left"
+                          label="New Location"
+                          class="slds-m-vertical_medium"
+                          onclick="{! c.onNewLocationClick }"/>
+
+        <h3 class="slds-text-heading_small slds-m-bottom_medium">Setup Enrollment Site Schedules</h3>
+
+        <div class="slds-m-bottom_medium">{! $Label.c.EmailBuilder_Edit_Sites_And_Schedules_Instructions }</div>
+    
+        <aura:iteration items="{! v.enrollmentSites }" var="es" indexVar="esNum">
+            <aura:if isTrue="{! esNum > 0 }">
+                <hr class="slds-m-vertical_x-small" />
+            </aura:if>
+
+            <h4 class="slds-m-bottom_x-small">
+                <span class="slds-text-heading_small">{! es.Name }</span>
+                <lightning:button variant="neutral"
+                                  iconName="utility:add" iconPosition="left"
+                                  label="Schedule"
+                                  class="slds-m-left_medium"
+                                  onclick="{! c.onScheduleEnrollmentSiteDateClick }"
+                                  value="{! es.Id }"/>
+
+                <lightning:button variant="neutral"
+                                  iconName="utility:edit" iconPosition="left"
+                                  label="Edit Site"
+                                  class="af-edit-site-btn"
+                                  onclick="{! c.onEditEnrollmentSiteClick }"
+                                  value="{! es.Id }"/>
+            </h4>
+            <div class="slds-p-left_medium">
+                <div>
+                    <aura:if isTrue="{! es.Physical_Street_Address__c }">
+                        {!es.Physical_Street_Address__c}, {!es.Physical_City__c}, {!es.Physical_State__c}
+                        <aura:set attribute="else">
+                            No Address Listed
+                        </aura:set>
+                    </aura:if>
+                </div>
+
+                <aura:if isTrue="{! and(es.Enrollment_Site_Dates__r, es.Enrollment_Site_Dates__r.length > 0) }">
+                    <table class="slds-m-vertical_medium af-enrollment-site-schedule-table">
+                        <tr>
+                            <th></th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Time</th>
+                            <th>Include In Build Your Own Time To Enroll Email?</th>
+                        </tr>
+                    <aura:iteration items="{! es.Enrollment_Site_Dates__r }" var="esd">
+                        <tr>
+                            <td class="af-enrollment-site-dates-action-column">
+                                <a class="slds-p-right_small" onclick="{! c.onEditEnrollmentSiteDateClick }" data-enrollmentSiteDateId="{! esd.Id }">Edit</a>
+
+                                |
+
+                                <a class="slds-p-left_medium" onclick="{! c.onDeleteEnrollmentSiteDateClick }" data-enrollmentSiteDateId="{! esd.Id }" >Delete</a>
+                            </td>
+                            <td><lightning:formattedDateTime value="{! esd.Start_Date__c }" year="numeric" month="numeric" day="numeric" timeZone="UTC" /></td>
+                            <td><lightning:formattedDateTime value="{! esd.End_Date__c }" year="numeric" month="numeric" day="numeric" timeZone="UTC" /></td>
+                            <td><c:FormattedTime value="{! esd.Start_Time__c }" /> - <c:FormattedTime value="{! esd.End_Time__c }" /></td>
+                            <td>{! esd.Show_In_Build_Time_To_Enroll_Email__c ? 'Yes' : 'No' }</td>
+                        </tr>
+                    </aura:iteration>
+                    </table>
+
+                </aura:if>
+            </div>
+        </aura:iteration>
+
+        <c:FieldSetFormModal aura:id="newEnrollmentSiteModal"
+                             record="{! v.NewEnrollmentSiteRecord }"
+                             fieldSetName="Create_Enrollment_Site"
+                             objectName="Enrollment_Site__c"
+                             saveHandler="{! c.saveNewEnrollmentSiteClick }"
+                             header="New Enrollment Site" />
+
+        <c:FieldSetFormModal aura:id="editEnrollmentSiteModal"
+                             record="{! v.EditEnrollmentSiteRecord }"
+                             fieldSetName="Edit_Enrollment_Site"
+                             objectName="Enrollment_Site__c"
+                             saveHandler="{! c.saveEditEnrollmentSiteClick }"
+                             header="Edit Enrollment Site" />
+
+        <c:FieldSetFormModal aura:id="newEnrollmentSiteDateModal"
+                             record="{! v.NewEnrollmentSiteDateRecord }"
+                             fieldSetName="Create_Enrollment_Site_Date"
+                             objectName="Enrollment_Site_Date__c"
+                             saveHandler="{! c.saveNewEnrollmentSiteDateClick }"
+                             header="{! 'New Schedule For ' + v.selectedEnrollmentSiteToSchedule.Name }" />
+
+        <c:FieldSetFormModal aura:id="editEnrollmentSiteDateModal"
+                             record="{! v.EditEnrollmentSiteDateRecord }"
+                             fieldSetName="Create_Enrollment_Site_Date"
+                             objectName="Enrollment_Site_Date__c"
+                             saveHandler="{! c.saveEditEnrollmentSiteDateClick }"
+                             header="{! 'Edit Schedule For ' + v.selectedEnrollmentSiteToSchedule.Name }" />
+
+        <div class="{! v.showDeleteEnrollmentSiteDateModal ? 'slds-show' : 'slds-hide'}">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeDeleteEnrollmentSiteDateModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Delete Confirmation</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        Are you sure you want to delete? Once deleted, the item is no longer available and cannot be recovered.
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" onclick="{! c.closeDeleteEnrollmentSiteDateModal }">Cancel</button>
+                        <button class="slds-button slds-button_brand" onclick="{! c.onDeleteEnrollmentSiteDate }">Delete</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </div>
+</aura:component>

@@ -1,0 +1,23 @@
+.THIS {
+    
+}
+
+.THIS .fav-icon svg{
+    fill : red;
+    background-color: white;
+    border : none;
+    border-radius : 0;
+}
+
+.THIS svg {
+    fill : token(AFAnavIconColor);
+}
+
+.THIS .cart-count {
+    color : token(AFAnavIconColor);
+    font-size : large;
+}
+
+.THIS .af-icon {
+    height: 29.5px;
+}

@@ -1,0 +1,7 @@
+<aura:component implements="force:lightningQuickAction,force:hasRecordId,force:hasSObjectName" controller="PlanSummaryRedirectController">
+    <aura:handler name="init" value="{!this}" action="{!c.redirect}" />
+    <aura:attribute name="redirectMessage" type="String" default="Gathering information for the Plan Summary Report."/>
+
+    {! v.redirectMessage }
+
+</aura:component>

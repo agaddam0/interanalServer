@@ -1,0 +1,149 @@
+<apex:page standardController="Opportunity" extensions="FormStatusCTRL" showHeader="false" sidebar="false">
+    <apex:slds />
+    <style>
+        #outerTable thead td
+        {
+            width: 20%;
+        }
+        .outertd
+        {
+            border-right: 1px solid lightgray;
+            vertical-align: top;
+        }
+        .imagetd
+        {
+            text-align: center !important;
+            padding-left:15px !important;
+        }
+        .innertd
+        {
+            padding: 5px 0px 0px 5px !important;
+        }
+        .imageClass
+        {
+        	max-width: 25px !important;
+        	height: 25px !important;
+        
+        }
+        .slds-tabs_path__item
+        {
+         	padding: .25rem .25rem .25rem 1.25rem;
+        	line-height: 1.5rem;
+            background-color: #0070d2;
+        	color: #fff;
+        	font-weight: bold;
+        }
+        .slds-tabs_path__item:hover+.slds-is-current:before
+        {
+        	background-color: #005fb2 !important;
+        }
+        .slds-is-current:before
+        {
+        	background-color: #0070d2 !important;
+        }
+
+    </style>
+    <div class="slds-path-coach">
+        <div class="slds-grid">
+            <div class="slds-tabs_path" role="application">
+                <ul class="slds-tabs_path__nav" role="listbox" aria-orientation="horizontal">
+                    <li class="slds-tabs_path__item slds-is-current" role="presentation">
+                        <span class="slds-tabs_path__title">In Progress</span>
+                    </li>
+                    <li class="slds-tabs_path__item slds-is-current" role="presentation">
+                        <span class="slds-tabs_path__title">Submitted</span>
+                    </li>
+                    <li class="slds-tabs_path__item slds-is-current" role="presentation">
+                        <span class="slds-tabs_path__title">H.O. Processing</span>
+                    </li>
+                    <li class="slds-tabs_path__item slds-is-current" role="presentation">
+                        <span class="slds-tabs_path__title">Waiting for Information</span>
+                    </li>
+                    <li class="slds-tabs_path__item slds-is-current" role="presentation">
+                        <span class="slds-tabs_path__title">Completed</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <table id="outerTable" width="100%" height="200px" style="border-collapse: collapse;">
+        <thead>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="outertd">
+                    <table id="progress" width="100%">
+                        <!-- in progress repeater -->
+                        <apex:repeat value="{!inProgress}" var="i">
+                            <tr>
+                                <td class="imagetd">
+                                    <apex:image styleClass="imageClass" url="{!URLFOR($Resource.FormStatusIcons, 'in-progreses-icon-100x100.png')}" />
+                                </td>
+                                <td class="innertd"><b>{!i.FormName}</b><br/> <i>-&nbsp;{!i.OwnerName}</i></td>
+                            </tr>
+                        </apex:repeat>
+                    </table>
+                </td>
+                <td class="outertd">
+                    <table id="submitted" width="100%">
+                        <!-- submitted repeater -->
+                        <apex:repeat value="{!submitted}" var="b">
+                            <tr>
+                                <td class="imagetd">
+                                    <apex:image styleClass="imageClass" url="{!URLFOR($Resource.FormStatusIcons, 'submitted-icon-100x100.png')}"/>
+                                </td>
+                                <td class="innertd"><b>{!b.FormName}</b><br/> <i>-&nbsp;{!b.OwnerName}</i></td>
+                            </tr>
+                        </apex:repeat>
+                    </table>
+                </td>
+                <td class="outertd">
+                    <table id="processing" width="100%">
+                        <!-- H.O. Processing repeater -->
+                        <apex:repeat value="{!HOProcessing}" var="h">
+                            <tr>
+                                <td class="imagetd">
+                                    <apex:image styleClass="imageClass" url="{!URLFOR($Resource.FormStatusIcons, 'HO-processing-icon-100x100px.png')}"/>
+                                </td>
+                                <td class="innertd"><b>{!h.FormName}</b><br/> <i>-&nbsp;{!h.OwnerName}</i></td>
+                            </tr>
+                        </apex:repeat>
+                    </table>
+                </td>
+                <td class="outertd">
+                    <table id="waiting" width="100%">
+                        <!-- Waiting on Information repeater -->
+                        <apex:repeat value="{!waiting}" var="w">
+                            <tr>
+                                <td class="imagetd">
+                                    <apex:image styleClass="imageClass" url="{!URLFOR($Resource.FormStatusIcons, 'pause-icon-100x100px.png')}"/>
+                                </td>
+                                <td class="innertd"><b>{!w.FormName}</b><br/> <i>-&nbsp;{!w.OwnerName}</i></td>
+                            </tr>
+                        </apex:repeat>
+                    </table>
+                </td>
+                <td class="outertd" style="border-right:0px">
+                    <table id="complete" width="100%">
+                        <!-- Completed repeater -->
+                        <apex:repeat value="{!completed}" var="c">
+                            <tr>
+                                <td class="imagetd">
+                                    <apex:image styleClass="imageClass" url="{!URLFOR($Resource.FormStatusIcons, 'completed-icon-100x100px.png')}"/>
+                                </td>
+                                <td class="innertd"><b>{!c.FormName}</b><br/> <i>-&nbsp;{!c.OwnerName}</i></td>
+                            </tr>
+                        </apex:repeat>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</apex:page>

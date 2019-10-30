@@ -1,0 +1,34 @@
+<aura:component controller="EmailBuilderController">
+    <aura:attribute name="sectionInput" type="Object" />
+    <aura:attribute name="dataContainer" type="Object" />
+
+    <aura:attribute name="inputComponent" type="Aura.Component" access="private" />
+    <aura:attribute name="dependentInputComponents" type="Aura.Component[]" access="private" />
+    <aura:attribute name="inputValue" type="Object" access="private" />
+    <aura:attribute name="editLinkInfo" type="Object" access="private" />
+    
+    <aura:attribute name="oldValueCached" type="Object" access="private" />
+    <aura:attribute name="newValueCached" type="Object" access="private" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}" />
+    
+    <aura:handler name="change" value="{!v.inputValue}" action="{!c.inputValueChange}"/>
+    
+    <aura:method name="validate" />
+
+    <aura:if isTrue="{! v.inputComponent }">
+        <lightning:navigation aura:id="navService"/>
+    
+        {! v.inputComponent }
+        
+        <aura:if isTrue="{! v.editLinkInfo }">
+        <div class="slds-m-vertical_small">
+            <a href="{! v.editLinkInfo.EditURL }" target="_blank">{! v.editLinkInfo.LinkTitle }</a>
+        </div>
+        </aura:if>
+
+        <aura:if isTrue="{! v.dependentInputComponents }">
+        {! v.dependentInputComponents }
+        </aura:if>
+    </aura:if>
+</aura:component>

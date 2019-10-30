@@ -1,0 +1,31 @@
+.THIS.af-order-admin-container {
+	overflow-y: auto !important;
+	overflow-x: auto !important;
+}
+
+.THIS lightning-datatable .slds-table--header-fixed_container {
+	height: auto !important;
+}
+
+.THIS .af-tag-category-filter .slds-form-element__control {
+	display: inline-block;
+}
+
+.THIS .af-selection-modal {
+	z-index: 9999;
+}
+
+.THIS .af-selection-modal .slds-modal {
+	position: absolute;
+}
+
+.THIS .af-tags-marketing-materials-grid td:first-child,
+.THIS .af-marketing-materials-tags-grid td:first-child {
+	width: 7rem;
+}
+
+.THIS .af-all-marketing-materials-search,
+.THIS .af-all-tags-search,
+.THIS .af-all-orders-search {
+	width: 400px !important;
+}

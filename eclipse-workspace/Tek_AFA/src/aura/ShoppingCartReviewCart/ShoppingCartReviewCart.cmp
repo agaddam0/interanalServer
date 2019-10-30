@@ -1,0 +1,244 @@
+<aura:component controller="ShoppingCartController">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler event="aura:locationChange" action="{!c.saveCartOnNavAway}" />
+    <aura:handler event="c:strike_change_evt" action="{!c.showHideAdditionalFieldSets}" />
+    <aura:handler event="c:ShoppingCartUpdateFavoritesList" action="{!c.updateFavoriteInShoppingCart}" />
+    
+    <aura:registerEvent name="navigate" type="c:ShoppingCartNavigationEvent" />
+    <aura:registerEvent name="reloadCart" type="c:ReloadCart" />
+    
+    <aura:attribute name="Order" type="Order__c" />
+    <aura:attribute name="LineItems" type="Object[]" />
+    <aura:attribute name="ShowCustomFields" type="Boolean" default="true" />
+    <aura:attribute name="objectFields" type="Object" />
+    <aura:attribute name="ReturnLocation" type="String" />
+    <aura:attribute name="lineItemFieldSetCustomAttributes" type="Object" access="private" />
+    
+    <div class="slds-box">
+        
+        <div class="slds-p-around_large">
+            
+            <div class="slds-text-heading_large">
+                Your Cart
+            </div>
+            
+            <aura:if isTrue="{! or(!v.ReturnLocation, v.ReturnLocation != 'PreenrollmentView') }">
+            <div class="slds-p-top_large">
+                <a class="backLink" onclick="{!c.backToSearchResults}">&lt; Catalog Search</a>
+            </div>
+            </aura:if>
+            
+            <aura:if isTrue="{! and(v.ReturnLocation, v.ReturnLocation == 'PreenrollmentView') }">
+            <div class="slds-p-top_large">
+                <a class="backLink" onclick="{!c.backToPreenrollmentMarketing}">&lt; Preenrollment Marketing</a>
+            </div>
+            </aura:if>
+            
+            <aura:If isTrue="{! empty(v.LineItems) }">
+                
+                <!-- display message that your cart is empty -->
+                <div class="slds-align_absolute-center slds-text-heading_medium slds-p-around_large">
+                    Your cart is empty.
+                </div>
+                
+                <!-- Show cart details -->
+                <aura:set attribute="else">
+                    <div class="slds-grid slds-p-top_large slds-wrap slds-form slds-form_horizontal slds-text-align_left">
+                        
+                        <div class="slds-size_3-of-8">
+                            <div class="slds-form-element order-name-element">
+                                <label class="slds-form-element__label">Order Name:</label>
+                                <div class="slds-form-element__control slds-p-left_small input-label">
+                                    <ui:inputText value="{!v.Order.Order_Name__c}" />
+                                </div>
+                            </div>
+                        </div>                                              
+                        
+                        <div class="slds-size_3-of-8">
+                            <div class="on-behalf-element">
+                                <c:strike_lookup aura:id="OnBehalfOf"
+                                                 label="On Behalf Of:" 
+                                                 object="User" 
+                                                 searchField="Name" 
+                                                 iconName="standard:user" 
+                                                 order="Name"
+                                                 value="{!v.Order.Colleague__c}"/>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-size_2-of-8 slds-text-align_center order-number-element">
+                            Order #: &nbsp; <b>{!v.Order.Name}</b>
+                        </div>
+                        
+                        <div class="slds-size_8-of-8 slds-p-top_large slds-m-bottom_large dividerLine" />
+                        
+                        <!-- First repeater item -->
+                        <aura:iteration items="{!v.LineItems}" var="lineItem" indexVar="index">
+                            <div class="slds-size_1-of-12 image-min-height">
+                                <img src='{!lineItem.MarketingMaterial.Record.Thumbnail_URL__c}' title="{! 'View ' + lineItem.Record.Material_Title__c }" />                
+                            </div>
+                            <div class="slds-grid slds-wrap slds-size_11-of-12">
+                                
+                                <div class="slds-size_5-of-12">
+                                    <div class="slds-truncate form-name slds-p-left_small" data-recId="{!lineItem.Record.Marketing_Material__c}" onclick="{!c.goToDetails}">
+                                        <a class="form-name">{!lineItem.Record.Material_Title__c}</a>
+                                    </div>                	
+                                </div>
+                                
+                                <div class="slds-size_2-of-12">
+                                    <b>{!lineItem.Record.Material_Number__c}</b>
+                                </div>
+                                
+                                <div class="slds-size_2-of-12">
+                                    <b><ui:outputCurrency value="{!lineItem.Record.Unit_Price__c}" /></b> &nbsp; Each Unit
+                                </div>
+                                
+                                <div class="slds-size_3-of-12">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label">Qty</label>
+                                        <div class="slds-form-element__control slds-p-left_small quantity-input">
+                                            <ui:inputNumber value="{!lineItem.Record.Quantity__c}" />
+                                        </div>
+                                    </div>
+                                    <div class="min-max slds-text-align_center slds-p-top_xx-small">
+                                    	({!lineItem.MarketingMaterial.Record.Quantity_Minimum__c} - {!lineItem.MarketingMaterial.Record.Quantity_Maximum__c})
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-size_6-of-8">
+                                    <!-- only render if there is a field set requiring additional information -->
+                                    <div class="{! or(lineItem.CustomFieldSet != '', lineItem.MarketingMaterial.Record.Logo_Option__c) ? 'expand-width slds-grid' : 'slds-grid expand-width slds-hide'}">
+                                        <ul class="slds-accordion expand-width">
+                                            
+                                            <li class="slds-accordion__list-item">
+                                                <section class="slds-accordion__section slds-is-open" id="{!'CustomFields' + index}" aura:Id="sectionHeader">
+                                                    <div class="slds-accordion__summary">
+                                                        <h3 class="slds-accordion__summary-heading">
+                                                            <div>
+                                                                <button aria-controls="{!'CustomFields' + index}" aria-expanded="true" class="slds-button slds-button_reset slds-accordion__summary-action accordionIcon"
+                                                                        onclick="{!c.toggleAccordion}">
+                                                                    <lightning:icon class="slds-accordion__summary-action-icon slds-button__icon slds-button__icon_left" 
+                                                                                    iconName="utility:down" size="x-small" />
+                                                                    
+                                                                    <span class="slds-truncate" title="Custom Fields">Custom Fields</span>
+                                                                </button>
+                                                            </div>
+                                                        </h3>
+                                                    </div>
+                                                    <div aria-hidden="false" class="slds-accordion__content slds-grid slds-wrap">
+                                                        
+                                                        <!-- Custom Fields generated from field set -->                                           
+                                                        
+                                                        <div class="slds-size_4-of-4 custom-fields">
+                                                            <c:FieldSetForm fieldSetName="{! lineItem.CustomFieldSet }"
+                                                                            objectName="Order_Line_Item__c"
+                                                                            record="{! lineItem.Record }"
+                                                                            showHorizontal="true"
+                                                                            aura:id="CustomizedLineItemFields"
+                                                                            customAttributes="{!v.lineItemFieldSetCustomAttributes}"/>
+                                                        </div>
+                                                        
+                                                        <div class="{! lineItem.MarketingMaterial.Record.Logo_Option__c ? 'slds-size_4-of-4 custom-fields' : 'slds-size_4-of-4 custom-fields slds-hide'}">
+                                                            <!-- Luke and I (Jessica) spent a very long time trying to figure out why the Value for Customize With Logo was getting cleared
+																 out after the Order Line Item was being initialized.  We could not figure it out so settled for a dirty yet
+																 working solution to throw the single field into a FieldSetForm.  Dirty, but works! -->
+                                                            
+                                                            <c:FieldSetForm fieldSetName="Upload_Files"
+                                                                            objectName="Order_Line_Item__c"
+                                                                            record="{! lineItem.Record }"
+                                                                            showHorizontal="true"
+                                                                            aura:Id="UploadFilesCustomFields"/>
+                                                            
+                                                        	<c:UploadFiles relatedTo="{!lineItem.Record.Id}" 
+                                                                           additionalRelatedRecords="{!lineItem.Record.Order__c}"
+                                                                           label="Upload Logo"
+                                                                           showDocuments="true" />
+                                                        </div>
+                                                        
+                                                        <!-- LF: This wrapper div is necessary so it'll be considered a flex item instead of a table
+                                                             and the content is wrapped onto a new row. -->
+                                                        <div>
+                                                            <div class="col-container">
+                                                                <aura:if isTrue="{!lineItem.Record.Account__c != null}">
+                                                                    <div class="slds-size_2-of-8 slds-p-top_medium col" data-recId="{!lineItem.Record.Id}" aura:id="AccountAdditionalFields">
+                                                                        <div class="slds-text-title_caps slds-p-bottom_x-small"><b>Account</b></div>
+                                                                        <c:FieldSetRecordDisplay loadRecordFromServer="true" fieldSetName="Marketplace_Fields" 
+                                                                                                objectName="Account" recordId="{! lineItem.Record.Account__c }"/>
+                                                                    </div>
+                                                                </aura:if>
+                                                                
+                                                                <aura:if isTrue="{!lineItem.Record.Opportunity__c != null}">
+                                                                    <div class="{! lineItem.Record.Account__c != null ? 'fieldDisplay-DividerLine slds-size_2-of-8 slds-p-top_medium col' : 'slds-size_2-of-8 slds-p-top_medium col'}" data-recId="{!lineItem.Record.Id}" aura:id="OpportunityProducts">
+                                                                        <div class="slds-text-title_caps slds-p-bottom_x-small"><b>Opportunity Products</b></div>
+                                                                        <c:OpportunityProductsList recordId="{!lineItem.Record.Opportunity__c}" />
+                                                                    </div>
+                                                                </aura:if>
+                                                                
+                                                                <aura:if isTrue="{!lineItem.Record.Sales_Office__c != null}">
+                                                                    <div class="{! lineItem.Record.Account__c != null || lineItem.Record.Opportunity__c != null ? 'fieldDisplay-DividerLine slds-size_2-of-8 slds-p-top_medium col' : 'slds-size_2-of-8 slds-p-top_medium col' }" aura:id="{! 'SalesOfficeAdditionalFields' + lineItem.Record.Id}">
+                                                                        <div class="slds-text-title_caps slds-p-bottom_x-small"><b>Sales Office</b></div>
+                                                                        <c:FieldSetRecordDisplay loadRecordFromServer="true" fieldSetName="Marketplace_Fields" 
+                                                                                                objectName="Branch_Office__c" recordId="{! lineItem.Record.Sales_Office__c }"/>
+                                                                    </div>
+                                                                </aura:if>
+                                                                
+                                                                <aura:if isTrue="{! lineItem.Record.Colleague__c != null}">
+                                                                    <div class="{! lineItem.Record.Account__c != null || lineItem.Record.Opportunity__c != null || lineItem.Record.Sales_Office__c != null ? 'fieldDisplay-DividerLine slds-size_2-of-8 slds-p-top_medium col' : 'slds-size_2-of-8 slds-p-top_medium col' }" aura:id="{! 'ColleagueAdditionalFields' + lineItem.Record.Id}">
+                                                                        <div class="slds-text-title_caps slds-p-bottom_x-small"><b>Colleague</b></div>
+                                                                        <c:FieldSetRecordDisplay loadRecordFromServer="true" fieldSetName="Marketplace_Fields" 
+                                                                                                objectName="User" recordId="{! lineItem.Record.Colleague__c }"/>
+                                                                    </div>
+                                                                </aura:if>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
+                                            </li>
+                                        </ul> 
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-size_2-of-8 slds-p-left_large cart-action-button-div">
+                                    <div class="{! lineItem.MarketingMaterial.Record.Processing_Type__c == 'AFPress' || lineItem.MarketingMaterial.Record.Processing_Type__c == 'AFPress &amp; Download' ? 'action-link solo-action-link' : 'separator action-link'}">
+                                        <a data-recId="{!lineItem.Record.Id}" onclick="{!c.removeFromCart}">Remove</a>
+                                    </div>
+                                    <div class="{! lineItem.MarketingMaterial.Record.Processing_Type__c == 'AFPress' || lineItem.MarketingMaterial.Record.Processing_Type__c == 'AFPress &amp; Download' ? 'slds-hide' : 'action-link'}">
+                                        <a data-recId="{!lineItem.Record.Id}" onclick="{!c.duplicateLineItemInCart}">Duplicate</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-size_8-of-8 slds-p-top_large slds-m-bottom_large dividerLine" />
+                            
+                        </aura:iteration>
+                        
+                        <!-- end repeaters -->
+                        
+                        <div class="slds-size_8-of-8 slds-p-top_large slds-m-bottom_large dividerLineRed" />
+                        
+                        <!-- checkout line -->
+                        
+                        <div class="slds-size_9-of-12 slds-text-align_right">
+                            Cart Expiration:
+                        </div>
+                        
+                        <div class="slds-size_1-of-12 slds-p-left_x-small warning-text">
+                            <b><lightning:formattedDateTime value="{!v.Order.Cart_Expiration_Date__c}" 
+                                                            year="numeric" month="numeric" day="numeric" /></b>
+                            
+                            <lightning:helptext class="expirationHelpText" content="{! v.objectFields.Cart_Expiration_Date__c.inlineHelpText }"/>
+                        </div>
+                        
+                        <div class="slds-size_2-of-12 slds-text-align_right">
+                            <lightning:button variant="brand" label="Checkout Now" class="cart-checkout-button" onclick="{!c.checkout}"/>
+                        </div>    
+                    </div>
+                    
+                </aura:set>
+                
+            </aura:If>
+            
+        </div>
+        
+    </div>
+</aura:component>

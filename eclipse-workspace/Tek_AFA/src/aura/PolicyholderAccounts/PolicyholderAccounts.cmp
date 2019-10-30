@@ -1,0 +1,12 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" 
+                controller="PolicyholderAccountsCompController" access="global" >
+	
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <aura:attribute name="accounts" type="Account[]" />
+    
+    <aura:iteration var="a" items="{!v.accounts}">
+        <c:AccountList account="{!a}" />
+    </aura:iteration>
+    
+</aura:component>

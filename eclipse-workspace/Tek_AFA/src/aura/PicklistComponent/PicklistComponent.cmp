@@ -1,0 +1,46 @@
+<aura:component controller="PicklistController" extends="c:LightningInputContainer">
+    <aura:registerEvent name="valueChange" type="c:SelectChange" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <aura:attribute name="id" type="String"/>
+    <aura:attribute name="fieldName" type="String" required="true" />
+    <aura:attribute name="sObjectName" type="String" required="true" />
+    <aura:attribute name="labelClass" type="String" />
+    <aura:attribute name="disabled" type="Boolean" />
+    <aura:attribute name="multiple" type="Boolean" />
+    <aura:attribute name="options" type="String[]" />
+    <aura:attribute name="initialValue" type="String" />
+    <aura:attribute name="allowNoneOption" type="Boolean" default="true" />
+    <aura:attribute name="useStrikePicklist" type="Boolean" default="false" />
+    
+    <aura:method name="getInputComponent" />
+
+    <aura:if isTrue="{! v.multiple &amp;&amp; v.useStrikePicklist }">
+        <!-- LF: A space is used for the label because the LightningInputContainer has the label and including it
+             here will cause it to show twice. -->
+        <c:strike_multiSelectPicklist aura:id="multiPicklistField"
+                                      label=" "
+                                      onchange="{! c.handleChangeEvent }" 
+                                      value="{! v.value }"
+                                      disabled="{!v.disabled}">
+            <aura:iteration items="{!v.options}" var="option">
+                <c:strike_option label="{!option.label}" value="{!option.value}"/>
+            </aura:iteration>
+        </c:strike_multiSelectPicklist>
+    
+        <aura:set attribute="else">
+            <ui:inputSelect aura:id="picklistField" 
+                            value="{!v.value}"
+                            labelClass="{!v.labelClass}" 
+                            class="dynamic" 
+                            required="{!v.required}"
+                            disabled="{!v.disabled}"
+                            multiple="{!v.multiple}"
+                            change="{!c.handleChangeEvent}">
+                <ui:inputSelectOption label="Loading Options" />
+            </ui:inputSelect>
+        </aura:set>
+    </aura:if>
+    
+</aura:component>

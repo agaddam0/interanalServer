@@ -1,0 +1,170 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" 
+                controller="PolicyholderListCompController">
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="change" value="{!v.pageNumber}" action="{!c.renderPage}" />
+    <aura:handler name="change" value="{!v.searchDate}" action="{!c.dateChange}" />
+    
+    <aura:attribute name="policyholders" 	type="Policyholder__c[]" />
+    <aura:attribute name="currentList" 		type="Policyholder__c[]" />
+    <aura:attribute name="pageNumber" 		type="Integer" 				default="1" />
+    <aura:attribute name="maxPage" 			type="Integer" 				default="1" />
+    <aura:attribute name="sortField" 		type="String" />
+    <aura:attribute name="sortAsc"			type="Boolean" />
+    <aura:attribute name="searchTerm" 		type="String" />
+    <aura:attribute name="searchDate" 		type="Date" />
+    <aura:attribute name="alphaList"		type="String[]" />
+    
+    <div class="exampleHolder">
+        <lightning:spinner aura:id="mySpinner" />
+    </div>
+
+    
+    <div class="slds">
+        <div class="slds-box" aura:id="main">
+            <div aura:id="panelList">
+                <header>
+                    <fieldset class="slds-form--compound">
+                        <legend class="slds-form-element__label slds-text-title--caps">Search</legend>
+                        <div class="slds-form-element__group">
+                            <div class="slds-form-element__row">
+                                <div class="slds-form-element slds-size--1-of-2">
+                                    <label class="slds-form-element__label" for="searchTerm">Last Name</label>
+                                    <ui:inputText aura:id="searchTerm" class="slds-input" placeholder="Last Name..." change="{!c.updateList}" />
+                                </div>
+                                <div class="slds-form-element slds-size--1-of-2">
+                                    <label class="slds-form-element__label" for="searchDate">Birthdate (mm-dd-yyyy)</label>
+                                    <ui:inputDate aura:id="searchDateField" class="slds-input"
+                                                  labelClass="slds-form-element__label" displayDatePicker="true"
+                                                  value="{!v.searchDate}" format="MM-dd-yyyy"/>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                </header>
+                <div class="slds-text-align--right">
+                	<aura:iteration var="a" items="{!v.alphaList}">
+                    	<a class="{!a != 'All' ? 'slds-border--right slds-p-horizontal--xx-small' : 'slds-p-horizontal--xx-small'}" 
+                           href="" value="{!a}" data-Letter="{!a}" onclick="{!c.updateList}">{!a}</a>
+                    </aura:iteration>
+                </div>
+                <div aura:id="scrollableArea">
+                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                        <thead>
+                            <tr class="slds-text-title--caps">
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Action">Action</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Name" onclick="{!c.sortByName}">
+                                        Policyholder Name
+                                        <aura:if isTrue="{!v.sortField=='Name'}">
+                                            <span>
+                                                <aura:if isTrue="{!v.sortAsc}">
+                                                    &#8593;
+                                                    <aura:set attribute="else">
+                                                        &#8595;
+                                                    </aura:set>
+                                                </aura:if>
+                                            </span>
+                                        </aura:if>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="LastName" onclick="{!c.sortByLastName}">
+                                        Last Name
+                                        <aura:if isTrue="{!v.sortField=='Last_Name__c'}">
+                                            <span>
+                                                <aura:if isTrue="{!v.sortAsc}">
+                                                    &#8593;
+                                                    <aura:set attribute="else">
+                                                        &#8595;
+                                                    </aura:set>
+                                                </aura:if>
+                                            </span>
+                                        </aura:if>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="FirstName" onclick="{!c.sortByFirstName}">
+                                        First Name
+                                        <aura:if isTrue="{!v.sortField=='First_Name__c'}">
+                                            <span>
+                                                <aura:if isTrue="{!v.sortAsc}">
+                                                    &#8593;
+                                                    <aura:set attribute="else">
+                                                        &#8595;
+                                                    </aura:set>
+                                                </aura:if>
+                                            </span>
+                                        </aura:if>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Birthdate" onclick="{!c.sortByBirthdate}">
+                                        Birthdate
+                                        <aura:if isTrue="{!v.sortField=='Birthdate__c'}">
+                                            <span>
+                                                <aura:if isTrue="{!v.sortAsc}">
+                                                    &#8593;
+                                                    <aura:set attribute="else">
+                                                        &#8595;
+                                                    </aura:set>
+                                                </aura:if>
+                                            </span>
+                                        </aura:if>
+                                    </div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Status"  onclick="{!c.sortByStatus}">
+                                        Status
+                                        <aura:if isTrue="{!v.sortField=='Status__c'}">
+                                            <span>
+                                                <aura:if isTrue="{!v.sortAsc}">
+                                                    &#8593;
+                                                    <aura:set attribute="else">
+                                                        &#8595;
+                                                    </aura:set>
+                                                </aura:if>
+                                            </span>
+                                        </aura:if>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration var="h" items="{!v.currentList}" indexVar="i">
+                                <tr>
+                                    <th scope="row" data-label="Action">
+                                        <div class="slds-truncate" title="{!h.Name}">
+                                            <a href="" data-recId="{!h.Id}" onclick="{!c.goToEditRecord}">Edit</a></div>
+                                    </th>
+                                    <th scope="row" data-label="Name">
+                                        <div class="slds-truncate" title="{!h.Name}">
+                                            <a href="" data-recId="{!h.Id}" onclick="{!c.goToRecord}">{!h.Name}</a></div>
+                                    </th>
+                                    <th scope="row" data-label="LastName">
+                                        <div class="slds-truncate" title="{!h.Last_Name__c}">{!h.Last_Name__c}</div>
+                                    </th>
+                                    <th scope="row" data-label="FirstName">
+                                        <div class="slds-truncate" title="{!h.First_Name__c}">{!h.First_Name__c}</div>
+                                    </th>
+                                    <th scope="row" data-label="Birthdate">
+                                        <div class="slds-truncate" title="{!h.Birthdate__c}">
+                                            <ui:outputDate format="MM-dd-yyyy" value="{!h.Birthdate__c}" />
+                                        </div>
+                                    </th>
+                                    <th scope="row" data-label="Status">
+                                        <div class="slds-truncate" title="{!h.Status__c}">{!h.Status__c}</div>
+                                    </th>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                    
+                    <c:Pagination currentPageNumber="{!v.pageNumber}" maxPageNumber="{!v.maxPage}" />
+                </div>
+            </div>
+        </div>
+    </div>
+</aura:component>

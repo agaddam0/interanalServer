@@ -1,0 +1,5 @@
+<aura:component extensible="true" abstract="true" implements="force:hasRecordId" controller="ReserviceSetupController">
+    
+    {!v.body}
+	
+</aura:component>

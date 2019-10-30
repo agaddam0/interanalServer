@@ -1,0 +1,226 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId,flexipage:availableForRecordHome"
+                controller="AlegeusParticipantAccountsController">
+
+    <aura:attribute name="participantId" type="String" access="private" />
+    <aura:attribute name="planYear" type="String" access="private" />
+    <aura:attribute name="participantInfo" type="AlegeusService.ParticipantAccountsResponse" access="private" />
+    <aura:attribute name="planYearGroups" type="AlegeusParticipantAccountsController.ParticipantAccountsGroup" access="private" />
+    <aura:attribute name="showSpinner" type="Boolean" default="false" access="private" />
+    <aura:attribute name="account" type="Account" access="private" />
+    <aura:attribute name="errorMessage" type="String" access="private" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <ltng:require styles="{! $Resource.QuickActionModalStyle }"/>
+
+    <div class="slds-is-relative">
+        <aura:if isTrue="{! $Browser.formFactor != 'DESKTOP' }">
+            <lightning:button variant="base" label="Back" title="Back to Account" onclick="{! c.closeQuickAction }" />
+        </aura:if>
+    <h2 class="slds-text-heading_medium slds-m-vertical_medium slds-text-align_center">
+        {! v.account.Name }<br />
+        MCP: {! v.account.MCP_Number__c } <br />
+        Employer Code: {! v.account.Employer_Code__c }
+    </h2>
+    
+    <aura:if isTrue="{! !v.account.Employer_Code__c }">
+    <p class="slds-m-bottom_small">{! $Label.c.Alegeus_No_Employer_Code_Instructions }</p>
+    </aura:if>
+
+    <aura:if isTrue="{! v.account.Employer_Code__c }">
+    <p class="slds-m-bottom_small">{! $Label.c.Alegeus_Participant_Info_Instructions }</p>
+
+    <lightning:layout horizontalAlign="spread" class="af-form-container">
+        <lightning:layoutItem>
+            <lightning:input name="participantInput"
+                             value="{! v.participantId }" label="Participant ID (SSN)"
+                             class="af-participantIdInput slds-show_inline-block"
+                             required="true" />
+        </lightning:layoutItem>
+
+        <lightning:layoutItem>
+            <lightning:select label="Plan Year" required="true"
+                      value="{!v.planYear}" onchange="{!c.onStatusFilterChanged}"
+                      class="af-planYearInput slds-show_inline-block slds-m-left_medium">
+                <option value="0" text="All"></option>
+                <option value="1" text="Current" selected="true"></option>
+                <option value="2" text="Previous"></option>
+                <option value="3" text="Future"></option>
+            </lightning:select>
+            
+            <lightning:button variant="brand" label="View Participant Accounts"
+                              onclick="{! c.viewParticipantAccountsClicked }" class="slds-m-vertical_medium slds-m-left_medium" />
+        </lightning:layoutItem>
+    </lightning:layout>
+    
+    <aura:if isTrue="{! and(v.participantInfo, v.participantInfo.Accounts.length > 0) }">
+        <h2 class="slds-text-heading_medium">Participant Info</h2>
+        <div class="slds-p-horizontal_medium slds-p-top_medium">
+            <span class="slds-p-right_medium">Name</span>
+            {! v.participantInfo.FirstName }&nbsp;{! v.participantInfo.LastName }
+        </div>
+
+        <aura:iteration items="{! v.planYearGroups }" var="planYearGroup">
+        <h2 class="slds-text-heading_medium slds-m-top_medium">{! planYearGroup.PlanYear } Accounts</h2>
+            <div class="af-account-container slds-p-horizontal_medium">
+                <aura:iteration items="{! planYearGroup.Accounts }" var="account" indexVar="i">
+
+                <aura:if isTrue="{! i == 0 }">
+                <hr class="slds-m-vertical_medium dividerLine" />
+                </aura:if>
+                
+                
+                <div class="slds-grid full forcePageBlockSectionRow">
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element slds-hint-parent override--slds-form-element">
+                            <span class="slds-form-element__label">
+                                Type
+                                <c:strike_tooltip text="{! $Label.c.Alegeus_Type_Field_Help_Text }" escapeText="false" placement="right" />
+                            </span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static">{! account.Type }</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element">
+                            <span class="slds-form-element__label">Remaining Deposits <c:strike_tooltip text="{! $Label.c.Alegeus_Remaining_Deposits_Field_Help_Text }" escapeText="false" /></span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static"><lightning:formattedNumber value="{! account.RemainingContributions }" style='currency' currencyCode="USD"/></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-grid full forcePageBlockSectionRow slds-m-top_small">
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element slds-hint-parent override--slds-form-element">
+                            <span class="slds-form-element__label">Plan Date <c:strike_tooltip text="{! $Label.c.Alegeus_Plan_Date_Field_Help_Text }" escapeText="false" placement="right" /></span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static">{! account.PlanStartDateString } - {! account.PlanEndDateString }</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element">
+                            <span class="slds-form-element__label">Other Deposits <c:strike_tooltip text="{! $Label.c.Alegeus_Other_Deposits_Field_Help_Text }" escapeText="false" /></span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static"><lightning:formattedNumber value="{! account.AdditionalDeposits }" style="currency" currencyCode="USD"/></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-grid full forcePageBlockSectionRow slds-m-top_small">
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element slds-hint-parent override--slds-form-element">
+                            <span class="slds-form-element__label">Annual Election <c:strike_tooltip text="{! $Label.c.Alegeus_Annual_Election_Field_Help_Text }" placement="right" escapeText="false" /></span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static"><lightning:formattedNumber value="{! account.AnnualElection }" style="currency" currencyCode="USD"/></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element">
+                            <span class="slds-form-element__label">Employee Per Pay Period Amount <c:strike_tooltip text="{! $Label.c.Alegeus_Employee_Per_Pay_Period_Amount_Field_Help_Text }" escapeText="false" /></span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static"><lightning:formattedNumber value="{! account.EmployeePPPContribution }" style="currency" currencyCode="USD"/></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-grid full forcePageBlockSectionRow slds-m-top_small">
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element slds-hint-parent override--slds-form-element">
+                            <span class="slds-form-element__label">Available Balance <c:strike_tooltip text="{! $Label.c.Alegeus_Available_Balance_Field_Help_Text }" placement="right" escapeText="false" /></span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static"><lightning:formattedNumber value="{! account.Balance }" style="currency" currencyCode="USD"/></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element">
+                            <span class="slds-form-element__label">Last Day For Spending <c:strike_tooltip text="{! $Label.c.Alegeus_Last_Day_For_Spending_Field_Help_Text }" escapeText="false" /></span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static">{! account.SpendingLastDateString }</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-grid full forcePageBlockSectionRow slds-m-top_small">
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element slds-hint-parent override--slds-form-element">
+                            <span class="slds-form-element__label">Disbursements YTD <c:strike_tooltip text="{! $Label.c.Alegeus_Disbursements_YTD_Field_Help_Text }" placement="right" escapeText="false" /></span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static"><lightning:formattedNumber value="{! account.Payments }" style="currency" currencyCode="USD"/></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element">
+                            <span class="slds-form-element__label">Last Day To Submit Claims <c:strike_tooltip text="{! $Label.c.Alegeus_Last_Day_To_Submit_Claims_Field_Help_Text }" escapeText="false" /></span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static">{! account.SubmitClaimsLastDateString }</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-grid full forcePageBlockSectionRow slds-m-top_small">
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element slds-hint-parent override--slds-form-element">
+                            <span class="slds-form-element__label">Contributions YTD <c:strike_tooltip text="{! $Label.c.Alegeus_Contributions_YTD_Field_Help_Text }" placement="right" escapeText="false" /></span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static"><lightning:formattedNumber value="{! account.TotalContributions }" style="currency" currencyCode="USD"/></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="slds-has-flexi-truncate slds-p-horizontal_x-small">
+                        <div class="slds-form-element">
+                            <span class="slds-form-element__label">Rollover Info <c:strike_tooltip text="{! $Label.c.Alegeus_Rollover_Info_Field_Help_Text }" escapeText="false" /></span>
+                            <div class="slds-form-element__control">
+                                <div class="slds-form-element__static">
+                                    Allowed: {! account.EmployerPlanAllowFundRollerYesNo }<br />
+
+                                    <aura:if isTrue="{! account.EmprPlanAllowFundRollover }">
+                                    Coverage Tier: {! account.RolloverCoverageTierId } <br />
+                                    Rollover Amount: <lightning:formattedNumber value="{! account.RolloverPrimaryFundRolloverAmount }" style="currency" currencyCode="USD"/>
+                                    </aura:if>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="slds-m-vertical_medium dividerLine" />
+                
+            </aura:iteration>
+        </div>
+    
+        </aura:iteration>
+    
+    </aura:if>
+
+    <aura:if isTrue="{! and(v.participantInfo, v.participantInfo.Accounts.length == 0) }">
+        No Accounts Found
+    </aura:if>
+
+    <aura:if isTrue="{! v.errorMessage }">
+    <div class="af-error-container">
+        Error: {! v.errorMessage }
+    </div>
+    </aura:if>
+    </aura:if>
+
+
+    <lightning:spinner aura:id="mySpinner" class="{! v.showSpinner ? 'slds-show' : 'slds-hide' }" />
+    </div>
+</aura:component>

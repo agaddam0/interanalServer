@@ -1,0 +1,140 @@
+<apex:page standardController="Enrollment_Form__c" extensions="PDFCreateController"  standardStylesheets="false" docType="html-5.0" sidebar="false" showHeader="false" renderAs="pdf" applyHtmlTag="false">
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.min.css')}"/> 
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"/>
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"/>
+    <head> 
+    <script type='text/javascript' src='/canvas/sdk/js/publisher.js'></script> 
+    <script>
+        //var $j = jQuery.noConflict();
+        var efId = '{!Enrollment_Form__c.Id}';
+        
+        var isSF1 = '';
+        if( (typeof sforce != 'undefined') && (sforce != null) ) {
+            isSF1 = true;
+        }
+        else {
+            isSF1 = false;
+        }   
+    </script>
+
+    <style>
+    .title
+    {
+        font-family: Times New Roman, Georgia, Serif;
+        font-size: 11px;
+        font-weight:bold;
+        color:#1B2E44;
+        text-align:center;
+        position:relative
+    }
+    .p1
+    {
+        font-family:Times New Roman, Georgia, Serif;
+        font-size: 14px;
+        font-weight:400;
+        color:#1B2E44;
+        margin-left: 50px;
+        margin-right: 50px;
+    }
+    .list
+    {
+        font-family:Times New Roman, Georgia, Serif;
+        font-size: 14px;
+        color:#1B2E44;
+        margin-left: 65px;
+        margin-right: 50px;
+    }
+    .p2
+    {
+        font-family:Times New Roman, Georgia, Serif;
+        font-size: 10px;
+        font-weight:bold;
+        color:#1B2E44;
+        margin-left: 50px;
+        margin-right: 50px;
+    }
+    @page {
+    	@bottom-left {
+     		content: element(footer);
+    	}
+    }
+        
+    div.footer {
+        display: block;
+        padding: 5px;
+        position: running(footer);
+    }
+    </style>
+    </head>
+    <apex:form id="pbform" style="margin-top:-20px">
+        <div class="footer">
+        	<div>S-2014 (0611)</div>
+        </div>
+        <div>
+            <div class="col-md-12 title">
+            <center>
+                <h3>Employer Agreement <br/>Health Flexible Spending Account <br/> Debit Card </h3>
+            </center>
+            </div>
+        </div>
+        <div class="p1">
+            <p>As an enhancement to your Section 125 "Cafeteria" Plan, you have requested for your employees to utilize the debit care for their Health Flexible Spending Account. The following outlines the special guidelines and employer responsibilities associated with the debit card:</p>
+        </div>
+        <div class="list">
+            <ul>         
+                <li><span>Once the employee elects the card, it will be mailed to the participant approximately two weeks after the enrollment information has been received in our Home Office. When the plan year begins, the card is ready to be used once it received; there is no further activation required.</span><br/></li>
+                <li><span>The participant is responsible for providing all receipts to American Fidelity Assurance as they are requested. If the participant does not respond to our requests for receipts in a timely manner, the debit card will be deactivated and will not be reactivated until the amount of the reimbursement is made or the requested receipts have been received.</span><br/></li>
+                <li><span>The participant must reimburse American Fidelity Assurance for any ineligible expense charged to the card. The reimbursement can be in the form of a check or money order to American Fidelity. If the participant does not reimburse American Fidelity for the ineligible claims, the card will be deactivated until resolution is made.</span><br/></li>
+                <li><span>If the participant does not reimburse American Fidelity for ineligible claims or for any claims for which they do not submit receipts in a timely manner, the Employer is responsible for making an after-tax deduction from the participant’s paycheck or adjusting the participant’s W-2 since the employee received a taxable benefit as the result of an improper claim.</span><br/></li>
+            </ul>
+        </div>
+        <br/>
+        <div>
+            <p>
+                I agree to the above conditions to provide my employees the Health Flexible Spending Account and the opportunity to choose the debit card for reimbursement.
+            </p>
+            <p>
+                Dated this &nbsp;<apex:outputText style="width: 20px; border-style: solid; border-width:2px; border-color: black;" id="numberDate" value="{!day}"/> day of &nbsp;<apex:outputText style="width: 100px; border-style: solid; border-width:2px; border-color: black;" id="month" value="{!month}"/>, 20&nbsp;<apex:outputText style="width: 20px; border-style: solid; border-width:2px; border-color: black;" id="year" value="{!year}"/>
+            </p>
+        </div>
+        <table class="signature">
+            <tr>
+                <td style="width:10%"></td>
+                <td style="border-bottom:solid;">{!opptyItem.Account.Name}</td>
+            </tr>
+            <tr>
+                <td style="width:10%"></td>
+                <td><b>Employer</b></td>
+            </tr>
+            <tr>            
+                <td style="width:10%"></td>
+                <td style="border-bottom:solid;"><apex:outputText value="Not Needed" rendered="{!IF(ISBLANK(a.Id), true, false)}"/><apex:image url="/servlet/servlet.FileDownload?file={!a.Id}" rendered="{!IF(NOT(ISBLANK(a.Id)),true,false)}"/></td>
+            </tr>
+            <tr>
+                <td style="width:10%"></td> 
+                <td><b>Signature</b></td>                               
+            </tr>
+            <tr>
+                <td style="width:10%"></td>
+                <td style="border-bottom:solid;">{!printedSignature}</td>
+            </tr>
+            <tr>
+                <td style="width:10%"></td> 
+                <td><b>Printed Signature</b></td>                               
+            </tr>
+            <tr>
+                <td style="width:10%"></td>
+                <td style="border-bottom:solid;">{!title}</td>              
+            </tr>
+            <tr>
+                <td style="width:10%"></td> 
+                <td><b>Title</b></td>                               
+            </tr>
+        </table>                  
+        <div>      
+            <input style="margin-left: 25px;" type="button" value="Continue" onclick="gatherInfo(); return false;"/>
+        </div> 
+            
+    </apex:form>
+</apex:page>

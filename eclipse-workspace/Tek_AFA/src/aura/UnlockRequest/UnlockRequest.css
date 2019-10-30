@@ -1,0 +1,8 @@
+.THIS.slds-show{
+    display : inline-block;
+}
+
+.THIS .modal-body{
+    background : white;
+    padding : 15px;
+}

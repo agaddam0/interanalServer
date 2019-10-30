@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AuraDefinitionBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>42.0</apiVersion>
+    <description>Error Toast component to display on a lightning component while the other toast continues to remain behind the current window.</description>
+</AuraDefinitionBundle>

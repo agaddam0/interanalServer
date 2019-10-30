@@ -1,0 +1,67 @@
+<aura:component controller="FieldSetComponentController">
+    <aura:attribute name="record" type="SObject" description="The record being edited"/>
+    <aura:attribute name="fieldSetName" type="String"/>
+    <aura:attribute name="objectName" type="String"/>
+    <aura:attribute name="fields" type="Object[]"/>
+    <aura:attribute name="loadOnInit" type="Boolean" default="true" />
+    <aura:attribute name="customAttributes" type="Object" default="{}" />
+    <aura:attribute name="customFieldInputs" type="Object" />
+    <aura:attribute name="showHorizontal" type="Boolean" default="false" />
+    <aura:attribute name="errorResponse" type="Object" />
+    <aura:attribute name="errorClass" type="String" />
+    <aura:attribute name="class" type="String" />
+    <aura:attribute name="formClass" type="String" default=""/>
+    <aura:attribute name="disableInputFields" type="Boolean" default="false" />
+    <aura:attribute name="useStrikePicklist" type="Boolean" default="false" />
+    
+    <aura:attribute name="pageErrors" type="Object[]" access="private" />
+    <aura:attribute name="fieldErrors" type="Object[]" access="private" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    <aura:handler name="change" value="{!v.errorResponse}" action="{!c.onErrorResponseChange}"/>
+    <aura:handler name="fieldChange" event="c:InputChangeEvent" action="{!c.fieldSetFieldValueChange}" includeFacets="true"/>
+    <aura:handler name="strikeChangeEvent" event="c:strike_change_evt" action="{!c.fieldSetFieldValueChange}" includeFacets="true" />
+
+    
+    <aura:method name="loadComponent" >
+        <aura:attribute name="record" type="SObject" />
+    </aura:method>
+    
+    <aura:method name="loadComponentUsingQueriedRecord" >
+        <aura:attribute name="Id" type="Id" />
+    </aura:method>
+
+    <aura:method name="validate" />
+    <aura:method name="showValidationMessages" />
+    <aura:method name="clearValidationMessages" />
+    
+    <aura:method name="disableForm">
+        <aura:attribute name="disabled" type="Boolean"/>
+    </aura:method>
+    
+    <aura:registerEvent name="fieldSetFormLoaded" type="c:OnFieldSetFormLoaded" />
+    <aura:registerEvent name="fieldSetFormValueChange" type="c:FieldSetFormValueChange" />
+    
+    <div class="{! v.class ? v.class : '' }">
+        <div class="{! or(and(v.pageErrors, v.pageErrors.length, v.pageErrors.length > 0), and(v.fieldErrors, v.fieldErrors.length, v.fieldErrors.length > 0 )) ? v.errorClass + ' slds-show' : 'slds-hide' }">
+            <div class="slds-box slds-theme--error">
+                <h2 class="slds-text-heading_medium">Error(s)</h2>
+                
+                <ul class="slds-list_dotted">
+                <aura:iteration items="{! v.pageErrors }" var="error">
+                    <li class="slds-item slds-m-top_medium">{! error.message }</li>
+                </aura:iteration>
+                <aura:if isTrue="{! and(v.fieldErrors, v.fieldErrors.length, v.fieldErrors.length > 0 ) }">
+                    <aura:iteration items="{! v.fieldErrors }" var="error">
+                    <li class="slds-item slds-m-top_medium">{! error.message }</li>
+                    </aura:iteration>
+                </aura:if>
+                </ul>
+            </div>
+        </div>
+        
+        <p class="{! v.showHorizontal ? 'slds-form_horizontal v.formClass' : v.formClass }">
+            {!v.body}
+        </p>
+    </div>
+</aura:component>

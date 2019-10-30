@@ -1,0 +1,628 @@
+<apex:page standardStylesheets="false" sidebar="false" standardController="Account" extensions="AccountDashboardController">
+
+    <apex:stylesheet value="{!URLFOR($Resource.lib_js, 'css/angular-material.min.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.lib_js, 'css/angular-material.css')}"/>
+
+    <apex:stylesheet value="{!URLFOR($Resource.lib_js, 'css/bootstrap/bootstrap.min.css')}" />
+
+
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/ramda.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/underscore.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/moment.js')}"/>
+
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/bluebird/bluebird.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/bluebird/bluebird.core.min.js')}"/>
+
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-sanitize.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-animate.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-aria.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-material.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib_js, 'js/angular/angular-material-icons.min.js')}"/>
+
+    <apex:remoteObjects >
+        <apex:remoteObjectModel name="Account">
+            <apex:remoteObjectField name="Name"/>
+            <apex:remoteObjectField name="OwnerId"/>
+            <apex:remoteObjectField name="MCP_Number__c"/>
+            <apex:remoteObjectField name="BillingState"/>
+            <apex:remoteObjectField name="AP_Percent_of_Change__c"/>
+            <apex:remoteObjectField name="Annualized_Premium__c"/>
+            <apex:remoteObjectField name="Owner_Team_District__c"/>
+            <apex:remoteObjectField name="Policy_of_Change__c"/>
+            <apex:remoteObjectField name="Policy_Count__c"/>
+            <apex:remoteObjectField name="Status__c"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="User">
+            <apex:remoteObjectField name="Name"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="Asset">
+            <apex:remoteObjectField name="Name"/>
+            <apex:remoteObjectField name="AccountId"/>
+            <apex:remoteObjectField name="RecordTypeId"/>
+            <apex:remoteObjectField name="Status"/>
+            <apex:remoteObjectField name="Carrier__c"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="RecordType">
+            <apex:remoteObjectField name="Name"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="Event">
+            <apex:remoteObjectField name="AccountId"/>
+            <apex:remoteObjectField name="Type__c"/>
+            <apex:remoteObjectField name="ActivityDate"/>
+            <apex:remoteObjectField name="Sub_Type__c"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="Contact">
+            <apex:remoteObjectField name="AccountId"/>
+            <apex:remoteObjectField name="Name"/>
+            <apex:remoteObjectField name="Inactive__c"/>
+            <apex:remoteObjectField name="Email"/>
+            <apex:remoteObjectField name="Phone"/>
+            <apex:remoteObjectField name="Type__c"/>
+            <apex:remoteObjectField name="Decision_Maker__c"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="Case">
+            <apex:remoteObjectField name="AccountId"/>
+            <apex:remoteObjectField name="Date__c"/>
+        </apex:remoteObjectModel>
+        <apex:remoteObjectModel name="Opportunity">
+            <apex:remoteObjectField name="AccountId"/>
+            <apex:remoteObjectField name="Record_Type__c"/>
+        </apex:remoteObjectModel>
+    </apex:remoteObjects>
+    <script type="text/javascript">
+        // Globals
+        var AccountDashboardController, R, angular, SObjectModel, moment;
+        var r = R;
+
+        angular
+            .module('lapsePrediction',          ['ngSanitize', 'ngMaterial', 'ngMdIcons'])
+            .directive('card',                  card)
+
+            .value('accountId',                 '{!account.Id}')
+            .value('VFRemote',                  AccountDashboardController)
+
+            .factory('metric',                  metric)
+            .service('api',                     ['VFRemote', api])
+
+            .service('account',                 ['accountId', 'api', '$q', account])
+
+            .service('metrics',                 ['account', 'api', 'metric', '$q', metrics])
+
+            .controller('ctrl',                 ['$scope', 'account', 'metric', 'metrics', controller]);
+
+        function controller ($scope, account, metric, metrics) {
+            var vm = this;
+
+            // set model variables
+            vm.accountMetric = metric(0, '', 0, '', '');
+            vm.metrics = [];
+            vm.splitColumn = 0;
+            vm.account = {};
+
+            account.then(function (data) {
+                var title, information, acct = data.account, owner = data.owner, Metric = metric;
+                title = acct.Name + ' (' + acct.BillingState + ')';
+                information = '<span class="row"><strong class="col-sm-3">Account Owner</strong>' + owner.Name + '</span>' +
+                    '<span class="row"><strong class="col-sm-3">Team/District</strong>' + (acct.Owner_Team_District__c || '') + '</span>' +
+                    '<span class="row"><strong class="col-sm-3">MCP #</strong>' + acct.MCP_Number__c + '</span>';
+
+                vm.accountMetric = new Metric(0, information, 0, title, '');
+                vm.account = acct;
+                return data;
+            });
+
+            metrics.then(function (data) {
+                var x = 0;
+                var starNumber = r.compose(r.sum, r.map(r.prop('starNumber')))(data);
+                starNumber = Math.ceil(starNumber / data.length);
+
+                data = r.sortBy(r.prop('priority'), data);
+                while (x < data.length) {
+                    vm.metrics.push([data[x++], data[x++]]);
+                }
+
+                vm.accountMetric.starNumber = starNumber;
+                $scope.$apply();
+            });
+        }
+
+        function api (VFRemote) {
+            var vForce = function (func) {
+                return function (conditions) {
+                    return new Promise(function (resolve, reject) {
+                        func(conditions, function (err, data, event) {
+                            if (err) { throw err; }
+                            return resolve(r.pluck('_props', data));
+                        });
+                    });
+                }
+            };
+
+            return {
+                // accountId, callback
+                GetAccount: vForce(new SObjectModel.Account().retrieve),
+
+                // account, callback
+                GetOwner: vForce(new SObjectModel.User().retrieve),
+                GetCases: vForce(new SObjectModel.Case().retrieve),
+                GetEvents: vForce(new SObjectModel.Event().retrieve),
+                GetAssets: vForce(new SObjectModel.Asset().retrieve),
+                GetContacts: vForce(new SObjectModel.Contact().retrieve),
+                GetOpportunities: vForce(new SObjectModel.Opportunity().retrieve),
+                GetRecordTypes: vForce(new SObjectModel.RecordType().retrieve),
+
+                StarRatingAccountPolicies: r.curryN(2, VFRemote.StarRatingAccountPolicies),
+                StarRatingAccountPremium: r.curryN(2, VFRemote.StarRatingAccountPremium),
+
+                // account, assets, callback
+                StarRatingAccountProducts: r.curryN(3, VFRemote.StarRatingAccountProducts),
+                StarRatingAccountServices: r.curryN(3, VFRemote.StarRatingAccountServices),
+
+                // account, events, callback
+                StarRatingAccountActivity: r.curryN(3, VFRemote.StarRatingAccountActivity),
+                StarRatingAccountContacts: r.curryN(3, VFRemote.StarRatingAccountContacts),
+                StarRatingAccountWorkingConditions: r.curryN(3, VFRemote.StarRatingAccountWorkingConditions),
+
+                // account, cases, opportunities, callback
+                StarRatingAccountRiskPotential: r.curryN(4, VFRemote.StarRatingAccountRiskPotential)
+            };
+        }
+
+        function account (accountId, api, $q) {
+            return api.GetAccount({where: {Id: {eq: accountId}}})
+                .then(getObjects)
+                .then(function (account) {
+                    return api.GetOwner({where: {Id: {eq: account.account.OwnerId}}})
+                        .then(function (owner) {
+                            account.owner = owner[0];
+                            return account;
+                        });
+                });
+
+            function getObjects (accounts) {
+                var account = accounts[0];
+                var set = r.curry(
+                    function (prop, value) {
+                        var dependent = {};
+                        dependent[prop] = value;
+                        return dependent;
+                    });
+                var setDates = r.curry(function (property, data) {
+                    var setDate = function (attr) {
+                        attr[property] = moment.unix(attr[property]).unix();
+                        return attr;
+                    };
+                    data = r.map(setDate, data);
+                    return data;
+                });
+                var getProperty = function (property, list) {
+                    return r.map(r.prop(property), list);
+                };
+                var getRecordTypes = r.curry(function (property, data) {
+                    // return data;
+                    if (data.length === 0) { return data; }
+                    var conditions = {
+                        where: {
+                            Id: {
+                                in: r.uniq(getProperty('RecordTypeId', data))
+                            }
+                        }
+                    };
+                    return api.GetRecordTypes(conditions)
+                        .then(function (recordTypes) {
+                            data = r.map(function (record) {
+                                var recordType = r.find(
+                                    r.propEq('Id', record.RecordTypeId),
+                                    recordTypes);
+                                record.RecordType = recordType;
+                                return record;
+                            }, data);
+                            return data;
+                        });
+                });
+
+                var conditions = {where: {AccountId: {eq: accountId}}};
+                return $q
+                    .all([
+                        api.GetCases(conditions)
+                            .then(setDates('Date__c'))
+                            .then(set('cases')),
+                        api.GetEvents(conditions)
+                            .then(setDates('ActivityDate'))
+                            .then(set('events')),
+                        api.GetAssets(conditions)
+                            .then(getRecordTypes('assets'))
+                            .then(set('assets')),
+                        api.GetContacts(conditions)
+                            .then(set('contacts')),
+                        api.GetOpportunities(conditions)
+                            .then(set('opportunities'))
+                    ])
+
+                    .then(function (dependents) {
+                        var obj = r.mergeAll(dependents);
+                        obj.account = account;
+                        return obj;
+                    });
+            }
+        }
+
+        function metrics (account, api, metric, $q, promise) {
+            return account.then(function (data) {
+                var
+                    Metric = metric,
+                    policies, premium, products, services, activity, contacts, conditions, risks,
+                    promises        = [],
+                    vForce          = function (func) {
+                        return new Promise(function (resolve, reject) {
+                            func(function (data) { return resolve(data); });
+                        });
+                    },
+                    createMetric    = r.curry(
+                        function (order, info, stars, title, helpText) {
+                            return new Metric(order, info, stars, title, helpText);
+                        }),
+                    setInfo         = r.curry(function (func, titles, result) {
+                        var data = [], x = titles.length;
+
+                        while (x-- > 0) {
+                            data.push(
+                                '<span class="row text-nowrap"><strong class="col-sm-5">' + titles[x] + '</strong><span>' +
+                            result.displayInfo[x] + '</span></span>');
+                        }
+
+                        return func(r.join('\r\n', data), result.starRating);
+                    });
+
+                // Add title and description
+
+                products    = createMetric(1, r.__, r.__, 'Products',   r.__);
+                services    = createMetric(2, r.__, r.__, 'Services',   r.__);
+                premium     = createMetric(3, r.__, r.__, 'Premium',    r.__);
+                policies    = createMetric(4, r.__, r.__, 'Policies',   r.__);
+                activity    = createMetric(5, r.__, r.__, 'Activity',   r.__);
+                contacts    = createMetric(6, r.__, r.__, 'Contacts',   r.__);
+                risks       = createMetric(7, r.__, r.__, 'Issues & Risk Potential', r.__);
+                conditions  = createMetric(8, r.__, r.__, 'Working Conditions', r.__);
+
+                products    = products(r.__, r.__, {
+                    green: '4 or more American Fidelity products',
+                    yellow: '2 - 3 American Fidelity products',
+                    red: '1 American Fidelity product'
+                });
+                services    = services(r.__, r.__, {
+                    green: 'Section 125 & at least 1 additional American Fidelity service',
+                    yellow: 'Only Section 125',
+                    red: 'No services'
+                });
+                premium     = premium(r.__, r.__, {
+                    green: 'Positive AP % of Change',
+                    yellow: 'Negative AP % of Change up to -25%',
+                    red: 'AP % of Change greater than -25%'
+                });
+
+                policies    = policies(r.__, r.__, {
+                    green: 'Positive Policy % of Change',
+                    yellow: 'Negative Policy % of Change up to -25%',
+                    red: 'Policy % of Change greater than -25%'
+                });
+
+                activity    = activity(r.__, r.__, {
+                    green: 'Last activity occurred in the past 90 days',
+                    yellow: 'Last activity occurred within the past 90 to 120 days',
+                    red: 'Last activity occurred more than 120 days '
+                });
+
+                contacts    = contacts(r.__, r.__, {
+                    green: 'Minimum of 3 contacts (which include an email and phone), including at least one decision maker',
+                    yellow: 'Less than 2 contacts',
+                    red: 'No contact is indicated as the decision maker, regardless of the number of contacts'
+                });
+
+                risks       = risks(r.__, r.__, {
+                    green: 'No cases or save opportunities within the past year',
+                    yellow: '1 to 4 cases',
+                    red: '1 or more save opportunities'
+                });
+
+                conditions  = conditions(r.__, r.__, {
+                    green: 'An enrollment, new hire pick-up, and a faculty/group meeting within the past year',
+                    yellow: 'Enrollment as well as either a new hire pick-up or a faculty/group meeting within the past year',
+                    red: 'Only an enrollment in the past year '
+                });
+
+                promises.push(
+                    vForce(
+                    api.StarRatingAccountProducts(
+                        data.account,
+                        data.assets))
+                        .then(function (results) {
+                            results.displayInfo = [r.join('', results.displayInfo)];
+                            return results;
+                        })
+                        .then(setInfo(products, ['Active Products'])));
+
+                promises.push(
+                    vForce(
+                        api.StarRatingAccountServices(
+                            data.account,
+                            data.assets))
+                        .then(function (results) {
+                            results.displayInfo = [r.join('', results.displayInfo)];
+                            return results;
+                        })
+                        .then(setInfo(services, ['Active Services'])));
+
+                promises.push(
+                    vForce(
+                        api.StarRatingAccountPremium(
+                            data.account))
+                        .then(
+                            setInfo(
+                                premium,
+                                [
+                                    'Annualized Premium',
+                                    'AP % of Change'
+                                ])));
+
+                promises.push(
+                    vForce(
+                        api.StarRatingAccountPolicies(data.account))
+                        .then(
+                            setInfo(
+                                policies,
+                                [
+                                    'Policy % of Change',
+                                    'Policy Count'
+                                ])));
+
+                promises.push(
+                    vForce(
+                        api.StarRatingAccountActivity(
+                            data.account,
+                            data.events))
+                        .then(
+                            setInfo(
+                                activity,
+                                [
+                                    'Number of Activities in Past Year',
+                                    'Last Activity Date'
+                                ])));
+
+                promises.push(
+                    vForce(
+                        api.StarRatingAccountContacts(
+                            data.account,
+                            data.contacts))
+                        .then(
+                            setInfo(
+                                contacts,
+                                [
+                                    'Type of Contacts',
+                                    'Number of Active Contacts',
+                                    'Has Decision Maker'
+                                ])));
+
+                promises.push(
+                    vForce(
+                        api.StarRatingAccountRiskPotential(
+                            data.account,
+                            data.cases,
+                            data.opportunities))
+                        .then(
+                            setInfo(
+                                risks,
+                                [
+                                    'Number of Cases',
+                                    'Number of Save Opportunities'
+                                ])));
+
+                promises.push(
+                    vForce(
+                        api.StarRatingAccountWorkingConditions(
+                            data.account,
+                            data.events))
+                        .then(function (results) {
+                            // the data is more complicated in this result set
+                            // we are going to reformat it
+                            var titles = [], x = 0;
+                            while (x < results.displayInfo.length) {
+                                var strs = results.displayInfo[x].split('|');
+                                titles[x] = strs[0];
+                                results.displayInfo[x++] = strs.length === 2 ? strs[1] : '';
+                            }
+                            return setInfo(conditions, titles, results);
+                        }));
+
+                return $q.all(promises);
+            });
+        }
+
+        function metric () {
+            return function (priority, info, stars, title, contraint) {
+                return {
+                    priority: priority,
+                    information: info,
+                    starNumber: stars,
+                    title: title,
+                    contraint: contraint
+                };
+            };
+        }
+
+        function card () {
+            return {
+                restrict: 'EA',
+                templateUrl: 'card-partial.html',
+                scope: {
+                    metric: '=',
+                    leadStar: '@'
+                },
+                controller: ['$scope', '$mdDialog', function ($scope, $mdDialog) {
+                    $scope.openHelpText = function () {
+                        $mdDialog.show({
+                            preserveScope: true,
+                            clickOutsideToClose: true,
+                            scope: $scope,
+                            templateUrl: 'help-text-template.html'
+                        });
+                    };
+
+                    $scope.$watch('metric', function (val, old) {
+                        var status, stars, x = 5, numberStar = Math.round(val.starNumber);
+
+                        status = (numberStar > 3) ? 'awesome' : 'bad';
+                        status = (numberStar === 3) ? 'ok' : status;
+                        stars = [];
+
+                        while (x-- > 0) {
+                            stars.push(
+                                (x >= numberStar ? 'empty' : status)        + ' ' +
+                                ($scope.leadStar ? 'lead-star' : 'star')
+                            );
+                        }
+
+                        $scope.status = status;
+                        $scope.stars = r.reverse(stars);
+                    }, true);
+                }]
+            };
+        }
+
+    </script>
+
+    <body ng-app="lapsePrediction" ng-cloak="">
+        <div ng-controller="ctrl as c" >
+            <card metric="c.accountMetric" lead-star="true"></card>
+            <hr></hr>
+            <div ng-repeat="metric in c.metrics" >
+                <div layout-gt-md="row">
+                    <card metric="metric[0]" flex-gt-md="50"></card>
+                    <card ng-if="metric.length == 2" metric="metric[1]" flex-gt-md="50"></card>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    <script type="text/ng-template" id="card-partial.html">
+        <style>
+
+            .lead-star {
+                width: 32px;
+                height: 32px;
+            }
+
+            .lead-star polygon {
+                transform: translate(12px, 12px) scale(12)
+            }
+
+            .rail {
+                width : 6px;
+
+            }
+
+            .bad {
+                background-color: darkred;
+                fill : darkred;
+            }
+
+
+            .ok {
+                background-color: darkgoldenrod;
+                fill : darkgoldenrod;
+            }
+
+            .awesome {
+                background-color: darkgreen;
+                fill : darkgreen;
+            }
+
+            svg {
+                background-color: inherit !important;
+            }
+
+            .empty {
+                fill : lightgray;
+            }
+
+            .full {
+                fill: mediumseagreen;
+            }
+
+            pre {
+                background: transparent;
+                border: none;
+                font: inherit;
+                padding: 0px;
+                word-break: break-all;
+            }
+
+            md-card {
+                height: 175px;
+                font-size: 12px;
+            }
+            ng-md-icon {
+                fill: grey;
+            }
+            span {
+                display: flex;
+            }
+
+        </style>
+        <md-card>
+            <div layout="row" layout-fill="">
+                <div class="rail" ng-class="status" ></div>
+                <div layout="column" layout-fill="">
+                        <div layout="row" flex="33">
+                            <md-card-title layout="column">
+                                <div layout="row">
+                                    <md-card-title-text >
+                                        <span class="md-headline">{{metric.title}}</span>
+                                    </md-card-title-text>
+                                    <div layout="row" layout-align="end center">
+                                        <div ng-repeat="star in stars track by $index">
+                                            <svg ng-class="star" xmlns="http://www.w3.org/2000/svg" height="16" width="16" id="star">
+                                                <polygon transform="translate(9, 9) scale(9)" points="0,-1   0.224513988289792686220972575898763393789606,-0.309016994374947424102293417182819058860155  0.951056516295153572116439333379382143405699,-0.309016994374947424102293417182819058860155  0.363271264002680442947733378740309374808046,0.118033988749894848204586834365638117720309  0.587785252292473129168705954639072768597652,0.809016994374947424102293417182819058860155  0,0.381966011250105151795413165634361882279691  -0.587785252292473129168705954639072768597652,0.809016994374947424102293417182819058860155  -0.363271264002680442947733378740309374808046,0.118033988749894848204586834365638117720309  -0.951056516295153572116439333379382143405699,-0.309016994374947424102293417182819058860155  -0.224513988289792686220972575898763393789606,-0.309016994374947424102293417182819058860155"></polygon>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </md-card-title>
+                        </div>
+                        <div layout="row" flex="66">
+                            <md-card-content layout-fill="" layout-align="end" layout="row">
+                                <md-content style="overflow-x: hidden;background:inherit;" ng-bind-html="metric.information" layout-fill=""></md-content>
+                                <ng-md-icon ng-hide="leadStar" layout="column" layout-align="end" icon="help" ng-click="openHelpText()"></ng-md-icon>
+                            </md-card-content>
+                        </div>
+                </div>
+                <div class="rail" ng-class="status" ></div>
+            </div>
+        </md-card>
+    </script>
+    <script type="text/ng-template" id="help-text-template.html">
+        <style>
+
+            md-dialog {
+                min-width: 40%;
+                min-height; 40%;
+            }
+
+            th {
+                color: white;
+            }
+        </style>
+        <md-dialog>
+            <md-dialog-content layout-margin="">
+                <div class="md-title">{{metric.title}}</div>
+                <hr/>
+                <table class="table">
+                    <tr><th class="awesome">Green</th><td>{{metric.contraint.green}}</td></tr>
+                    <tr><th class="ok">Yellow</th><td>{{metric.contraint.yellow}}</td></tr>
+                    <tr><th class="bad">Red</th><td>{{metric.contraint.red}}</td></tr>
+                </table>
+            </md-dialog-content>
+        </md-dialog>
+    </script>
+</apex:page>

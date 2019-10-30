@@ -1,0 +1,25 @@
+<aura:component >
+    <aura:attribute name="header" type="Object" />
+    <aura:attribute name="saveHandler" type="Aura.Action" />
+    <aura:attribute name="saveAndNewHandler" type="Aura.Action" />
+    <aura:attribute name="showSaveAndNewHandlerButton" type="Boolean" default="false" />
+    <aura:attribute name="record" type="SObject" description="The record being edited"/>
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="fieldSetName" type="String"/>
+    <aura:attribute name="objectName" type="String"/>
+    <aura:attribute name="errorResponse" type="Object" />
+    <aura:attribute name="customFieldInputs" type="Object" />
+    
+    <aura:attribute name="overlayPromise" type="Aura.Action" access="private" />
+    
+    <aura:method name="showModalUsingRecord" />
+    <aura:method name="showModalUsingQuery">
+        <aura:attribute name="Id" type="Id" />
+    </aura:method>
+    <aura:method name="hideModal" action="{! c.hideFieldSetFormOverlayLibrary }" />
+    <aura:method name="validate" />
+    <aura:method name="showValidationMessages" />
+    <aura:method name="clearValidationMessages" />
+    
+    <lightning:overlayLibrary aura:id="fieldSetFormOverlayLibrary" />
+</aura:component>

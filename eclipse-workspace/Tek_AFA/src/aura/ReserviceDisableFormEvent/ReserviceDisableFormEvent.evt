@@ -1,0 +1,3 @@
+<aura:event type="COMPONENT" description="Event that fires after the form has been submitted and the fieldsets need to be disabled" >
+    <aura:attribute name="setDisabled" type="Boolean" />
+</aura:event>

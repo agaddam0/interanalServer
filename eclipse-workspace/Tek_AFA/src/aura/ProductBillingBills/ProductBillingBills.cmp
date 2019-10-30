@@ -1,0 +1,122 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId,flexipage:availableForRecordHome"
+                controller="ProductBillingBillsController">
+
+    <aura:attribute name="loading" type="Boolean" default="true" access="private" />
+    <aura:attribute name="browseBillsResponse" type="ESBBillingServiceClient.BrowseBillsResponse" access="private" />
+    <aura:attribute name="billsFilterOptions" type="List" default="[
+        {'label': 'Current', 'value': 'Current'},
+        {'label': 'Archived', 'value': 'Historical'},
+        {'label': 'All', 'value': 'All'} ]" access="private" />
+    <aura:attribute name="billsByMCP" type="List" access="private" />
+    <aura:attribute name="billFilter" type="String" default="Current" access="private" />
+    <aura:attribute name="account" type="Account" access="private" />
+    <aura:attribute name="errorMessage" type="String" access="private" />
+    <aura:attribute name="loadingOnInit" type="Boolean" default="true" access="private" />
+    <aura:attribute name="loadedPayorNumbers" type="String[]" access="private" />
+    <aura:attribute name="billsCount" type="Integer" access="private" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <ltng:require styles="{! $Resource.QuickActionModalStyle }"/>
+
+    <aura:if isTrue="{! $Browser.formFactor != 'DESKTOP' }">
+            <lightning:button variant="base" label="Back" title="Back to Account" onclick="{! c.closeQuickAction }" />
+    </aura:if>
+    
+    <aura:if isTrue="{! and(!v.errorMessage , and(!v.loading, v.browseBillsResponse)) }">
+        <div class="af-bills-container">
+        <div class="af-bills-header slds-p-vertical_medium">
+        <h2 class="slds-text-heading_medium slds-m-bottom_medium slds-text-align_center">
+            {! v.account.Name } Bills - MCP: {! v.account.MCP_Number__c } <br />
+            {! v.account.PayorName__c } - Payor #(s): 
+            <aura:iteration items="{! v.loadedPayorNumbers }" var="payorNumber">
+                <aura:if isTrue="{! _index > 0 }">,&nbsp;</aura:if> {! payorNumber }
+            </aura:iteration>
+        </h2>
+    
+        <div class="slds-clearfix">
+            <div class="slds-float_left">
+                <lightning:radioGroup name="radioGroup"
+                                      options="{! v.billsFilterOptions }"
+                                      value="{! v.billFilter }"
+                                      onchange="{! c.onBillFilterChange }"
+                                      type="button"
+                                      variant="label-hidden"/>
+                <aura:if isTrue="{! v.billFilter == 'Historical' }">
+                <div class="slds-m-top_small">{! $Label.c.Product_Bills_Historical_Desc }</div>
+                </aura:if>
+                
+                <aura:if isTrue="{! v.billFilter == 'Current' }">
+                <div class="slds-m-top_small">{! $Label.c.Product_Bills_Current_Desc }</div>
+                </aura:if>
+            </div>
+
+            <span class="slds-float_right">{! v.billsCount } Bill(s)</span>
+        </div>
+        </div>
+        
+        <aura:iteration items="{! v.billsByMCP }" var="mcpGrouping">
+            <div class="slds-text-heading_medium slds-m-bottom_small">{! mcpGrouping.CustomerName } - MCP: {! mcpGrouping.MCP }</div>
+
+            <table class="slds-table slds-table_bordered slds-table_cell-buffer slds-table_col-bordered slds-table_striped slds-m-bottom_medium af-bill-table">
+                <thead class="{! v.billFilter == 'All' ? 'af-all-filter' : '' }">
+                <tr>
+                    <th scope="col" aura:id="billCol">Invoice #</th>
+                    <th scope="col" aura:id="billCol">Bill Description</th>
+                    <th scope="col" aura:id="billCol">Invoice Date</th>
+                    <th scope="col" aura:id="billCol">Bill Period</th>
+                    <th scope="col" aura:id="billCol" class="slds-text-align_right">Billed Amount</th>
+                    <th scope="col" aura:id="billCol" class="slds-text-align_right">Reconciled Amount</th>
+    
+                    <th scope="col" aura-id="billCol">Status</th>
+                    <th scope="col" aura-id="billCol">Bill Type</th>
+                    <th scope="col" aura-id="billCol">Distribution Id</th>
+                </tr>
+                </thead>
+                
+                <tbody>
+                <aura:iteration items="{! mcpGrouping.Bills }" var="bill">
+                <tr>
+                    <td><a href="{! bill.billDetailURL }" target="_blank" title="View Bill Details in new tab">{! bill.InvoiceNumber }</a></td>
+                    <td>{! bill.BillDescription }</td>
+                    <td>{! bill.InvoiceDate }</td>
+                    <td>{! bill.BillPeriodFromDate } - {! bill.BillPeriodToDate }</td>
+                    <td class="slds-text-align_right">
+                       <lightning:formattedNumber value="{! bill.BilledAmount }" style="currency" currencyCode="USD"/>
+                    </td>
+                    <td class="slds-text-align_right">
+                       <lightning:formattedNumber value="{! bill.ReconciledAmount }" style="currency" currencyCode="USD"/>
+                    </td>
+    
+                    <td>{! bill.BillStatus }</td>
+                    <td>{! bill.BillType }</td>
+                    <td>{! bill.DistributionId }</td>
+                </tr>
+                
+                </aura:iteration>
+                </tbody>
+            </table>
+        </aura:iteration>
+        </div>
+    </aura:if>
+
+    <aura:if isTrue="{! and(v.loading, !v.errorMessage) }">
+       <div class="slds-text-align_center slds-text-heading_medium slds-m-top_medium">
+          Loading {! v.billFilter } Bills...
+       </div>
+    
+       <div class="">
+           <div aura:id="wait" role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+               <div class="slds-spinner__dot-a"></div>
+               <div class="slds-spinner__dot-b"></div>
+           </div>
+        </div>
+
+    </aura:if>
+
+    <aura:if isTrue="{! v.errorMessage }">
+        <div class="af-error-container slds-m-top_medium">
+            Error: {! v.errorMessage }
+        </div>
+    </aura:if>
+</aura:component>

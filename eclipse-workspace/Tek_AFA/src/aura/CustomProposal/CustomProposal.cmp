@@ -1,0 +1,169 @@
+<aura:component implements="force:hasRecordId,force:lightningQuickAction"  controller="NewProposalCTRL" >
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="valueChange" event="c:SelectChange" action="{!c.handleEvent}" />
+    <aura:handler name="updateLineItem" event="c:OpportunityProductsChanged" action="{!c.handleLineItemEvent}"/>
+    <aura:registerEvent name="navigate" type="c:navigateToCmp" />
+    
+    <aura:attribute name="Proposal" 			type="Proposal__c" default="{'sobjectType' : 'Proposal__c'}"/>
+    <aura:attribute name="LoggedInUser"			type="User" />
+    <aura:attribute name="Account"				type="Account" />
+    <aura:attribute name="OpportunityProducts" 	type="OpportunityLineItem[]" />
+    <aura:attribute name="validForm" 			type="Boolean" default="false" />
+    <aura:attribute name="updateAccountFields" 	type="Boolean" default="false" />
+    <aura:attribute name="updateUserFields" 	type="Boolean" default="false" />
+    
+    <header class="slds-modal__header header">
+        <h2 class="slds-text-heading_medium slds-hyphenate">Custom Proposal</h2>
+    </header> 
+    
+    <div class="main slds-is-relative">
+        <div aura:id="errorContainer"></div>
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small" >Proposal Information</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="Custom_ProposalInfo"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="ProposalInfoFieldSet" />
+            </div>
+        </div>
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small" >Benefits &amp; Services</span>
+            </h3>
+            <br/>
+            <div aura:id="ProductsContainer"></div>
+            
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="Custom_LTDPlan"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomLTDPlan" />
+                <c:FieldSetForm fieldSetName="Custom_LTD_Details"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomLTDDetails" />
+                <c:FieldSetForm fieldSetName="Custom_STDPlan"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomSTDPlan" />
+                <c:FieldSetForm fieldSetName="Custom_STD_Details"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomSTDDetails" />
+                <c:FieldSetForm fieldSetName="Custom_Benefits_Services"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomBenefits" />
+                <br/>
+                <div class="slds-box">
+                    <div class="slds-text-body_small">{!$Label.c.Upload_Files_For_Proposal}</div>
+                    <br/>
+                    <div aura:id="UploadContainer"></div>
+                </div>
+            </div>            
+        </div>
+        
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small" >Rep Information</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="Custom_RepInfo_1"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomRepInfo1" />
+                <c:FieldSetForm fieldSetName="Custom_BranchOffice"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomBranchOffice" />
+                <c:FieldSetForm fieldSetName="Custom_BrokerInvolved"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomBrokerInvolved" />
+                <c:FieldSetForm fieldSetName="Custom_BrokerName"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomBrokerName" />
+            </div>            
+        </div>
+        
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small" >Delivery</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="Custom_Delivery_1"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomDelivery1" />
+                <c:FieldSetForm fieldSetName="Custom_Delivery_Print"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomDeliveryPrint" />
+                <c:FieldSetForm fieldSetName="Custom_Delivery_ShipAddress"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="CustomDeliveryShipping" />
+                
+                <div aura:id="ShipToGroup">
+                    <lightning:input aura:id="AccountStreet" name="AccountStreet" label="Group Street"
+                                     value="{!v.Account.ShippingStreet}" required="true"/>
+                    <lightning:input aura:id="AccountCity" name="AccountCity" label="Group City"
+                                     value="{!v.Account.ShippingCity}" required="true"/>
+                    <lightning:input aura:id="AccountState" name="AccountState" label="Group State"
+                                     value="{!v.Account.ShippingState}" required="true"/>
+                    <lightning:input aura:id="AccountZip" name="AccountZip" label="Group Zip"
+                                     value="{!v.Account.ShippingPostalCode}" required="true"/>
+                </div>
+                
+                <div aura:id="ShipToMe">
+                    <lightning:input aura:id="UserStreet" name="UserStreet" label="Street"
+                                     value="{!v.LoggedInUser.Street}" required="true"/>
+                    <lightning:input aura:id="UserCity" name="UserCity" label="City"
+                                     value="{!v.LoggedInUser.City}" required="true"/>
+                    <lightning:input aura:id="UserState" name="UserState" label="State"
+                                     value="{!v.LoggedInUser.State}" required="true"/>
+                    <lightning:input aura:id="UserZip" name="UserZip" label="Zip"
+                                     value="{!v.LoggedInUser.PostalCode}" required="true"/>
+                </div>
+                
+            </div>            
+        </div>
+        
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small" >Additional Notes</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="Custom_AddNotes"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="AdditionalNotes" />                
+            </div>            
+        </div>
+    </div>
+    
+    <lightning:spinner aura:id="mySpinner" />
+    
+    <footer class="slds-modal__footer footer">
+        <ui:button aura:id="submitBtn" label="Submit" press="{!c.handleSubmit}" class="slds-button slds-button--brand" />
+        <ui:button label="Cancel" press="{!c.handleCancel}" class="slds-button slds-button--neutral" />
+    </footer>    
+</aura:component>

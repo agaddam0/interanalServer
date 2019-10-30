@@ -1,0 +1,43 @@
+<aura:component >
+    <aura:attribute name="exception" type="Exception" />
+    <aura:attribute name="title" type="String" default="Error" />
+    <aura:attribute name="show" type="Boolean" default="false" />
+    
+    <aura:attribute name="internalShow" type="Boolean" default="true" access="private" />
+    
+    <aura:handler name="change" value="{!v.exception}" action="{!c.handleExceptionChange}"/>
+	
+	<div class="{! and(v.show, v.internalShow) ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header slds-theme--error">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">{! v.title }</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <aura:if isTrue="{! v.exception.message }">
+                    {! v.exception.message }
+                    </aura:if>
+                    
+                    <aura:if isTrue="{! v.exception.length > 0 }">
+                        <aura:iteration items="{! v.exception }" var="error">
+                            <div>Error(s)</div>
+                            <ul class="slds-list_dotted">
+                            <aura:iteration items="{! error.pageErrors }" var="pageError">
+	                            <li>
+	                                {! pageError.message }
+	                            </li>
+                            </aura:iteration>
+                            </ul>
+                        </aura:iteration>
+                    </aura:if>
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeModal }">Close</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+</aura:component>

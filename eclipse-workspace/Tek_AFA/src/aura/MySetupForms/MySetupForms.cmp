@@ -1,0 +1,73 @@
+<aura:component implements="flexipage:availableForAllPageTypes" access="global"
+                controller="MySetupFormsController">
+
+    <aura:attribute name="ComponentTitle" type="String" />
+    <aura:attribute name="DisplayLimit" type="String" required="true" />
+    <aura:attribute name="Statuses" type="String" required="true" />
+    <aura:attribute name="TitleHelpText" type="String" />
+    
+    <aura:attribute name="Context" type="MySetupFormsController.Context" access="private" />
+    <aura:attribute name="StatusFilter" type="String" access="private" />
+    <aura:attribute name="OppOwnerIdFilter" type="String" access="private" />
+    <aura:attribute name="initialLoading" type="Boolean" access="private" default="false" />
+    <aura:attribute name="AvailableStatuses" type="String[]" access="private" />
+    <aura:attribute name="AllEnrollmentOpps" type="MySetupFormsController.EnrollmentOpportunity[]" access="private" />
+    <aura:attribute name="PageEnrollmentOpps" type="MySetupFormsController.EnrollmentOpportunity[]" access="private" />
+    <aura:attribute name="maxSlice" type="Integer" access="private" default="1" />
+    <aura:attribute name="sliceNo" type="Integer" access="private" default="1"/>
+    <aura:attribute name="showLess" type="boolean" access="private" default="false"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    <aura:handler name="change" value="{! v.OppOwnerIdFilter }" action="{! c.onOppOwnerIdFilterChanged }" />
+    
+    <div class="slds-box">
+        <h3 class="slds-text-heading_small">{! v.ComponentTitle }
+            <aura:if isTrue="{!not(empty(v.TitleHelpText))}">
+                <c:strike_tooltip placement="top" text="{!v.TitleHelpText}" class="si-help-text-icon slds-m-horizontal--x-small">
+                </c:strike_tooltip>
+            </aura:if>
+        </h3>
+    
+        <div class="slds-m-vertical_medium">
+		    <lightning:select aura:id="statusSelect" name="status" label="Status" required="true" value="{!v.StatusFilter}" onchange="{!c.onStatusFilterChanged}">
+		        <aura:iteration items="{!v.AvailableStatuses}" var="status">
+		            <option value="{!status}" text="{!status}" selected="{! status == v.StatusFilter }"></option>
+		        </aura:iteration>
+		    </lightning:select>
+		    
+		    <c:strike_lookup searchField="Name"
+		                     order="Name"
+		                     label="Opportunity Owner"
+		                     limit="10"
+		                     class="slds-p-vertical_xx-small"
+		                     object="User"
+		                     loadingMessage="Loading..."
+		                     errorMessage="Invalid user input"
+		                     value="{! v.OppOwnerIdFilter }"
+		                      />
+        </div>
+	    
+	    <div class="af-setup-forms-container">
+	        <aura:iteration items="{! v.PageEnrollmentOpps }" var="enrollmentOpp">
+	            <lightning:card >
+	                <aura:set attribute="title">
+                       <a class="slds-text-body_regular" onclick="{! c.onEnrollmentOpportunityClicked }" data-enrollment-opp-id="{! enrollmentOpp.Record.Id }">{# enrollmentOpp.Record.Name }</a>
+                    </aura:set>
+                    
+                    <div class="slds-card__body_inner">
+                        <div>Enrollment Start Date: <ui:outputDate value="{!enrollmentOpp.Record.Enrollment_Start_Date__c}"/></div>
+	                    <aura:iteration items="{! enrollmentOpp.SetupForms }" var="setupForm" indexVar="setupFormIndex">
+	                        <span class="af-setup-form-name">{# setupFormIndex > 0 ? ' | ' : '' } {# setupForm.Name }</span>
+	                    </aura:iteration>
+                    </div>
+	            </lightning:card>
+	        </aura:iteration>
+
+	        <c:Paginator aura:id="paginator" PageSize="{! v.DisplayLimit }" AllItems="{! v.AllEnrollmentOpps }" DisplayedItems="{! v.PageEnrollmentOpps }" />
+
+	        <aura:if isTrue="{! or(!v.Context.EnrollmentOpportunities, v.Context.EnrollmentOpportunities.length == 0) }">
+	            No Enrollment Opportunities Found
+	        </aura:if>
+	    </div>
+    </div>
+</aura:component>

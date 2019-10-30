@@ -1,0 +1,49 @@
+<aura:component implements="force:appHostable,lightning:isUrlAddressable" controller="AppointmentSchedulerController">
+    <aura:attribute name="Accounts" type="Account[]" access="private" />
+    <aura:attribute name="EmployerAppointmentSchedulerURL" type="String" />
+    <aura:attribute name="EmployerAppointmentSchedulerErrorMessage" type="String" />
+
+    <aura:attribute name="preselectedAccountId" type="String" access="private" />
+    <aura:attribute name="showSpinner" type="Boolean" default="true" access="private" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <div class="af-appointment-scheduler-container slds-is-relative slds-p-around_medium">
+        <h1 class="slds-text-heading_large slds-m-bottom_large">Appointment Scheduler</h1>
+
+        <div class="slds-form-element">
+            <label class="slds-form-element__label">
+                <span>Select Account</span>
+
+                <lightning:helptext content="{! $Label.c.Appointment_Scheduler_Select_Account_Help_Text }" class="slds-m-left_x-small slds-float_right" />
+            </label>
+
+            <div class="slds-form-element__control slds-grow af-lightning-input-container">
+                <select class="chosen-select" onchange="{! c.onEmployerSelected }">
+                    <option value="">Search or select from list below</option>
+
+                    <aura:iteration items="{! v.Accounts }" var="account">
+                       <option value="{! account.Id }" selected="{! account.Id == v.preselectedAccountId ? 'selected' : '' }">{! account.Account_Name_with_Alias__c }</option>
+                    </aura:iteration>
+                </select>
+            </div>
+        </div>
+
+        <aura:if isTrue="{! v.EmployerAppointmentSchedulerURL }">
+        <div class="slds-m-top_large">
+            <iframe src="{!v.EmployerAppointmentSchedulerURL}" width="100%" height="900px" />
+        </div>
+        </aura:if>
+        
+        <aura:if isTrue="{! v.EmployerAppointmentSchedulerErrorMessage }">
+        <h2 class="slds-text-heading_medium slds-m-top_large">Error Message</h2>
+        <div>
+            {! v.EmployerAppointmentSchedulerErrorMessage }
+        </div>
+        </aura:if>
+        
+        <lightning:spinner aura:id="mySpinner" class="{! v.showSpinner ? 'slds-show' : 'slds-hide' }" />
+    </div>
+
+    <ltng:require scripts='/resource/JQuery_2_1_3,/resource/Chosen_JQuery_Plugin' styles="/resource/Chosen_Jquery_Plugin_CSS,/resource/Chosen_JQuery_Plugin_Sprite" />
+</aura:component>

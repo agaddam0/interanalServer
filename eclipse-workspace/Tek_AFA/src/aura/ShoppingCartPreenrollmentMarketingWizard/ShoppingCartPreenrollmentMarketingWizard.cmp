@@ -1,0 +1,10 @@
+<aura:component>
+    <div class="slds-box slds-theme_default slds-align_absolute-center af-pem-marketing-wizard">
+        <span><img class="af-pem-marketing-wizard-icon" src="{!$Resource.ShoppingCartIcons + '/Icons/Pre_Enrollment_Marketing_Wizard.png'}" /></span>
+        <span class="af-title slds-text-heading_large">PRE-ENROLLMENT MARKETING WIZARD</span>
+        <span class="slds-p-left_medium"><lightning:button label="Start Now"
+                                variant="neutral"
+                                class="af-start-now-button"
+                                onclick="{!c.navigateToPreenrollment}" /></span>
+    </div>
+</aura:component>

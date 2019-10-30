@@ -1,0 +1,29 @@
+.THIS {
+    background-color : white;
+}
+
+.THIS .af-width {
+    width : 100%;
+}
+
+.THIS .af-progress-button {
+    background-color: token(AFAgreen2);
+    border: 1px solid green;
+    font-weight: bold;
+    color: white;
+    height: 40px;
+    width: 50%;
+    font-size: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+.THIS .af-progress-button:hover {
+    background-color: token(AFAgreen3);
+}
+
+.THIS .af-form-title{
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25rem;
+}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AuraDefinitionBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>41.0</apiVersion>
+    <description>This component is used to determine the type of field and display the output accordingly.  It takes a lot of logic out of the parent component to make things cleaner where used.</description>
+</AuraDefinitionBundle>

@@ -1,0 +1,24 @@
+<apex:page controller="UploadFileCTRL" showHeader="false" sidebar="false">
+    <style type="text/css">
+        body{
+        font-size: 14px;
+        }
+    </style>
+    <apex:outputPanel rendered="{!refreshPage}">
+        <script>
+        	parent.location.reload();
+        </script>
+    </apex:outputPanel>
+    <apex:form >
+        <apex:inputFile value="{!fileBody}" filename="{!fileName}"/>
+        <apex:commandButton action="{!Upload}" value="Upload"/><br/>
+        <apex:repeat value="{!files}" var="f">
+            <br/>
+            <apex:commandLink action="{!DeleteFile}" value="Del" style="color:blue;">
+                <apex:param name="fileToDelete" value="{!f.ContentDocumentId}"></apex:param>
+            </apex:commandLink>
+            &nbsp;&nbsp;&nbsp;
+            <apex:outputField value="{!f.ContentDocument.Title}"/>
+        </apex:repeat>
+    </apex:form>
+</apex:page>

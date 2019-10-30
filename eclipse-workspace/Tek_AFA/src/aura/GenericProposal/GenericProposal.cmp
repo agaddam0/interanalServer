@@ -1,0 +1,115 @@
+<aura:component implements="force:hasRecordId" controller="NewProposalCTRL">
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="valueChange" event="c:SelectChange" action="{!c.handleEvent}" />
+    <aura:handler name="blur" value="{!v.Proposal.Group_Display_Name__c}" action="{!c.handleChange}"/>
+    <aura:registerEvent name="navigate" type="c:navigateToCmp" />
+    
+    <aura:attribute name="Proposal" 			type="Proposal__c" default="{'sobjectType' : 'Proposal__c'}"/>
+    <aura:attribute name="validForm" 			type="Boolean" default="false" />
+    <aura:attribute name="LoggedInUser"			type="User" />
+    <aura:attribute name="updateUserFields" 	type="Boolean" default="false" />
+    
+    <header class="slds-modal__header header">
+        <h2 class="slds-text-heading_medium slds-hyphenate">Generic Proposal</h2>
+    </header> 
+    
+    <div class="main slds-is-relative">
+        <div aura:Id="errorContainer"></div>
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small" >Proposal Information</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="Generic_ProposalInfo"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="ProposalInfoFieldSet" />
+            </div>
+        </div>
+        
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small">Rep Information</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <div class="slds-grid slds-grid_vertical-align-start">
+                	<div class="slds-col slds-p-right_large slds-size_1-of-2">
+                        <c:FieldSetForm fieldSetName="Generic_RepInfo_Left"
+                                        objectName="Proposal__c"
+                                        record="{! v.Proposal }"
+                                        loadOnInit="false"
+                                        aura:id="RepInfoLeft" />
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <c:FieldSetForm fieldSetName="Generic_RepInfo_Right"
+                                        objectName="Proposal__c"
+                                        record="{! v.Proposal }"
+                                        loadOnInit="false"
+                                        aura:id="RepInfoRight" />
+                        <c:FieldSetForm fieldSetName="Generic_BranchOffice"
+                                        objectName="Proposal__c"
+                                        record="{! v.Proposal }"
+                                        loadOnInit="false"
+                                        aura:id="RepInfoBranchOffice" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small">Delivery</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="Generic_Delivery"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="DeliveryFieldSet" />
+                <c:FieldSetForm fieldSetName="Generic_ShipTo"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="DeliveryShipTo" />
+                <c:FieldSetForm fieldSetName="Generic_ShippingAddress"
+                                objectName="Proposal__c"
+                                record="{! v.Proposal }"
+                                loadOnInit="false"
+                                aura:id="GenericDeliveryShipping" />
+                
+                <div aura:id="ShipToMe">
+                    <lightning:input aura:id="UserStreet" name="UserStreet" label="Street"
+                                     value="{!v.LoggedInUser.Street}" required="true"/>
+                    <lightning:input aura:id="UserCity" name="UserCity" label="City"
+                                     value="{!v.LoggedInUser.City}" required="true"/>
+                    <lightning:input aura:id="UserState" name="UserState" label="State"
+                                     value="{!v.LoggedInUser.State}" required="true"/>
+                    <lightning:input aura:id="UserZip" name="UserZip" label="Zip"
+                                     value="{!v.LoggedInUser.PostalCode}" required="true"/>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-theme_shade">
+                <span class="slds-truncate slds-p-horizontal_small">Additional Notes</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <c:FieldSetForm fieldSetName="Generic_AddNotes"
+                                        objectName="Proposal__c"
+                                        record="{! v.Proposal }"
+                                        loadOnInit="false"
+                                        aura:id="AdditionalNotes" />
+            </div>
+        </div>
+        
+    </div>
+    
+    <lightning:spinner aura:id="mySpinner" />
+    
+    <footer class="slds-modal__footer footer">
+        <ui:button aura:id="submitBtn" label="Submit" press="{!c.handleSubmit}" class="slds-button slds-button--brand" />
+        <ui:button label="Cancel" press="{!c.handleCancel}" class="slds-button slds-button--neutral" />
+    </footer>    
+</aura:component>

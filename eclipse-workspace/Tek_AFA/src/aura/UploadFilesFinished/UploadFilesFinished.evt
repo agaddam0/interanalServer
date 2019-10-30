@@ -1,0 +1,3 @@
+<aura:event type="Component">
+     <aura:attribute name="Files" type="Object[]" description="The uploaded files" access="global" />
+</aura:event>

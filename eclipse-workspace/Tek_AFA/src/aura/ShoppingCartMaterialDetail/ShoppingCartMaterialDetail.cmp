@@ -1,0 +1,196 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" controller="ShoppingCartController">
+    <aura:handler event="c:ShoppingCartNavigationEvent" action="{!c.loadRecord}" />
+    
+    <aura:attribute name="material" type="Object" />
+    <aura:attribute name="quantity" type="Integer" default="0" />
+    <aura:attribute name="returnLocation" type="String" default="" />
+    <aura:attribute name="isOpen" type="Boolean" default="false" />
+    
+    <aura:handler event="aura:doneRendering" action="{!c.removeImageContextMenu}"/>
+    
+    <aura:registerEvent name="sendOrderDetails" type="c:ShoppingCartOrderDetailsEvent" />
+    <aura:registerEvent name="sentFavorite" type="c:ShoppingCartUpdateFavoritesList" />
+    
+    <div clas="slds-box">
+        <div class="slds-p-left_large slds-p-vertical_large">
+            
+            <aura:if isTrue="{! !v.returnLocation }">
+                <div class="slds-p-left_xx-large" onclick="{!c.backToSearchResults}">
+                    <a class="backLink">&lt; Back to Results</a>
+                </div>
+            </aura:if>
+            
+            <aura:if isTrue="{! v.returnLocation == 'HomePageView' }">
+                <div class="slds-p-left_xx-large" onclick="{!c.backToCatalogHome}">
+                    <a class="backLink">&lt; Back to Catalog Home</a>
+                </div>
+            </aura:if>
+            
+            <aura:if isTrue="{! v.returnLocation == 'CartReviewView' }">
+                <div class="slds-p-left_xx-large" onclick="{!c.backToCart}">
+                    <a class="backLink">&lt; Back to Cart</a>
+                </div>
+            </aura:if>
+            
+            <aura:if isTrue="{! v.returnLocation == 'FavoritesView' }">
+                <div class="slds-p-left_xx-large" onclick="{!c.backToFavorites}">
+                    <a class="backLink">&lt; Back to Favorites</a>
+                </div>
+            </aura:if>
+            
+            <aura:if isTrue="{! v.returnLocation == 'OrderHistoryView' }">
+                <div class="slds-p-left_xx-large" onclick="{!c.backToHistory}">
+                    <a class="backLink">&lt; Back to Order History</a>
+                </div>
+            </aura:if>
+            
+            <div class="slds-grid slds-is-relative slds-p-around_x-large">
+                
+                <div class="slds-size_1-of-2 slds-text-align_center">
+                    <div class="image-container" onclick="{!c.openModal}">
+                        <img src='{! v.material.Record.Thumbnail_URL__c }' class="af-thumbnailImg af-image"/>
+                        <aura:renderIf isTrue="{!v.material.Record.New__c == true}">
+                            <div class="corner-triangle"><span class="triangle-text">New!</span></div>
+                        </aura:renderIf>
+                    </div>                    
+                </div>
+                
+                <div class="slds-size_1-of-2">
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-size_12-of-12 slds-text-color_weak material-title">
+                            <b>{!v.material.Record.Title__c}</b>
+                        </div>
+                        
+                        <div class="slds-size_1-of-12 favorite">
+                            <button class="slds-button slds-button_icon slds-button_icon-bare" 
+                                    data-favorite="{! v.material.IsFavorite}" data-recId="{! v.material.Record.Id}"
+                                    onclick="{!c.toggleFavorite}">
+                                <img src="{!$Resource.ShoppingCartIcons + '/Icons/05_heart.png'}" class="{! v.material.IsFavorite ? 'slds-show' : 'slds-hide'}" />
+                                <img src="{!$Resource.ShoppingCartIcons + '/Icons/05_heart_gray.png'}" class="{! v.material.IsFavorite ? 'slds-hide' : 'slds-show'}" />
+                            </button>
+                        </div>
+                        
+                        <div class="slds-size_11-of-12 slds-p-top_xx-small slds-text-color_weak">
+                            <b>{!v.material.Record.Material_Number__c}</b>
+                        </div>
+                        
+                        <div class="slds-size_11-of-12">
+                            <p>
+                                {!v.material.Record.Description__c}
+                            </p>
+                        </div>
+                        
+                        <div class="{! v.material.Record.Additional_Information_Needed__c != null ? 'slds-size_11-of-12 slds-p-top_medium' : 'slds-size_11-of-12 slds-p-top_medium slds-hide'}">
+                        	<p>
+                                <b>Additional Information Required Prior To Ordering:</b>
+                                <lightning:formattedRichText value="{!v.material.Record.Additional_Information_Needed__c}"/>
+                            </p>
+                        </div>
+                        
+                        <div class="slds-size_10-of-12">
+                            <c:ShoppingCartAvailableFormats record="{! v.material.Record }" />
+                        </div> 
+                        
+                        <div class="slds-size_2-of-12"/>
+                        
+                        <div class="slds-size_12-of-12 slds-p-top_large">
+                        	<aura:iteration items="{!v.material.Record.Marketing_Material_Tags__r}" var="tag" >
+                                <span class="slds-pill pill-tag">
+                                    <span class="slds-pill__label">{!tag.Tag__r.Name}</span>
+                                </span>
+                            </aura:iteration>
+                        </div>
+                        
+                        <div class="{! v.material.Record.Warning_Details__c != null ? 'slds-size_12-of-12 slds-grid slds-wrap slds-p-top_large' : 'slds-size_12-of-12 slds-grid slds-wrap slds-p-top_large slds-hide'}">
+                            <div class="slds-size_1-of-12">
+                                <button class="slds-button slds-button_icon slds-button_icon-bare">
+                                    <lightning:icon iconName="utility:warning" size="small" variant="warning"/>
+                                </button>
+                            </div>
+                            <div class="slds-size_10-of-12">
+                                <b>Warning! </b> {!v.material.Record.Warning_Details__c}
+                            </div>
+                        </div>
+                        
+                        <!-- hidden for future implementation -->
+                        <div class="slds-size_11-of-12 slds-grid slds-wrap slds-p-top_x-small slds-hide">
+                        	<div class="slds-size_4-of-4 slds-p-left_xx-large slds-p-vertical_medium">
+                            	80% <lightning:icon iconName="utility:like" size="small" class="thumbActive"/>                                
+                            </div>
+                            <div class="slds_size_4-of-4 slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2 slds-align_absolute-center">
+                                    <div class="rateText">
+                                        Rate this item
+                                    </div>                                	
+                                </div>
+                                <div class="slds-size_1-of-4 slds-align_absolute-center thumbDivider slds-p-right_small">
+                                    <button class="slds-button slds-button_icon slds-button_icon-bare">
+                                        <lightning:icon iconName="utility:like" size="small" class="thumbActive"/>
+                                    </button>
+                                </div>
+                                <div class="slds-size_1-of-4 slds-align_absolute-center  slds-p-left_small">
+                                	<button class="slds-button slds-button_icon slds-button_icon-bare">
+                                        <lightning:icon iconName="utility:dislike" size="small" class="thumbInactive"/>
+                                    </button>
+                                </div>
+                            </div>
+                        
+                        </div>
+                        
+                        <aura:if isTrue="{! v.material.Record.Not_Available_For_Order__c == False }">
+                        <div class="slds-size_12-of-12 slds-grid slds-p-top_large">
+                        	<div class="slds-size_3-of-6 slds-grid slds-text-align_center">
+                                <div class="slds-size_1-of-4">
+                                    <div class="slds-text-color_weak">
+                                        <b>Quantity</b>
+                                    </div>
+                                    <div class="minMaxText">
+                                        ({! v.material.Record.Quantity_Minimum__c } - {! v.material.Record.Quantity_Maximum__c })
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-4">
+                                    <ui:inputNumber value="{!v.quantity}" />
+                                </div> 
+                                <div class="slds-size_1-of-4 slds-align_absolute-center each-text">
+                                    <ui:outputCurrency value="{! v.material.Record.Price__c }" />&nbsp;each
+                                </div>
+                            </div>
+                            <div class="slds-size_3-of-6 slds-align_absolute-center">
+                                <lightning:button variant="brand" label="Add to Cart" class="button-add-to-cart" onclick="{!c.addToCart}"/>
+                            </div>
+                        </div>
+                        </aura:if>
+                        
+                    </div>
+                    
+                </div>
+                
+            </div>
+            
+            <!-- Future implementation
+            <div class="slds-p-vertical_large">
+                <c:ItemSlider />
+            </div>
+            -->
+        </div>
+    </div>
+    
+    <!-- Image preview modal begin -->
+    <aura:if isTrue="{!v.isOpen}">
+        <div style="height: 640px;">
+        	<section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open af-modal">
+            	<div class="slds-modal__container">
+                	<header class="slds-modal__header slds-modal__header_empty">
+                    	<lightning:buttonIcon iconName="utility:close" class="slds-modal__close" variant="bare-inverse" 
+                                              onclick="{!c.closeModal}" size="large"/>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium slds-text-align_center">
+                        <img src='{! v.material.Record.Thumbnail_URL__c }' class="af-image modal-image"/>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>        
+    </aura:if>
+    <!-- Image preview modal end -->
+</aura:component>

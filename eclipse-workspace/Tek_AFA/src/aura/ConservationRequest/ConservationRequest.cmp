@@ -1,0 +1,47 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId"
+                controller="PolicyholderChangeRequestEXT">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="valueChange" event="c:SelectChange" action="{!c.handleEvent}" />
+    <aura:attribute name="ChangeRequest" type="Change_Request__c" default="{'sobjectType' : 'Change_Request__c'}"/>
+    <aura:attribute name="validForm" type="Boolean" default="false" />
+	
+    <header class="slds-modal__header header">
+        <h2 class="slds-text-heading_medium slds-hyphenate">New Conservation Request</h2>
+    </header>
+    
+    <form class="slds-form--stacked">
+        <div class="slds-form-element">
+            <div class="slds-form-element__control">
+                <c:PicklistComponent id="paidByGroup" fieldName="Last_Month_Paid_by_Group__c" 
+                                         sObjectName="Change_Request__c" required="true"
+                                         label="Last Month Paid by Group"
+                                         labelClass="slds-form-element__label"
+                                         value="{!v.ChangeRequest.Last_Month_Paid_by_Group__c}"/>
+            </div>
+        </div>
+        <div class="slds-form-element">
+            <div class="slds-form-element__control">
+                <c:PicklistComponent id="ReasonForLeaving" fieldName="Reason_for_Leaving_Employment__c" 
+                                         sObjectName="Change_Request__c" required="true"
+                                         label="Reason for Leaving Employment"
+                                         labelClass="slds-form-element__label"
+                                         value="{!v.ChangeRequest.Reason_for_Leaving_Employment__c}"/>
+            </div>
+        </div>
+        <div class="slds-form-element">
+            <ui:inputCheckbox aura:id="flexCheck" label="Is Customer a Flex Participant" class="slds-checkbox" value="{!v.ChangeRequest.Is_customer_a_Flex_participant__c}" />
+        </div>
+        <div class="slds-form-element">
+            <div class="slds-form-element__control">
+                <ui:inputTextArea aura:id="comments" label="Additional Comments" class="slds-textarea" rows="3"
+                              labelClass="slds-form-element__label" value="{!v.ChangeRequest.Additional_Info__c}"/>
+            </div>
+        </div>
+    </form>
+    
+    
+    <footer class="slds-modal__footer footer">
+        <ui:button label="Submit" disabled="{!!v.validForm}" press="{!c.handleSubmit}" class="slds-button slds-button--brand" />
+        <ui:button label="Cancel" press="{!c.handleCancel}" class="slds-button slds-button--neutral" />
+    </footer>
+</aura:component>

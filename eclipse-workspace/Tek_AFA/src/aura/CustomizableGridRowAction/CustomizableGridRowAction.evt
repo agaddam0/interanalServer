@@ -1,0 +1,4 @@
+<aura:event type="COMPONENT" description="Dispatched when a row action is invoked">
+    <aura:attribute name="actionName" type="String" description="The name of the row action" access="global" />
+    <aura:attribute name="record" type="Object" description="The record that's bound to this row." access="global"/>
+</aura:event>

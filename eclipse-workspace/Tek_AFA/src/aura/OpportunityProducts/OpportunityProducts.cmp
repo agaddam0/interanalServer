@@ -1,0 +1,152 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" controller="OpportunityProductsCTRL">
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:registerEvent name="updateLineItem" type="c:OpportunityProductsChanged" />
+    
+    <aura:attribute name="OpportunityProducts" type="OpportunityLineItem[]"/>
+    <aura:attribute name="ProductCatalog" type="PricebookEntry[]"/>
+    <aura:attribute name="searchResults" type="PricebookEntry[]"/>
+    <aura:attribute name="SelectedProducts" type="String[]"/>
+    <aura:attribute name="SelectedNum" type="Integer" default="0"/>
+    <aura:attribute name="isOpen" type="Boolean" />
+    
+    <div class="slds-box slds-clearfix">
+        
+        <div class="slds-clearfix">
+            <div class="slds-float_right slds-p-bottom_small">
+                <ui:button aura:id="addProducts" label="Add Products" press="{!c.openModal}" class="slds-button slds-button_neutral" />
+            </div>
+        </div>
+        
+        <div class="slds-scrollable" style="height: 8rem;">
+            <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                <thead>
+                    <tr class="slds-text-title_caps">
+                        <th scope="col" style="width: 3.75rem;"></th>
+                        <th scope="col">
+                            <div class="slds-truncate" title="Product">Product</div>
+                        </th>
+                        <th scope="col">
+                            <div class="slds-truncate" title="Description">Description</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration var="OppProduct" items="{!v.OpportunityProducts}">
+                        <tr>
+                            <td scope="row" data-label="Remove">
+                                <div class="slds-truncate">
+                                    <a href="" data-recId="{!OppProduct.Id}" onclick="{!c.deleteLineItem}">Del</a></div>
+                            </td>
+                            <td scope="row" data-label="Product">
+                                <div class="slds-truncate" title="{!OppProduct.Product2.Name}">{!OppProduct.Product2.Name}</div>
+                            </td>
+                            <td scope="row" data-label="Description">
+                                <div class="slds-truncate" title="{!OppProduct.Product2.Description}">{!OppProduct.Product2.Description}</div>
+                            </td>
+                        </tr>
+                    </aura:iteration>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Modal Start.. Hang on to your hat folks..this is a big one -->
+    <aura:if isTrue="{!v.isOpen}">
+        <div style="height: 640px;">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large slds-list-builder" aria-labelledby="id-of-modalheader-h2" aria-modal="true" aria-describedby="modal-content-id-1">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close" class="slds-modal__close" onclick="{!c.closeModal}"/>
+                        <h2 id="id-of-modalheader-h2" class="slds-text-heading_medium">Add Products</h2>
+                    </header>
+                    <div class="slds-modal__content slds-grid slds-grow" id="modal-content-id-1">
+                        <div class="slds-grid slds-grid_vertical">
+                            <div class="slds-p-vertical_x-small slds-p-horizontal_large slds-shrink-none slds-theme_shade">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="searchBox">Search</label>
+                                    <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
+                                        <lightning:icon iconName="utility:search" size="xx-small" class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"/>
+                                        <ui:inputText aura:id="searchBox" class="slds-input" keyup="{!c.filterResults}" updateOn="keyup"/>
+                                    </div>
+                                </div>
+                                <!-- selected container -->
+                                <div class="slds-pill_container slds-pill_container_bare">
+                                    <ul class="slds-listbox slds-listbox_horizontal slds-listbox_inline" role="listbox" aria-label="Selected Options:" aria-orientation="horizontal">
+                                        <aura:iteration items="{!v.SelectedProducts}" var="selected">
+                                            <li class="slds-listbox-item" role="presentation">
+                                                <span class="slds-pill" role="option" tabindex="0" aria-selected="true">
+                                                    <span class="slds-pill__label" title="{!selected}">{!selected}</span>
+                                                    <span class="slds-icon_container slds-pill__remove"  data-recordName="{!selected}" onclick="{!c.removeSelectedFromPillList}">
+                                                        <lightning:icon iconName="utility:close"/>
+                                                        <span class="slds-assistive-text">Press delete or backspace to remove</span>
+                                                    </span>
+                                                </span>
+                                            </li>
+                                        </aura:iteration>
+                                    </ul>
+                                </div>
+                                <div class="slds-text-title slds-m-top_x-small" aria-live="polite">{!v.SelectedNum} Item(s) Selected</div>
+                            </div>
+                            <div class="slds-scrollable slds-grow">
+                                <table role="grid" class="slds-table slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover slds-scrollable_none">
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th scope="col" style="width: 3.75rem;"></th>
+                                            <th aria-label="Product" aria-sort="none" class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+                                                <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="-1">
+                                                    <span class="slds-assistive-text">Sort by: </span>
+                                                    <span class="slds-truncate" title="Name">Product</span>
+                                                    <lightning:icon iconName="utility:arrowDown" />
+                                                </a>
+                                            </th>
+                                            <th aria-label="Description" aria-sort="none" class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+                                                <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="-1">
+                                                    <span class="slds-assistive-text">Sort by: </span>
+                                                    <span class="slds-truncate" title="Description">Description</span>
+                                                    <lightning:icon iconName="utility:arrowDown" />
+                                                </a>
+                                                <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true">Sorted none</span>
+                                                <div class="slds-resizable">
+                                                    <input type="range" min="20" max="1000" aria-label="Product Family column width" class="slds-resizable__input slds-assistive-text" id="cell-resize-handle-8" tabindex="-1" />
+                                                    <span class="slds-resizable__handle">
+                                                        <span class="slds-resizable__divider"></span>
+                                                    </span>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <!-- Start Iterable -->
+                                    <tbody>
+                                        <aura:iteration items="{!v.searchResults}" var="Product" indexVar="idx">
+                                            <tr class="slds-hint-parent">
+                                                <td role="gridcell" tabindex="0" class="slds-text-align_right" style="width: 3.75rem;">
+                                                    <div class="slds-checkbox_add-button">
+                                                        <input type="checkbox" class="slds-assistive-text" id="{!'add-checkbox-'+idx}" aura:Id="boxPack" 
+                                                               data-recordName="{!Product.Name}" value="on" onclick="{!c.AddProductToSelectedList}" />
+                                                        <label for="{!'add-checkbox-'+idx}" class="slds-checkbox_faux"/>
+                                                    </div>
+                                                </td>
+                                                <th scope="row">
+                                                    <div class="slds-truncate" title="{!Product.Product2.Name}">{!Product.Product2.Name}</div>
+                                                </th>
+                                                <td role="gridcell">
+                                                    <div class="slds-truncate" title="{!Product.Product2.Description}">{!Product.Product2.Description}</div>
+                                                </td>
+                                            </tr>
+                                        </aura:iteration>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <ui:button aura:id="Cancel" label="Cancel" press="{!c.closeModal}" class="slds-button slds-button_neutral" />
+                        <ui:button aura:id="AddSelected" label="Add Selected" press="{!c.addProducts}" class="slds-button slds-button_brand" />
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </aura:if>
+</aura:component>

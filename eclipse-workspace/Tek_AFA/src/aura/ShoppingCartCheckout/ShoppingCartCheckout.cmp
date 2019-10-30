@@ -1,0 +1,274 @@
+<aura:component controller="ShoppingCartController">
+    
+    <aura:attribute name="cart" type="Order__c" />
+    <aura:attribute name="lineItems" type="Object[]" />
+    <aura:attribute name="salesOffice" type="Branch_Office__c" />
+    
+    <aura:attribute name="exception" type="Exception" access="private" />
+    <aura:attribute name="showCancelOrderConfirmation" type="Boolean" access="private" />
+    <aura:attribute name="showRushOrderModal" type="Boolean" access="private" />
+    
+    <aura:registerEvent name="navigate" type="c:ShoppingCartNavigationEvent" />
+    <aura:registerEvent name="reloadCart" type="c:ReloadCart" />
+    
+    <aura:handler name="strike_evt_modalPrimaryButtonClicked" event="c:strike_evt" action="{! c.onModalButtonClick }" />
+    <aura:handler name="change" value="{!v.cart.Colleague__c}" action="{!c.handleColleagueChange}"/>
+    <aura:handler name="valueChange" event="c:SelectChange" action="{! c.onPicklistChange }" />
+    
+    <div class="slds-box">
+        
+        <div class="slds-p-around_large slds-p-bottom_large">
+            
+            <div class="slds-text-heading_large">
+                Checkout
+            </div>
+            
+            <div class="slds-p-around_large slds-text-heading_small">
+                <p>
+                    {! format($Label.c.Shopping_Cart_Checkout_Description, v.cart.Name) }
+                </p>
+            </div>
+            
+            <div class="slds-grid slds-wrap slds-form slds-form_horizontal">
+                
+                <div class="slds-col">
+                    <div class="slds-form-element order-name-element">
+                        <label class="slds-form-element__label ">Order Name:</label>
+                        <div class="slds-form-element__control slds-p-left_small input-label">
+                            <ui:inputText aura:id="Order_Name__c" value="{!v.cart.Order_Name__c}" change="{! c.onOrderChanged }" />
+                        </div>
+                    </div>
+                </div>                
+                
+                <div class="slds-col">
+                    <div class="colleague-element">
+                        <c:strike_lookup aura:id="Colleague__c"
+                                         label="On Behalf Of:" 
+                                         object="User" 
+                                         searchField="Name" 
+                                         iconName="standard:user" 
+                                         order="Name"
+                                         value="{!v.cart.Colleague__c}"
+                                         class="" />
+                    </div>
+                </div>
+                
+                <div class="slds-col slds-text-align_center order-number-element">
+                    Order #: &nbsp; <b>{!v.cart.Name}</b>
+                </div>
+            </div>
+            
+            <div class="slds-size_8-of-8 slds-p-top_large slds-m-bottom_small dividerLine" />
+            
+            <table class="slds-text-heading_small">
+                <tr class="order-details-header-row">
+                    <!-- Shipping Fields only necessary if there are shippable items. -->
+                    <th class="requested-date">In Hands Date</th>
+                    <aura:if isTrue="{! v.cart.Number_of_Shippable_Items__c > 0 }">
+                        <th>Shipping Method</th>
+                        <th>Rush</th>
+                        <th>Ship To</th>
+                        <th>Shipping Information</th>
+                    </aura:if>
+                    <th>Charge Center</th>
+                    <th>Sales Office</th>
+                </tr>
+                
+                <tr class="{! v.cart.Rush_Order__c ? 'order-details-row-data rush-order-header' : 'order-details-row-data' }">
+                    <td style="vertical-align: top;"><ui:inputDate displayDatePicker="true"
+                                      format="MM/dd/yyyy"
+                                      value="{!v.cart.Requested_Delivery_Date__c}"
+                                      change="{! c.onOrderChanged }"
+                                      aura:id="Requested_Delivery_Date__c" />
+                    </td>
+                    <aura:if isTrue="{! v.cart.Number_of_Shippable_Items__c > 0 }">
+                        <td style="vertical-align: top;">
+	                        <c:PicklistComponent aura:id="Shipping_Method__c" fieldName="Shipping_Method__c" 
+	                                             sObjectName="Order__c"
+	                                             value="{!v.cart.Shipping_Method__c}"
+	                                             initialValue="{!v.cart.Shipping_Method__c}"
+	                                             allowNoneOption="false"
+	                                             hideLabelIfBlank="true"
+                                                 class="af-picklist-input"/>
+                            
+                            <div class="{! v.cart.Rush_Order__c ? 'slds-p-top_medium' : 'slds-hide'}">
+                                <ui:inputTextarea placeholder="Why is your order being rushed?" value="{! v.cart.Rush_Reason__c}" 
+                                                  aura:id="Rush_Reason__c" change="{! c.onOrderChanged }"/>
+                            </div>
+                            
+	                    </td>
+
+                        <td style="vertical-align: top;">
+                            <aura:if isTrue="{! v.cart.Rush_Order__c }">
+                                <img src="{!$Resource.ShoppingCartIcons + '/Icons/Icons_150_Rush.png'}" class="af-icon" />
+                            </aura:if>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <c:PicklistComponent aura:id="Ship_To__c" fieldName="Ship_To__c" 
+                                                 sObjectName="Order__c"
+                                                 value="{!v.cart.Ship_To__c}"
+                                                 initialValue="{!v.cart.Ship_To__c}"
+                                                 allowNoneOption="false"
+                                                 hideLabelIfBlank="true"
+                                                 class="af-picklist-input"/>
+                        </td>
+                        <td style="vertical-align: top; width: 30%">
+                            <div class="af-bolded-item">
+                                <aura:if isTrue="{! v.cart.Ship_To__c == 'Sales Office' }">
+                                    <aura:if isTrue="{! v.cart.Shipping_Location__c }">
+                                    {! v.cart.Shipping_Location__c } <br/>
+                                    </aura:if>
+
+                                    {! v.cart.Shipping_Street__c } <br/>
+                                    {! v.cart.Shipping_City__c }, {! v.cart.Shipping_State__c }&nbsp;{! v.cart.Shipping_Zip__c }
+                                </aura:if>
+                                
+                                <div id="ShippingInput" class="{! v.cart.Ship_To__c != 'Sales Office' ? 'slds-text-align_left slds-grid slds-wrap' :  'slds-text-align_left slds-grid slds-wrap slds-hide'}">
+                                    <div class="slds-size_6-of-6">
+                                        <ui:inputText placeholder="Location" value="{! v.cart.Shipping_Location__c }"
+                                                      maxlength="255" class="af-shipping-location-input"
+                                                      change="{! c.saveShippingAddress }"
+                                                      aura:id="Shipping_Location__c" />
+                                    </div> 
+                                    
+                                    <div class="slds-size_6-of-6 slds-m-top_medium">
+                                        <ui:inputText placeholder="Street" value="{! v.cart.Shipping_Street__c }"
+                                                      maxlength="100" class="af-shipping-street-input"
+                                                      change="{! c.saveShippingAddress }"
+                                                      aura:id="Shipping_Street__c" />
+                                    </div> 
+                                    
+                                    <div class="slds-size_3-of-6 slds-m-top_medium slds-p-right_medium">
+                                        <ui:inputText placeholder="City" value="{! v.cart.Shipping_City__c }"
+                                                      maxlength="100" class="af-shipping-city-input slds-text-align_left"
+                                                      change="{! c.saveShippingAddress }"
+                                                      aura:id="Shipping_City__c" />           
+                                    </div>
+                                    
+                                    <div  class="slds-size_1-of-6 slds-m-top_medium">
+                                        
+                                        <c:PicklistComponent aura:id="Shipping_State__c" fieldName="AnnBeforeTaxState__c" 
+                                                             sObjectName="Customer_Setup_Form__c"
+                                                             class="af-shipping-state-input"
+                                                             value="{!v.cart.Shipping_State__c}"
+                                                             initialValue="{!v.cart.Shipping_State__c}"/>
+                                    </div>
+                                    
+                                    <div  class="slds-size_2-of-6 slds-m-top_medium slds-p-left_medium">
+                                        <ui:inputText placeholder="Zip" value="{! v.cart.Shipping_Zip__c }"
+                                                      maxlength="12" class="af-shipping-zip-input"
+                                                      change="{! c.saveShippingAddress }"
+                                                      aura:id="Shipping_Zip__c" />
+                                    </div>                                        
+                                </div>
+                            </div>
+                        </td>
+                    </aura:if>
+                    <td class="af-bolded-item">{! v.salesOffice.Charge_Code__c }</td>
+                    <td class="af-bolded-item">{! v.salesOffice.Name }</td>
+                </tr>
+            </table>
+            
+            <div class="slds-size_8-of-8 slds-p-top_large slds-m-bottom_small dividerLine" />
+            
+            <div class="slds-grid slds-wrap">
+                <aura:iteration items="{!v.lineItems}" var="lineItem" indexVar="lineItemIndex">
+                    <aura:if isTrue="{! lineItemIndex > 0 }">
+                        <div class="slds-size_8-of-8 slds-p-top_large slds-m-bottom_large dividerLine" />
+                    </aura:if>
+                    
+                    <div class="slds-size_1-of-12 image-min-height">
+                        <img src='{!lineItem.Record.Marketing_Material__r.Thumbnail_URL__c}' />                
+                    </div>
+                    <div class="slds-grid slds-wrap slds-size_11-of-12">
+                        
+                        <div class="slds-size_5-of-12">
+                            <div class="slds-truncate form-name slds-p-left_small" data-recId="{!lineItem.Record.Marketing_Material__c}" onclick="{!c.goToDetails}">
+                                <a class="form-name">{!lineItem.Record.Material_Title__c}</a>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-size_2-of-12">
+                            <b>{!lineItem.Record.Material_Number__c}</b>
+                        </div>
+                        
+                        <div class="slds-size_2-of-12">
+                            <b><ui:outputCurrency value="{!lineItem.Record.Unit_Price__c}" /></b> &nbsp; Each Unit
+                        </div>
+                        
+                        <div class="slds-size_1-of-12">
+                            Qty &nbsp; <ui:outputNumber value="{!lineItem.Record.Quantity__c}" />
+                        </div>
+                        
+                        <div class="slds-size_1-of-12" />
+                        
+                        <div class="slds-size_1-of-12">
+                            Total <div class="slds-show_inline-block slds-float_right"><ui:outputCurrency value="{!lineItem.Record.Total_Price__c}" /></div>
+                        </div>
+                        
+                        <div class="{! lineItem.CustomFields.length > 0 || lineItem.Record.Marketing_Material__r.Logo_Option__c ? 'slds-show slds-size_4-of-8 slds-m-top_small text-align-right' : 'slds-hide slds-size_4-of-8 slds-m-top_small text-align-right'}">
+                            <c:FieldSetRecordDisplay fieldsToUse="{! lineItem.CustomFields }"
+                                                     record="{! lineItem.Record }" />
+                        
+                            <div class="{! lineItem.Record.Marketing_Material__r.Logo_Option__c ? 'slds-show upload-option' : 'slds-hide upload-option'}">
+                                <!-- Luke and I spent a very long time trying to figure out why the Value for Customize With Logo was getting cleared
+									 out after the Order Line Item was being initialized.  We could not figure it out so settled for a dirty yet
+									 working solution to throw the single field into a FieldSetRecordDisplay.  Dirty, but works! -->
+                                
+                                <c:FieldSetRecordDisplay fieldSetName="Upload_Files" recordId="{! lineItem.Record.Id }" objectName="Order_Line_Item__c"
+                                                         loadRecordFromServer="true"/>
+                            </div>
+                        </div>
+                    </div>
+                </aura:iteration>
+                
+            </div>
+            
+            <div class="slds-size_8-of-8 slds-p-top_small dividerLine" />
+            
+            <!-- Price Line -->
+            <div class="price-line slds-text-align_right af-bolded-item slds-text-heading_small slds-m-vertical_medium">
+                Order Total <ui:outputCurrency value="{!v.cart.Total_Price__c}" />
+            </div>
+            
+            <div class="slds-size_8-of-8 slds-m-bottom_large dividerLineRed" />
+            
+            <div class="slds-grid">    
+                <!-- Action Button Line -->
+                
+                <div class="slds-size_2-of-8">
+                    <lightning:button variant="brand" label="&lt; Back to Cart" class="cart-back-button" onclick="{!c.navigateToCart}"/>
+                </div>
+                
+                <div class="slds-size_4-of-8" />
+                
+                <div class="slds-size_1-of-8 slds-text-align_right cart-cancel-button">
+                    <lightning:button variant="brand" label="Cancel Order" class="" onclick="{!c.cancelOrderClicked}"/>
+                </div>
+                
+                <div class="slds-size_1-of-8 slds-text-align_right">
+                    <lightning:button variant="brand" label="Submit Order" class="cart-checkout-button" onclick="{! c.onSubmitOrder }"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <c:ExceptionModal title="Error"
+                      exception="{! v.exception }"
+                      show="{! or (v.exception.message, v.exception[0].pageErrors.length > 0) }" />
+    
+    <c:strike_modal primaryButtonLabel="Confirm"
+                    title="Cancel Order Confirmation"
+                    showModal="{! v.showCancelOrderConfirmation }"
+                    aura:id="cancelOrderConfirmationModal">
+        Are you sure you want to cancel your order?  All materials and customizations saved 
+        in your cart will be removed.
+    </c:strike_modal>
+    
+    <c:strike_modal primaryButtonLabel="Confirm"
+                    title="Confirm Rush Order"
+                    showModal="{! v.showRushOrderModal }"
+                    aura:id="rushOrderModal">
+    	{! $Label.c.Confirm_Rush_Order_Message }
+    </c:strike_modal>
+</aura:component>

@@ -1,0 +1,122 @@
+<aura:component >
+    
+    <div>
+        <div class="divider slds-align_absolute-center slds-p-bottom_medium"/>
+        
+        <div class="feature-title">
+        	Popular Now
+        </div>
+        
+        <div class="slds-grid slds-align_absolute-center feature-width">
+            
+            <div class="banner-arrow slds-size_1-of-8 slds-align_absolute-center">
+                <lightning:icon iconName="utility:chevronleft" size="x-small" variant="inverse" />
+            </div>
+            
+            <!-- first slider item -->
+            <div class="slds-size_2-of-8 slds-p-around_small">
+                
+                <div class="slds-grid slds-is-relative">
+                    
+                    <div class="slds-size_1-of-5">
+                        <img src='/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB120BY90&amp;versionId=068m000000063WhAAI' />
+                    </div>
+                    
+                    <div class="slds-size_4-of-5 slds-p-left_xx-small">
+                        
+                        <div class="">
+                            <div class="slds-text-heading_medium form-name-feature">
+                                Item Name goes here with more blahs and blahs
+                            </div>
+                            
+                            <div class="slds-grid slds-p-bottom_xx-small slds-p-top_xx-small">
+                                <div class="slds-size_1-of-10">
+                                    <button class="slds-button slds-button_icon slds-button_icon-bare">
+                                        <lightning:icon iconName="utility:favorite" size="xx-small" />
+                                    </button>
+                                </div>
+                                <div class="slds-size_9-of-10 slds-p-top_xx-small slds-p-left_xx-small slds-text-color_weak slds-text-body_small">
+                                    <b>Form Number xxxxxxxx</b>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- second slider item -->
+            <div class="slds-size_2-of-8 slds-p-around_small">
+                
+                <div class="slds-grid slds-is-relative">
+                    
+                    <div class="slds-size_1-of-5">
+                        <img src='/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB120BY90&amp;versionId=068m000000063WhAAI' />
+                    </div>
+                    
+                    <div class="slds-size_4-of-5 slds-p-left_xx-small">
+                        
+                        <div class="">
+                            <div class="slds-text-heading_medium form-name-feature">
+                                Item Name number 2 goes here with more blahs
+                            </div>
+                            
+                            <div class="slds-grid slds-p-bottom_xx-small slds-p-top_xx-small">
+                                <div class="slds-size_1-of-10">
+                                    <button class="slds-button slds-button_icon slds-button_icon-bare">
+                                        <lightning:icon iconName="utility:favorite" size="xx-small" />
+                                    </button>
+                                </div>
+                                <div class="slds-size_9-of-10 slds-p-top_xx-small slds-p-left_xx-small slds-text-color_weak slds-text-body_small">
+                                    <b>Form Number xxxxxxxx</b>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- third slider item -->
+            <div class="slds-size_2-of-8 slds-p-around_small">
+                
+                <div class="slds-grid slds-is-relative">
+                    
+                    <div class="slds-size_1-of-5">
+                        <img src='/sfc/servlet.shepherd/version/renditionDownload?rendition=THUMB120BY90&amp;versionId=068m000000063WhAAI' />
+                    </div>
+                    
+                    <div class="slds-size_4-of-5 slds-p-left_xx-small">
+                        
+                        <div class="">
+                            <div class="slds-text-heading_medium form-name-feature">
+                                Item Name number 3 goes here with more blahs
+                            </div>
+                            
+                            <div class="slds-grid slds-p-bottom_xx-small slds-p-top_xx-small">
+                                <div class="slds-size_1-of-10">
+                                    <button class="slds-button slds-button_icon slds-button_icon-bare">
+                                        <lightning:icon iconName="utility:favorite" size="xx-small" />
+                                    </button>
+                                </div>
+                                <div class="slds-size_9-of-10 slds-p-top_xx-small slds-p-left_xx-small slds-text-color_weak slds-text-body_small">
+                                    <b>Form Number xxxxxxxx</b>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="banner-arrow slds-size_1-of-8 slds-align_absolute-center">
+                <lightning:icon iconName="utility:chevronright" size="x-small" variant="inverse"/>
+            </div>
+            
+        </div>
+    </div>
+	
+</aura:component>

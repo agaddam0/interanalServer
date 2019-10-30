@@ -1,0 +1,5 @@
+<design:component >
+	<sfdc:objects >
+    	<sfdc:object >Colleague__c</sfdc:object>
+    </sfdc:objects>
+</design:component>

@@ -1,0 +1,530 @@
+<aura:component implements="lightning:isUrlAddressable" access="global" controller="ShoppingCartController">
+    <aura:attribute name="cart" type="Order__c" />
+    <aura:attribute name="lineItems" type="Object[]" />
+
+    <aura:attribute name="preenrollmentMarketingFormId" type="String" />
+    <aura:attribute name="enrollmentOpportunityId" type="String" />
+    <aura:attribute name="requestedStep" type="String" />
+
+    <aura:attribute name="enrollmentOpportunityInfo" type="ShoppingCartController.OpportunityInformation" access="private" />
+    <aura:attribute name="currentStep" type="String" default="ChooseOpportunity" access="private" />
+    <aura:attribute name="preenrollmentMaterials" type="ShoppingCartController.MarketingMaterial[]" access="private" />
+    <aura:attribute name="printMaterials" type="ShoppingCartController.MarketingMaterial[]" access="private" />
+    <aura:attribute name="digitalMaterials" type="ShoppingCartController.MarketingMaterial[]" access="private" />
+    <aura:attribute name="preenrollmentMaterialOptions" type="List" access="private" />
+    <aura:attribute name="selectedMaterials" type="String[]" access="private" />
+    <aura:attribute name="enrollmentSites" type="ShoppingCartController.EnrollmentSite[]" access="private" />
+    <aura:attribute name="NewEnrollmentSiteRecord" type="Enrollment_Site__c" access="private" />
+    <aura:attribute name="EditEnrollmentSiteRecord" type="Enrollment_Site__c" access="private" />
+    <aura:attribute name="enrollmentSitesToSchedule" type="Enrollment_Site__c[]" access="private" />
+    <aura:attribute name="NewEnrollmentSiteDateRecord" type="Enrollment_Site_Date__c" access="private" />
+    <aura:attribute name="EditEnrollmentSiteDateRecord" type="Enrollment_Site_Date__c" access="private" />
+    <aura:attribute name="selectedEnrollmentSiteToSchedule" type="Enrollment_Site__c" access="private" />
+    <aura:attribute name="hasBenefitsSite" type="Boolean" access="private" default="false" />
+    <aura:attribute name="hasAppointmentScheduler" type="Boolean" access="private" default="false" />
+    <aura:attribute name="hasTimeToEnrollBuildYourOwnEmail" type="Boolean" access="private" default="false" />
+    <aura:attribute name="intermediateSteps" type="List" access="private" />
+    <aura:attribute name="benefitsSiteInput" type="Object" access="private" />
+    <aura:attribute name="showDeleteEnrollmentSiteDateModal" type="Boolean" default="false" access="private" />
+    <aura:attribute name="enrollmentSiteDateToDelete" type="Enrollment_Site_Date__c" access="private" />
+    <aura:attribute name="lastMarketingAccountName" type="String" access="private" />
+    <aura:attribute name="showSpinner" type="Boolean" access="private" />
+    <aura:attribute name="addEnrollmentSites" type="Boolean" access="private" default="false" />
+
+    <aura:handler event="c:strike_change_evt" action="{!c.handleEnrollmentOpportunityChanged}"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="change" value="{!v.requestedStep}" action="{!c.requestedStepChange}"/>
+
+    <div class="slds-box slds-theme_default oneContent active forceContentWrapper">
+	    <h3 class="slds-text-heading_medium slds-m-bottom_medium">Pre-enrollment Marketing Material Order</h3>
+	    
+	    <!-- Step 1: Choose Enrollment Opportunity -->
+	    
+	    <div class="{! v.currentStep == 'ChooseOpportunity' ? 'slds-show' : 'slds-hide' }">
+		    <c:strike_lookup searchField="Name" order="Name"
+	                         label="Select Enrollment Opportunity" limit="10"
+	                         class="slds-p-vertical_xx-small" object="Opportunity"
+	                         loadingMessage="Loading..." errorMessage="Please select an enrollment opportunity."
+	                         value="{! v.enrollmentOpportunityId }"
+	                         filter="RecordType.Name like '%Enrollment%' AND StageName = 'Enrollment'"
+	                         aura:id="enrollmentOpportunityLookup" />
+	
+	        <aura:if isTrue="{! and(v.enrollmentOpportunityId, v.enrollmentOpportunityInfo) }">
+                <hr class="slds-m-vertical_small" />
+
+	            Account Name: {! v.enrollmentOpportunityInfo.AccountName } <br />
+	            MCP: {! v.enrollmentOpportunityInfo.MCP } <br />
+	            Enrollment Dates: {! v.enrollmentOpportunityInfo.EnrollmentStartDateStr } - {! v.enrollmentOpportunityInfo.EnrollmentEndDateStr } <br />
+	            Account Owner: {! v.enrollmentOpportunityInfo.AccountOwner }
+	        
+	        
+	        </aura:if>
+	
+	        <div class="slds-m-vertical_medium">
+		        <lightning:button variant="brand"
+		                          aura:id="chooseOpportunityNextButton"
+		                          onclick="{! c.onNextButtonClick }"/>
+	        </div>
+        </div>
+        
+        <!-- Step 2: Choose Materials -->
+        
+        <div class="{! v.currentStep == 'ChooseMaterials' ? 'slds-show' : 'slds-hide' }">
+            <div>{! $Label.c.Marketplace_Preenrollment_Materials_Disclaimer }</div>
+
+            <h4 class="slds-text-heading_small slds-m-vertical_medium">Digital Materials</h4>
+            
+            <div class="slds-grid slds-wrap slds-gutters">
+                <aura:iteration items="{! v.digitalMaterials }" var="dm">
+                    <div class="slds-grid slds-wrap af-material-tile">
+                        <div>
+                            <lightning:input type="checkbox"
+                                             label="{! dm.Record.Title__c }"
+                                             value="{!dm.Record}"
+                                             aura:id="digitalMaterialCheckbox"
+                                             checked="{! dm.isInCart }"
+                                             disabled="{! dm.isDisabled }"
+                                             onchange="{! c.onSelectedMaterialChange }"
+                                             variant="label-hidden" />
+                        </div>
+
+                        <div>
+                            <div class="slds-text-color_weak af-material-title"><b>{! dm.Record.Title__c }</b></div>
+
+                            <div class="slds-text-color_weak">
+                                <b>{! dm.Record.Material_Number__c }</b>
+                            </div>
+
+                            <aura:if isTrue="{! dm.Record.Thumbnail_URL__c }">
+                            <div class="image-container">
+                                <img src='{! dm.Record.Thumbnail_URL__c }' />
+                                <aura:renderIf isTrue="{! dm.Record.New__c == true}">
+                                    <div class="corner-triangle"><span class="triangle-text">New!</span></div>
+                                </aura:renderIf>
+                            </div>
+                            </aura:if>
+                        </div>
+                        
+                        
+                    </div>
+                </aura:iteration>
+            </div>
+
+            <h4 class="slds-text-heading_small slds-m-vertical_medium">Print Materials</h4>
+            
+            <div class="slds-grid slds-wrap slds-gutters">
+                <aura:iteration items="{! v.printMaterials }" var="pm">
+                    <div class="slds-grid slds-wrap af-material-tile">
+                        <div>
+                            <lightning:input type="checkbox"
+                                             label="{! pm.Record.Title__c }"
+                                             value="{!pm.Record}"
+                                             checked="{! pm.isInCart }"
+                                             aura:id="digitalMaterialCheckbox"
+                                             disabled="{! pm.isDisabled }"
+                                             onchange="{! c.onSelectedMaterialChange }"
+                                             variant="label-hidden" />
+                        </div>
+
+                        <div>
+                            <div class="slds-text-color_weak af-material-title">
+                                <b>{! pm.Record.Title__c }</b>
+                            </div>
+
+                            <div class="slds-text-color_weak">
+                                <b>{! pm.Record.Material_Number__c }</b>
+                            </div>
+
+                            <aura:if isTrue="{! pm.Record.Thumbnail_URL__c }">
+                            <div class="image-container">
+                                <img src='{! pm.Record.Thumbnail_URL__c }' />
+                                <aura:renderIf isTrue="{! pm.Record.New__c == true}">
+                                    <div class="corner-triangle"><span class="triangle-text">New!</span></div>
+                                </aura:renderIf>
+                            </div>
+                            </aura:if>
+                        </div>
+                    </div>
+                </aura:iteration>
+            </div>
+
+            <div class="slds-m-vertical_medium af-nav-button-container">
+                    <lightning:button variant="brand"
+                                      aura:id="chooseMaterialsPreviousButton"
+                                      class="slds-m-right_large"
+                                      onclick="{! c.onPreviousButtonClick }" />
+            
+	                <lightning:button variant="brand"
+	                                  aura:id="chooseMaterialsNextButton"
+	                                  onclick="{! c.onNextButtonClick }"/>
+            </div>
+        </div>
+
+        <!-- Enter Group Information -->
+
+        <div class="{! v.currentStep == 'EnterGroupInformation' ? 'slds-show' : 'slds-hide' }">
+            <h4 class="slds-text-heading_small slds-m-vertical_medium">Enter Group Information</h4>
+            
+            <lightning:input type="text"
+                             label="Marketing Account Name"
+                             value="{! v.enrollmentOpportunityInfo.Account.Marketing_Account_Name__c }"
+                             required="true"
+                             aura:id="marketingAccountNameInput"
+                             class="af-limited-width" />
+
+            <div class="slds-m-vertical_medium af-nav-button-container">
+                    <lightning:button variant="brand"
+                                      class="slds-m-right_large"
+                                      aura:id="enterGroupInformationPreviousButton"
+                                      onclick="{! c.onPreviousButtonClick }" />
+            
+                    <lightning:button variant="brand"
+                                      aura:id="enterGroupInformationNextButton"
+                                      onclick="{! c.onNextButtonClick }"/>
+            </div>
+        </div>
+
+        <!-- Setup Enrollment Sites -->
+
+        <div class="{! v.currentStep == 'SetupEnrollmentSites' ? 'slds-show' : 'slds-hide' }">
+            <h3 class="slds-text-heading_small slds-m-bottom_medium">Add/Edit {! v.enrollmentOpportunityInfo.Account.Name } Sites and Schedules</h3>
+
+            <div>{! $Label.c.Marketplace_Preenrollment_Sites_And_Schedules_Instructions }</div>
+
+            <lightning:input type="toggle"
+                             label="Add Enrollment Sites and Schedules To Build Your Own Time To Enroll Email?"
+                             checked="{! v.addEnrollmentSites }"
+                             class="slds-m-top_small" />
+
+            <div class="{! v.addEnrollmentSites ? 'slds-show' : 'slds-hide' }">
+
+            <lightning:button variant="neutral"
+                              iconName="utility:add" iconPosition="left"
+                              label="New Site"
+                              class="slds-m-vertical_medium"
+                              onclick="{! c.onNewLocationClick }"/>
+
+            <hr class="slds-m-bottom_x-small slds-m-top_xx-small" />
+
+            <aura:iteration items="{! v.enrollmentSites }" var="es" indexVar="esNum">
+                <aura:if isTrue="{! esNum > 0 }">
+                    <hr class="slds-m-vertical_x-small" />
+                </aura:if>
+
+                <h4 class="slds-m-bottom_x-small">
+                    <span class="slds-text-heading_small">{! es.Record.Name }</span>
+                    <lightning:button variant="neutral"
+                                      iconName="utility:add" iconPosition="left"
+                                      label="Schedule"
+                                      class="slds-m-left_medium"
+                                      onclick="{! c.onScheduleEnrollmentSiteDateClick }"
+                                      value="{! es.Record.Id }"/>
+
+                    <lightning:button variant="neutral"
+                                      iconName="utility:edit" iconPosition="left"
+                                      label="Edit Site"
+                                      class="af-edit-site-btn"
+                                      onclick="{! c.onEditEnrollmentSiteClick }"
+                                      value="{! es.Record.Id }"/>
+                </h4>
+                <div class="slds-p-left_medium">
+                    <div>
+                        <aura:if isTrue="{! es.Record.Physical_Street_Address__c }">
+                            {!es.Record.Physical_Street_Address__c}, {!es.Record.Physical_City__c}, {!es.Record.Physical_State__c}
+                            <aura:set attribute="else">
+                                No Address Listed
+                            </aura:set>
+                        </aura:if>
+                    </div>
+
+                    <aura:if isTrue="{! and(es.Record.Enrollment_Site_Dates__r, es.Record.Enrollment_Site_Dates__r.length > 0) }">
+                        <table class="slds-m-vertical_medium af-enrollment-site-schedule-table">
+                            <tr>
+                                <th></th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Time</th>
+                                <th>Include In Build Your Own Time To Enroll Email?</th>
+                            </tr>
+                        <aura:iteration items="{! es.Record.Enrollment_Site_Dates__r }" var="esd">
+                            <tr>
+                                <td class="af-enrollment-site-dates-action-column">
+                                    <a class="slds-p-right_small" onclick="{! c.onEditEnrollmentSiteDateClick }" data-enrollmentSiteDateId="{! esd.Id }">Edit</a>
+
+                                    |
+
+                                    <a class="slds-p-left_small" onclick="{! c.onDeleteEnrollmentSiteDateClick }" data-enrollmentSiteDateId="{! esd.Id }" >Delete</a>
+                                </td>
+                                <td><lightning:formattedDateTime value="{! esd.Start_Date__c }" year="numeric" month="numeric" day="numeric" timeZone="UTC" /></td>
+                                <td><lightning:formattedDateTime value="{! esd.End_Date__c }" year="numeric" month="numeric" day="numeric" timeZone="UTC" /></td>
+                                <td><c:FormattedTime value="{! esd.Start_Time__c }" /> - <c:FormattedTime value="{! esd.End_Time__c }" /></td>
+                                <td>{! esd.Show_In_Build_Time_To_Enroll_Email__c ? 'Yes' : 'No' }</td>
+                            </tr>
+                        </aura:iteration>
+                        </table>
+
+                    </aura:if>
+                </div>
+            </aura:iteration>
+
+            </div>
+
+            <div class="slds-m-vertical_medium af-nav-button-container">
+                    <lightning:button variant="brand"
+                                      class="slds-m-right_large"
+                                      aura:id="setupEnrollmentSitesAndSchedulesPreviousButton"
+                                      onclick="{! c.onPreviousButtonClick }"/>
+            
+                    <lightning:button variant="brand"
+                                      label="Next: Cart"
+                                      aura:id="setupEnrollmentSitesAndSchedulesNextButton"
+                                      onclick="{! c.onNextButtonClick }"/>
+            </div>
+        </div>
+        
+        <!-- Setup Benefits Site Step -->
+        
+        <div class="{! v.currentStep == 'SetupBenefitsSite' ? 'slds-show' : 'slds-hide' }">
+            <h3 class="slds-text-heading_small slds-m-bottom_medium">Setup Benefits Site</h3>
+            
+            <aura:if isTrue="{! !v.enrollmentOpportunityInfo.Account.Marketing_Resource_ID__c }">
+            <lightning:input type="text"
+                             label="Group Display Name"
+                             value="{! v.benefitsSiteInput.GroupDisplayName }"
+                             required="true"
+                             aura:id="groupDisplayName"
+                             class="af-limited-width slds-m-bottom_small" />
+            </aura:if>
+
+            <div>Assigned Account Manager: {! v.enrollmentOpportunityInfo.PreenrollmentForm.Account_Manager_Name__c }</div>
+            
+            <lightning:input type="text"
+                             label="Title"
+                             value="{! v.benefitsSiteInput.Title }"
+                             class="slds-m-top_small af-limited-width"
+                             aura:id="title" />
+
+            <lightning:input type="text"
+                             label="License Number"
+                             value="{! v.benefitsSiteInput.LicenseNumber }"
+                             required="{! v.enrollmentOpportunityInfo.PreenrollmentForm.License_Number_Required__c }"
+                             class="slds-m-top_small af-limited-width"
+                             aura:id="licenseNumber" />
+
+            <aura:if isTrue="{! v.enrollmentOpportunityInfo.Account.Division__c == 'AFES' }">
+            <!-- Don't fire the field change event because it bubbles up elsewhere in Markeplace and causes errors to show -->
+            <c:strike_lookup searchField="Name"
+                             order="Name"
+                             label="Branch Office"
+                             limit="10"
+                             class="slds-m-top_small af-limited-width"
+                             object="Branch_Office__c"
+                             filter="Status__c = 'Open'"
+                             loadingMessage="Loading..."
+                             required="true"
+                             errorMessage="Complete this field."
+                             fireValueChangeEvents="false"
+                             value="{! v.benefitsSiteInput.BranchOffice }"
+                             aura:id="branchOffice" />
+            </aura:if>
+            
+            <lightning:input type="checkbox"
+                             label="Show One-on-One Information"
+                             checked="{! v.benefitsSiteInput.ShowOneonOneInformation }"
+                             class="slds-m-top_small"
+                             aura:id="showOneOnOneInformation" />
+            
+            <lightning:input type="checkbox"
+                             label="Show Self-Service Information"
+                             checked="{! v.benefitsSiteInput.ShowSelfServiceInformation }"
+                             class="slds-m-top_small"
+                             aura:id="showSelfServiceInformation" />
+
+            <c:DateInput label="Open Enrollment Start Date"
+                         value="{! v.benefitsSiteInput.OpenEnrollmentStartDate }"
+                         required="true"
+                         class="slds-m-top_small af-limited-width"
+                         aura:id="openEnrollmentStartDate" />
+
+            <c:DateInput label="Open Enrollment End Date"
+                         value="{! v.benefitsSiteInput.OpenEnrollmentEndDate }"
+                         required="true"
+                         class="slds-m-top_small af-limited-width"
+                         aura:id="openEnrollmentEndDate" />
+
+            <hr />
+            
+            <!-- Benefits & Services -->
+            <h4 class="slds-m-vertical_small slds-text-heading_small">Benefits &amp; Services</h4>
+            
+            <div>{! $Label.c.Preenrollment_Marketing_Benefits_Services_Note }</div>
+            
+            <ul class="slds-list_dotted slds-m-top_small">
+                <aura:iteration items="{! v.enrollmentOpportunityInfo.BenefitsAndServiceProducts }" var="benefitAndSvcProd">
+			    <li>{! benefitAndSvcProd.Name }</li>
+			    </aura:iteration>
+            </ul>
+            
+            <hr />
+			
+			<!-- Imports -->
+            <h4 class="slds-m-vertical_small slds-text-heading_small">Imports</h4>
+            
+            <div>{! $Label.c.Preenrollment_Marketing_Imported_Products_Note }</div>
+            
+            <table class="slds-m-top_small af-import-table">
+                <tr>
+                    <th>Name</th>
+                    <th>Include on Employer Benefits Site</th>
+                    <th>Carrier</th>
+                    <th>Carrier URL</th>
+                </tr>
+                <aura:iteration items="{! v.benefitsSiteInput.ImportProducts }" var="importProd">
+                <tr>
+                    <td>{! importProd.Name }</td>
+                    <td>
+                        <lightning:input type="checkbox"
+                                         label=" "
+                                         checked="{! importProd.Include_on_Employer_Benefits_Site__c }" />
+                    </td>
+                    <td class="af-import-carrier-container">
+                        <lightning:input type="text"
+                                         label=" "
+                                         name="{! importProd.Id }"
+                                         aura:id="carrier"
+                                         value="{! importProd.Carrier__c }"
+                                         required="{! importProd.Include_on_Employer_Benefits_Site__c == true }"
+                                         variant="label-inline"
+                                         class="af-import-field" />
+                    </td>
+                    <td>
+                        <lightning:input type="text"
+                                         label=" "
+                                         name="{! importProd.Id }"
+                                         aura:id="carrierurl"
+                                         value="{! importProd.Carrier_URL__c }"
+                                         required="{! importProd.Include_on_Employer_Benefits_Site__c == true }"
+                                         variant="label-inline"
+                                         class="af-import-field" />
+                    </td>
+                
+                </tr>
+                </aura:iteration>
+            </table>
+            
+            <aura:if isTrue="{! v.enrollmentOpportunityInfo.PreenrollmentForm.Id }">
+            <hr />
+            <c:EmployerLogoUploader PreenrollmentFormId="{! v.enrollmentOpportunityInfo.PreenrollmentForm.Id }" />
+            </aura:if>
+
+            <div class="slds-m-vertical_medium af-nav-button-container">
+                    <lightning:button variant="brand"
+                                      class="slds-m-right_large"
+                                      aura:id="setupBenefitsSitePreviousButton"
+                                      onclick="{! c.onPreviousButtonClick }"/>
+            
+                    <lightning:button variant="brand"
+                                      label="Next: Cart"
+                                      aura:id="setupBenefitsSiteNextButton"
+                                      onclick="{! c.onNextButtonClick }"/>
+            </div>
+        </div>
+
+        <!-- Setup Appointment Scheduler Step -->
+        
+        <div class="{! v.currentStep == 'SetupAppointmentScheduler' ? 'slds-show' : 'slds-hide' }">
+            <h3 class="slds-text-heading_small slds-m-bottom_medium">Setup Appointment Scheduler</h3>
+        
+            <lightning:input type="text"
+                             label="Group Display Name"
+                             value="{! v.benefitsSiteInput.GroupDisplayName }"
+                             required="true"
+                             aura:id="apptSchedulerGroupDisplayName"
+                             class="af-limited-width slds-m-bottom_small" />
+
+            <aura:if isTrue="{! v.enrollmentOpportunityInfo.Account.Division__c == 'AFES' }">
+            <!-- Don't fire the field change event because it bubbles up elsewhere in Markeplace and causes errors to show -->
+            <c:strike_lookup searchField="Name"
+                             order="Name"
+                             label="Branch Office"
+                             limit="10"
+                             class="slds-m-top_small af-limited-width"
+                             object="Branch_Office__c"
+                             filter="Status__c = 'Open'"
+                             loadingMessage="Loading..."
+                             required="true"
+                             errorMessage="Complete this field."
+                             fireValueChangeEvents="false"
+                             value="{! v.benefitsSiteInput.BranchOffice }"
+                             aura:id="apptSchedulerBranchOffice" />
+            </aura:if>
+
+            <div class="slds-m-vertical_medium af-nav-button-container">
+                <lightning:button variant="brand"
+                                  class="slds-m-right_large"
+                                  aura:id="setupApptSchedulerPreviousButton"
+                                  onclick="{! c.onPreviousButtonClick }"/>
+        
+                <lightning:button variant="brand"
+                                  label="Next: Cart"
+                                  aura:id="setupApptSchedulerNextButton"
+                                  onclick="{! c.onNextButtonClick }"/>
+            </div>
+        </div>
+        
+        <c:FieldSetFormModal aura:id="newEnrollmentSiteModal"
+                             record="{! v.NewEnrollmentSiteRecord }"
+                             fieldSetName="Create_Enrollment_Site"
+                             objectName="Enrollment_Site__c"
+                             saveHandler="{! c.saveNewEnrollmentSiteClick }"
+                             header="New Enrollment Site" />
+
+        <c:FieldSetFormModal aura:id="editEnrollmentSiteModal"
+                             record="{! v.EditEnrollmentSiteRecord }"
+                             fieldSetName="Edit_Enrollment_Site"
+                             objectName="Enrollment_Site__c"
+                             saveHandler="{! c.saveEditEnrollmentSiteClick }"
+                             header="Edit Enrollment Site" />
+
+        <c:FieldSetFormModal aura:id="newEnrollmentSiteDateModal"
+                             record="{! v.NewEnrollmentSiteDateRecord }"
+                             fieldSetName="Create_Enrollment_Site_Date"
+                             objectName="Enrollment_Site_Date__c"
+                             saveHandler="{! c.saveNewEnrollmentSiteDateClick }"
+                             header="{! 'New Schedule For ' + v.selectedEnrollmentSiteToSchedule.Name }" />
+
+        <c:FieldSetFormModal aura:id="editEnrollmentSiteDateModal"
+                             record="{! v.EditEnrollmentSiteDateRecord }"
+                             fieldSetName="Create_Enrollment_Site_Date"
+                             objectName="Enrollment_Site_Date__c"
+                             saveHandler="{! c.saveEditEnrollmentSiteDateClick }"
+                             header="{! 'Edit Schedule For ' + v.selectedEnrollmentSiteToSchedule.Name }" />
+
+        <div class="{! v.showDeleteEnrollmentSiteDateModal ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeDeleteEnrollmentSiteDateModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Delete Confirmation</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    Are you sure you want to delete? Once deleted, the item is no longer available and cannot be recovered.
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeDeleteEnrollmentSiteDateModal }">Cancel</button>
+                    <button class="slds-button slds-button_brand" onclick="{! c.onDeleteEnrollmentSiteDate }">Delete</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+        
+    </div>
+    
+    <aura:if isTrue="{! v.showSpinner }">
+        <div class="spinner-container">
+            <lightning:spinner variant="brand" size="large" />
+        </div>
+    </aura:if>
+</aura:component>

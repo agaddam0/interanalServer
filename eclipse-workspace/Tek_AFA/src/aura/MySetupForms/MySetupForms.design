@@ -1,0 +1,6 @@
+<design:component >
+    <design:attribute name="DisplayLimit" label="Display Limit" default="10" description="The number of enrollment opportunities to show." />
+    <design:attribute name="Statuses" label="Statuses" default="In Progress, Submitted, H.O. Processing, Completed, Waiting on Information" description="The comma separated list of statuses to filter by" />
+    <design:attribute name="ComponentTitle" label="Component Title" default="Setup Forms Status" description="The title to use for this component" />
+    <design:attribute name="TitleHelpText" label="Title Help Text" default="List only includes setup forms for active and upcoming enrollments." description="The help text to display when someone hovers over the help icon." />
+</design:component>

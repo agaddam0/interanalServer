@@ -1,0 +1,201 @@
+<apex:page standardController="Enrollment_Form__c" extensions="SignatureFormPDFext" applyBodyTag="false" showHeader="false" sidebar="false"
+           renderAs="pdf">
+    <head>
+        <style type="text/css" media="print">
+            @page :first {
+                padding-top: 50px;
+                padding-bottom: 50px;
+                @top-center {
+                    content: element(header);
+                }
+            }
+            @page {
+                padding-top: 25px;
+                padding-bottom: 50px;
+                @top-center {
+                    content: element(header2);
+                }
+                @bottom-center {
+                    content: element(footer);
+                }
+            }
+            body {
+                font-family: sans-serif;
+            }
+            .logo {
+                width: 300px;
+                padding-left: 300px;
+                padding-top: 0px;
+            }
+            div.header {
+                padding: 25px 10px 10px;
+                position: running(header);
+                text-align: center;
+                font-size: x-small;
+                color: gray;
+            }
+            div.header2 {
+                padding: 25px 10px 10px;
+                position: running(header2);
+                text-align: center;
+                font-size: x-small;
+                color: gray;
+            }
+            div.footer {
+                display: block;
+                padding-bottom: 20px;
+                position: running(footer);
+                font-size: small;
+                color: gray;
+            }
+            .pagenumber:before 
+            {
+                content: counter(page);
+            }
+            .pagecount:before 
+            {
+                content: counter(pages);
+            }
+            .tab-title {
+                color: #EB0029;
+            }
+            
+        </style>
+    </head>
+   <div class="header">
+        <div>
+            <apex:image styleClass="logo" url="{!$Resource.AFALogo}"/>
+        </div>
+    </div>
+    
+    <div class="header2">
+    </div>
+    
+    <div class="footer" style="text-align: right;">
+        <div>Page <span class="pagenumber"/> of <span class="pagecount"/></div>
+    </div>
+    
+    <div class="footer">   
+        
+        <div style="float:left;">SB-25780-0118 Signed Service Agreement</div>
+        <div style="text-align:right; float:right;">Page <span class="pagenumber"/> of <span class="pagecount"/></div>
+    </div>
+    
+    <div class="content">
+        <div class="row">
+            <h2 class="tab-title">Service Exchange Agreement</h2>
+        </div>
+        <div class="row">
+            <p>
+                This Service Exchange Agreement is entered into by and between American Fidelity Assurance Company ("American Fidelity") and
+                <u> {!eForm.Enrollment_Opportunity__r.Account.Name}  </u> ("Customer"), who in consideration of the mutual agreements and promises contained herein, agree to
+                work together as described in this Service Exchange Agreement.  This Service Exchange Agreement shall be effective on the date
+                signed by American Fidelity, and shall continue until terminated or modified by agreement of the parties.
+            </p>
+        </div>
+        <div class="row">
+            <h4>
+                American Fidelity will provide to Customer the following services (the "Services"):
+            </h4>
+            <ul>
+                <li>Section 125 Plan Administrative Services</li>
+                <li>Healthcare Flexible Spending Account Administrative Services</li>
+                <li>Benefits Debit Card Services for Healthcare FSA Participants</li>
+                <li>Annual Enrollment (American Fidelity’s or Customer’s platform)</li>
+                <li>Year-Round Support from a dedicated Account Manager</li>
+            </ul>
+        </div>
+        <div class="row">
+            <h4>
+                In exchange for the Services, Customer shall:
+            </h4>
+            <h7><i>Products</i></h7>
+            <ul>
+                <li>Allow American Fidelity to be the primary provider for supplemental insurance products; and</li>
+                <li>Give American Fidelity the opportunity to offer insurance products to all eligible employees.</li>
+            </ul>
+            <h7><i>Communication</i></h7>
+            <ul>
+                <li>Permit American Fidelity opportunities to present to employees or employee groups prior to enrollment;</li>
+                <li>Facilitate one-on-one meetings of employees with American Fidelity to discuss employee benefit options and 
+                    as applicable, to make their annual Section 125 Plan enrollment elections; and</li>
+                <li>Provide working space for American Fidelity during enrollment meetings.</li>
+            </ul>
+            <h7><i>Administration</i></h7>
+            <ul>
+                <li>Provide a complete employee census to American Fidelity each year;</li>
+                <li>Provide other administrative services to American Fidelity as may be mutually agreed to by the parties; and</li>
+                <li>Provide payroll deduction for American Fidelity products and services.</li>
+            </ul>
+        </div>
+        
+        <div class="row">
+            <h4>
+                By agreeing to the Services, Customer acknowledges its understanding of the following:
+            </h4>
+            <ul>
+                <li>The Services described above will be provided to the extent allowed by law;</li>
+                <li>American Fidelity does not provide tax or legal advice;</li>
+                <li>American Fidelity reserves the right to change the delivery of Services and cost associated with them, but only
+                    with advanced written communication to Customer.</li>
+            </ul>
+        </div>
+        
+        <div class="row">
+            <p>
+                Intending to be bound, American Fidelity and Customer have caused their duly authorized representatives to execute
+                this Service Exchange Agreement.
+            </p>
+        </div>
+        
+        <table class="signature">
+            <tr>
+                <td colspan="3">AMERICAN FIDELITY OFFICER</td>
+                <td style="width: 10%;"></td>
+                <td colspan="3" class="customerLeftCol">CUSTOMER</td>
+            </tr>
+            <tr>            
+                <td style="border-bottom:solid;"><apex:image id="JeannetteSig" url="{!URLFOR($Resource.Signatures, 'Jeanette_Rice_Signature.png')}" width="200px"/></td>
+                <td style="width: 5%;"></td>
+                <td style="border-bottom:solid;vertical-align: bottom;" class="AFARightCol">
+                    <apex:outputText value="{0,date,MM/dd/yyyy}">
+                        <apex:param value="{!Today()}" />
+                    </apex:outputText></td>
+                <td></td>
+                <td style="border-bottom:solid;" class="customerLeftCol"><apex:image url="/servlet/servlet.FileDownload?file={!signature.Id}" width="200px" rendered="{!IF(NOT(ISBLANK(signature.Id)),true,false)}"/>&nbsp;</td>
+                <td></td>
+                <td style="border-bottom:solid;"></td>
+            </tr>
+            <tr>
+                <td><b>Signature</b></td> 
+                <td></td>
+                <td>Date</td>
+                <td></td>
+                <td><b>Signature</b></td>
+                <td></td>
+                <td>Date</td>
+            </tr>
+            <tr>
+                <td style="border-bottom:solid;">Jeanette Rice</td>
+                <td></td>
+                <td style="border-bottom:solid; width: 100px;">
+                    <apex:outputText value="{0,date,MM/dd/yyyy}">
+                        <apex:param value="{!Today()}" />
+                    </apex:outputText></td>
+                <td></td>
+                <td style="border-bottom:solid; width: 200px;">{!eForm.Printed_Signature__c}&nbsp;</td>
+                <td style="width: 5%;"></td>
+                <td style="border-bottom:solid;  width: 100px;"></td>
+            </tr>
+            <tr>
+                <td><b>Printed Name</b></td>
+                <td></td>
+                <td>Date</td>
+                <td></td>
+                <td class="customerLeftCol"><b>Printed Name</b></td>
+                <td></td>
+                <td>Date</td>                            
+            </tr>
+        </table> 
+    </div>
+</apex:page>

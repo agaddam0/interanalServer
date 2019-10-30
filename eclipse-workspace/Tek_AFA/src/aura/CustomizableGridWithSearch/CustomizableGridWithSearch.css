@@ -1,0 +1,8 @@
+.THIS {
+    /* for Salesforce's new background */
+    background-color: token(colorBackgroundAlt);
+}
+
+.THIS .af-alternate-row {
+	background-color: token(AFAgrey1);
+}

@@ -1,0 +1,3 @@
+<aura:event type="APPLICATION" description="This event passes the line items back to the Shopping Cart container">
+    <aura:attribute name="OrderLineItems" type="Order_Line_Item__c[]" />
+</aura:event>

@@ -1,0 +1,943 @@
+<apex:page sidebar="false" standardStylesheets="true" showHeader="false" 
+           standardController="Platform_Setup__c" extensions="PlatformSetupFormCTRL" docType="html-5.0">
+    <head> 
+        
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"/>
+        <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"/>
+        
+        <apex:includeScript value="{!URLFOR($Resource.bootstrap3, 'js/bootstrap.min.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.bootstrapExtra, 'bootstrap-3.3.1/js/tab.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.datepicker, 'datepicker/js/bootstrap-datepicker.js')}"/>
+        <apex:includeScript value="{!URLFOR($Resource.jQueryNumeric, 'js/jquery.numeric.min.js')}"/>
+        
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.css')}"/>
+        <apex:stylesheet value="{!URLFOR($Resource.bootstrap, 'bootstrap/css/bootstrap.min.css')}"/>
+        <apex:stylesheet value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css"/>
+        
+        
+        
+        <!--------------- Include StyleSheet ---------------------------->     
+        <apex:include pageName="SetupFormsStyleSheet"/>
+        
+        <style>
+            .nav {
+                margin-bottom: 0px;
+            }
+            
+            .auditOfInputContainer table,
+            .verificationTypeInputContainer table {
+                width: 500px;
+            }
+            
+            .whichEmployeesToIncludeInputContainer table {
+                width: 700px;
+            }
+            
+            .enrollmentOccurenceInputContainer table {
+                width: 500px;
+            }
+
+            /*
+               LF: For some reason the height of the texas life tab and dvr Info Tabs
+               cause the sub-tabs to not be scrollable when the height
+               isn't big enough. It seems to be some bug in the fixit plugin
+               but have not been able to diagnose it.
+            */
+            #texasLifeTab,
+            #dvrInfoTab {
+                min-height: 700px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <apex:pageBlock id="thePageBlock">
+            <apex:form id="theForm">
+                <apex:outputPanel id="page">  
+                    <!---------------------------- TAB DEFINITIONS -------------------------------------->
+                    <div class="container af-container" >
+                        <div class="af-header">
+                            <c:SetupFormsNavBar formName="platformSetup" efId="{!enrollmentForm.Id}" submitLabel="Submit Platform Setup"/>
+                        
+	                        <div class="header-tabs">
+	                            <apex:outputPanel id="tabPanel">
+	                                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+	                                    <li ><a href="#texasLifeTab" data-toggle="tab" id="texasLifeLink" class="{! if(texasLifeTabComplete, 'af-tab-complete', 'af-tab-incomplete') }" style="{!if(Platform_Setup__c.Tx_Life_Will_Tx_Life_be_set_up__c != 'Yes','display:none','')}">Texas Life</a></li>
+	                                    <li><a href="#dvrInfoTab" data-toggle="tab" id="dvrInfoLink" class="{! if(dvrInfoTabComplete, 'af-tab-complete', 'af-tab-incomplete') }" style="{!if(Platform_Setup__c.DVR_Info_WillThereBeDependent_Verif__c != 'Yes','display:none','')}">DVR Info</a></li>
+	                                    <li><a href="#125otherServicesTab" data-toggle="tab" id="servicesInfoLink" class="{! if(s125servicesTabComplete, 'af-tab-complete', 'af-tab-incomplete') }">Services Info</a></li>
+	                                    <li><a href="#coreBenefitsTab" data-toggle="tab" id="coreBenefitsLink" class="{! if(coreDetailsTabComplete, 'af-tab-complete', 'af-tab-incomplete') }">Core Benefits Information</a></li>
+	                                </ul>
+	                                <script>
+	                                // tab event handler.  Use to enable/disable buttons. Needs to be here due to rerendering of tabPanel  
+	                                var currentTab;
+	                                
+	                                //need to delete hidden tabs
+	                                $('#tabs > li').each(function(i, val) { 
+	                                    var anchor = this.firstChild;
+	                                    if ( !$(anchor).is(':visible')) {
+	                                        console.log('**** removing '+ $(anchor).html());
+	                                        $(val).remove();                     
+	                                    }
+	                                });
+	                                
+	                                $('.nav-tabs a').on('show.bs.tab', function(){
+	                                    if ($(this).parent().is(':last-child')) {
+	                                        $("#nextTabButton").hide();
+	                                        
+	                                        if ({!formIsSubmitted == false}) {
+	                                            $("#submitAndContinueButton").show();
+	                                        }
+	                                    }
+	                                    else {
+	                                        $("#nextTabButton").show();
+	                                        $("#submitAndContinueButton").hide();
+	                                    }
+	                                    
+	                                    if ($(this).parent().is(':first-child')){
+	                                        console.log('**** tab handler: hiding prevTabButton');
+	                                        $("#prevTabButton").hide();
+	                                    }
+	                                    else {
+	                                        console.log('**** tab handler: showing prevTabButton');
+	                                        $("#prevTabButton").show();
+	                                    }
+	                                    
+	                                    currentTab='#'+$(this).attr('id');
+	                                    
+	                                    console.log('**** tab handler: '+currentTab);
+	                                    console.log('**** isFirstChild: '+$(this).parent().is(':first-child'));
+	                                    console.log('**** isLastChild: ' +$(this).parent().is(':last-child'));
+	                                });
+	                                
+	                                function nextTab() {
+	                                    $('#tabs > .active').next('li').find('a').click();
+	                                } 
+	                                
+	                                function  prevTab() {
+	                                    $('#tabs > .active').prev('li').find('a').click();
+	                                }
+	                                
+	                                // Luke Freeland: Added this so Salesforce won't automatically set
+	                                // focus to a date field.
+	                                function setFocusOnLoad() {}
+	                                
+	                                
+	                                </script>   
+	                                
+	                            </apex:outputPanel>
+	                        </div> <!-- end header-tabs -->
+                        </div>
+                        <div class="content">
+                            <apex:outputPanel id="messages">
+		                        <apex:pageMessages />
+		                    </apex:outputPanel>
+                            <span id="submitMessage" style="margin-left:10px;font-size:16pt;color:red;display:none"></span>
+                        
+                            <apex:outputPanel id="allTabs">
+                                
+                                
+                                <div id="my-tab-content" class="tab-content">
+                                    
+                                    <div class="tab-pane active" id="texasLifeTab">
+                                        <apex:outputPanel id="texasLifePanel">
+                                            
+                                            <table id="texasLifeTable" class="formtable texasLife" style="width:100%">
+                                                <tr>
+                                                    <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Will_Tx_Life_be_set_up__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_Will_Tx_Life_be_set_up__c')]}"/></td>
+                                                    <td class="fieldLabel "><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.TXLifeFirstDedDate__c.Label }<c:cHelp helpText="{!hMap[LOWER('TXLifeFirstDedDate__c')]}"/></div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding-left:25px;padding-top:6px"><apex:outputField value="{!Platform_Setup__c.Tx_Life_Will_Tx_Life_be_set_up__c}"/></td>
+                                                    <td><apex:inputField value="{!Platform_Setup__c.TXLifeFirstDedDate__c}" onchange="saveRecord();"/></td>
+                                                    
+                                                </tr>
+                                            </table>
+                                             
+                                            <table  style="display:none;" class="formtable texasLife">
+
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Is_new_case_of_a_re_enrol__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_Is_new_case_of_a_re_enrol__c')]}"/></div></td>
+                                                    <td class="fieldLabel ">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Texas_Life_Risk_States__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_Texas_Life_Risk_States__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField value="{!Platform_Setup__c.Tx_Life_Is_new_case_of_a_re_enrol__c}"  onchange="saveRecord();"/></td>
+                                                    <td ><apex:outputField value="{!Platform_Setup__c.Tx_Life_Texas_Life_Risk_States__c}"/></td>
+                                                </tr>
+                                                
+                                                
+                                                <tr>
+                                                    <td  class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Bill_Type__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_Bill_Type__c')]}"/></div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="vertical-align:top"><apex:inputField value="{!Platform_Setup__c.Tx_Life_Bill_Type__c}" onchange="saveRecord();if(this.value == 'Common' && '{!enrollmentOpp.Division__c}' == 'AWD')$('.mgrApproved').show();else $('.mgrApproved').hide();"/></td>
+                                                </tr>
+                                                
+                                                
+                                                <tr  >
+                                                    <td  class="fieldLabel mgrApproved">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_District_Manager_Approved__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_District_Manager_Approved__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class=" mgrApproved"  style="vertical-align:top"><apex:inputField value="{!Platform_Setup__c.Tx_Life_District_Manager_Approved__c}" onchange="saveRecord();"/></td>
+                                                </tr>
+                                            </table>
+                                            <table class="formtable">
+                                                <tr>
+                                                    <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_SSR_Comments__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_SSR_Comments__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td ><apex:inputTextArea value="{!Platform_Setup__c.Tx_Life_SSR_Comments__c}" onblur="saveRecord();" style="width:800px" rows="4" /></td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <div class="sectionHeader texasLife">
+                                                <apex:outputText styleclass="sectionLabel" value="Additional Details"/>
+                                            </div>
+                                            
+                                            
+                                            <table class="texasLife">
+                                                <tr>
+                                                    <td  class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.TXLifeBrokerInvolved__c.Label }<c:cHelp helpText="{!hMap[LOWER('TXLifeBrokerInvolved__c')]}"/></div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputField id="brokerinvolved" value="{!Platform_Setup__c.TXLifeBrokerInvolved__c}" onchange="saveRecord();if (this.checked) $('.broker').show();else $('.broker').hide();"/></td>
+                                                </tr>
+                                                
+                                                
+                                                <tr class="broker" style="display:none;">
+                                                    <td class="fieldLabel" ><div >{! $ObjectType.Platform_Setup__c.Fields.TXLifeBrokerName__c.Label }<c:cHelp helpText="{!hMap[LOWER('TXLifeBrokerName__c')]}"/></div></td>
+                                                </tr>
+                                                <tr class="broker" style="display:none;">
+                                                    <td><apex:inputField value="{!Platform_Setup__c.TXLifeBrokerName__c}" onchange="saveRecord();" /></td>
+                                                </tr>
+                                                
+                                                
+                                                <tr class="broker" style="display:none;">
+                                                    <td   class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.TXLifeBrokerEmail__c.Label }<c:cHelp helpText="{!hMap[LOWER('TXLifeBrokerEmail__c')]}"/></div></td>
+                                                </tr>
+                                                <tr class="broker" style="display:none;">
+                                                    <td><apex:inputField value="{!Platform_Setup__c.TXLifeBrokerEmail__c}" onchange="saveRecord();"  type="email"/></td>
+                                                </tr>
+                                                
+                                                
+                                                <tr class="broker" style="display:none;">
+                                                    <td   class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.TXLifeBrokerPhone__c.Label }<c:cHelp helpText="{!hMap[LOWER('TXLifeBrokerPhone__c')]}"/></div></td>
+                                                </tr>
+                                                <tr class="broker" style="display:none;">
+                                                    <td ><apex:inputField value="{!Platform_Setup__c.TXLifeBrokerPhone__c}" onchange="saveRecord();" type="tel"/></td>
+                                                </tr>
+                                                
+                                            </table>
+                                            
+                                            <script>
+                                            if ("{!Platform_Setup__c.TXLifeBrokerInvolved__c}" == "true")
+                                                $('.broker').show();
+                                            else
+                                                $('.broker').hide();
+                                            </script>
+                                            
+                                            
+                                            <div class="sectionHeader texasLife">
+                                                <apex:outputText styleclass="sectionLabel" value="Supplies"/>
+                                            </div>
+                                            
+                                            <table class="formtable texasLife">
+                                                
+                                                
+                                                <tr>
+                                                    <td   class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_Brochure_Quantity__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_Supplies_Brochure_Quantity__c')]}"/></div></td>
+                                                    <td   class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_City__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_Supplies_City__c')]}"/></div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td ><apex:inputField value="{!Platform_Setup__c.Tx_Life_Supplies_Brochure_Quantity__c}" onchange="saveRecord();"/></td>
+                                                    <td ><apex:inputField value="{!Platform_Setup__c.Tx_Life_Supplies_City__c}" onblur="saveRecord();"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td   class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_Name__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_Supplies_Name__c')]}"/></div></td>
+                                                    <td   class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_State__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_Supplies_State__c')]}"/></div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td ><apex:inputField value="{!Platform_Setup__c.Tx_Life_Supplies_Name__c}" onchange="saveRecord();"/></td>
+                                                    <td ><apex:inputField value="{!Platform_Setup__c.Tx_Life_Supplies_State__c}" onblur="saveRecord();"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td   class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_Address__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_Supplies_Address__c')]}"/></div></td>
+                                                    <td   class="fieldLabel"><div >{! $ObjectType.Platform_Setup__c.Fields.Tx_Life_Supplies_Zip__c.Label }<c:cHelp helpText="{!hMap[LOWER('Tx_Life_Supplies_Zip__c')]}"/></div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td ><apex:inputField value="{!Platform_Setup__c.Tx_Life_Supplies_Address__c}" onblur="saveRecord();"/></td>
+                                                    <td ><apex:inputField value="{!Platform_Setup__c.Tx_Life_Supplies_Zip__c}" onblur="saveRecord();"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td   class="fieldLabel"><div ></div></td>
+                                                </tr>
+                                            </table>    
+                                            
+                                        </apex:outputPanel>  <!--  end texasLifePanel -->
+                                        <script>
+                                        
+                                        
+                                        if("{!Platform_Setup__c.Tx_Life_Will_Tx_Life_be_set_up__c}" == 'Yes')
+                                        {
+                                            $('.texasLife').show();
+                                            if('{!enrollmentOpp.Division__c}' == 'AWD' && '{!Platform_Setup__c.Tx_Life_Bill_Type__c}' == 'Common')
+                                                $('.mgrApproved').show();
+                                            else
+                                                $('.mgrApproved').hide(); 
+                                        }
+                                        else
+                                        {
+                                            $('.texasLife').hide();
+                                        }
+                                        </script>
+                                        
+                                    </div>   <!--  END Texas Life Tab -->
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    <div class="tab-pane" id="dvrInfoTab">
+                                        <apex:outputPanel id="dvrInfoPanel">
+                                            
+                                            <table   class="formtable " style="width:50%">
+                                                <tr>
+                                                    <td  class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.DVR_Info_WillThereBeDependent_Verif__c.Label }<c:cHelp helpText="{!hMap[LOWER('DVR_Info_WillThereBeDependent_Verif__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  style="padding-left:25px"><apex:outputField value="{!Platform_Setup__c.DVR_Info_WillThereBeDependent_Verif__c}" /></td>
+                                                </tr> 
+                                                <tr class="dvrInfo">
+                                                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.DVR_Info_dependent_SSNs_required__c.Label } <c:cHelp helpText="{!hMap[LOWER('DVR_Info_dependent_SSNs_required__c')]}"/></div></td>
+                                                </tr>
+                                                <tr>
+                                                	<td><apex:inputField value="{!Platform_Setup__c.DVR_Info_dependent_SSNs_required__c}" onchange="saveRecord();"/></td>
+                                                </tr>
+                                                <tr class="dvrInfo">
+                                                    <td class="fieldLabel"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.DVR_Info_Include__c.Label }<c:cHelp helpText="{!hMap[LOWER('DVR_Info_Include__c')]}"/></div></td>
+                                                </tr>
+                                                <tr class="dvrInfo">
+                                                    <td class="whichEmployeesToIncludeInputContainer"><apex:inputField id="dvrInclude" value="{!Platform_Setup__c.DVR_Info_Include__c}" styleClass="myMultiClass" onchange="saveRecord();"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fieldLabel">DVR Notes<c:cHelp helpText="{!hMap[LOWER('DVR_Notes__c')]}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><apex:inputTextArea id="DVR_Notes" style="width:900px" rows="4" value="{!Platform_Setup__c.DVR_Notes__c}" onchange="saveRecord();"/></td>
+                                                </tr>
+                                            </table> 
+                                        </apex:outputPanel>  <!--  end DVR Tab -->
+                                    </div>
+                                    
+                                    <div class="tab-pane " id="125otherServicesTab">
+                                        
+                                        <div class="sectionHeader">
+                                            <apex:outputText styleclass="sectionLabel" value="Section 125 Plan Information"/>
+                                        </div>      
+                                        
+                                        
+                                        <table   class="formtable">
+                                            
+                                            <tr>
+                                                <td class="fieldLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcHaveAFASection125__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcHaveAFASection125__c')]}"/></td>
+                                                <td class="fieldLabel s125"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcPlanStartDate__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcPlanStartDate__c')]}"/></div></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding-left:25px"><apex:outputField value="{!Platform_Setup__c.S125OtherSvcHaveAFASection125__c}" /></td>
+                                                <td class="s125"><apex:inputField value="{!Platform_Setup__c.S125OtherSvcPlanStartDate__c}" onchange="saveRecord();"/></td>
+                                            </tr>
+                                            
+                                            
+                                            <tr>
+                                                <td  class="fieldLabel s125"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcPlanYearDesc__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcPlanYearDesc__c')]}"/></div></td>
+                                                <td class="fieldLabel s125"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcPlanEndDate__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcPlanEndDate__c')]}"/></div></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="s125" ><apex:inputField value="{!Platform_Setup__c.S125OtherSvcPlanYearDesc__c}" onchange="saveRecord();"/></td>
+                                                <td  class="s125"><apex:inputField value="{!Platform_Setup__c.S125OtherSvcPlanEndDate__c}" onchange="saveRecord();"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td  class="fieldLabel s125No"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcHaveSection125WithAnotherCo__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcHaveSection125WithAnotherCo__c')]}"/></div></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="s125No"><apex:inputField value="{!Platform_Setup__c.S125OtherSvcHaveSection125WithAnotherCo__c}" onchange="saveRecord();"/></td>
+                                            </tr>
+                                            
+                                            
+                                        </table>
+                                        
+                                        
+                                        <div class="sectionHeader s125">
+                                            <apex:outputText styleclass="sectionLabel" value="FSA Details"/>
+                                        </div>      
+                                        
+                                        <table   class="formtable ">
+                                            
+                                            <tr>
+                                                <td  class="fieldLabel s125"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcIsThereFSA__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcIsThereFSA__c')]}"/> </div></td>
+                                                <td class="fieldLabel hasFSA "><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcFlexEffDate__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcFlexEffDate__c')]}"/> </div></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="s125"><apex:inputField id="isFSA" value="{!Platform_Setup__c.S125OtherSvcIsThereFSA__c}"  onchange="saveRecord();setFSAVisibility(this.value);" /></td>
+                                                <td class="hasFSA"><apex:inputField value="{!Platform_Setup__c.S125OtherSvcFlexEffDate__c}" onchange="saveRecord();"/></td>
+                                            </tr>
+                                            
+                                            
+                                            <tr>
+                                                <td  class="fieldLabel hasFSA"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcHealthFSAMin__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcHealthFSAMin__c')]}"/> </div></td>
+                                                <td class="fieldLabel hasFSA">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcDDCMin__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcDDCMin__c')]}"/> </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="hasFSA"><apex:inputField value="{!Platform_Setup__c.S125OtherSvcHealthFSAMin__c}" onchange="saveRecord();"/></td>
+                                                <td class="hasFSA"><apex:inputField value="{!Platform_Setup__c.S125OtherSvcDDCMin__c}" onchange="saveRecord();"/></td>
+                                            </tr>
+                                            
+                                            
+                                            <tr  >
+                                                <td  class="fieldLabel hasFSA"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcHealthFSAMax__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcHealthFSAMax__c')]}"/></div></td>
+                                                <td class="fieldLabel hasFSA">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcDDCMax__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcDDCMax__c')]}"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="hasFSA"><apex:inputField value="{!Platform_Setup__c.S125OtherSvcHealthFSAMax__c}" onchange="saveRecord();" /></td>
+                                                <td class="hasFSA" ><apex:inputField value="{!Platform_Setup__c.S125OtherSvcDDCMax__c}" onchange="saveRecord();"/></td>
+                                            </tr>
+                                            
+                                            
+                                        </table>      
+                                        
+                                        <table class="formtable">
+                                            
+                                            
+                                            <tr>
+                                                <td class="fieldLabel hasFSA"><div class="requiredLabel">Admin Fee<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcAdminFee__c')]}"/></div></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="hasFSA"><apex:inputField id="hasAdminFee"  value="{!Platform_Setup__c.S125OtherSvcAdminFee__c}" onchange="saveRecord(); showFSAAdminFeeAmount(this.value);"/></td>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <td class="fieldLabel hasFSA fsaAdminFee"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcAmount__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcAmount__c')]}"/></div></td>
+                                            </tr>
+                                            <tr>
+                                                <td  class="hasFSA fsaAdminFee"><apex:inputField value="{!Platform_Setup__c.S125OtherSvcAmount__c}" onchange="saveRecord();"/></td>
+                                            </tr>
+                                            
+                                            
+                                            <tr>
+                                                <td   class="fieldLabel hasFSA"><div class="requiredLabel">{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcDebitCard__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcDebitCard__c')]}"/> </div></td>
+                                            </tr>
+                                            <tr>
+                                                <td  class="hasFSA"><apex:inputField value="{!Platform_Setup__c.S125OtherSvcDebitCard__c}" onchange="saveRecord();"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td   class="fieldLabel hasFSA"><div >{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcDebitCardFee__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcDebitCardFee__c')]}"/> </div></td>
+                                            </tr>
+                                            <tr>
+                                                <td  class="hasFSA"><apex:inputField value="{!Platform_Setup__c.S125OtherSvcDebitCardFee__c}" onchange="saveRecord();"/></td>
+                                                <td/>
+                                            </tr>
+                                        </table> 
+                                        
+                                        
+                                        
+                                        <div class="sectionHeader s125">
+                                            <apex:outputText styleclass="sectionLabel" value="Other Services"/>
+                                        </div>      
+                                        
+                                        <table class="formtable" style="width:40%">
+                                            
+                                            
+                                            <tr>
+                                                <td   class="fieldLabel s125"><div >{! $ObjectType.Platform_Setup__c.Fields.S125OtherSvcHSA__c.Label }<c:cHelp helpText="{!hMap[LOWER('S125OtherSvcHSA__c')]}"/></div></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="s125" ><apex:inputField value="{!Platform_Setup__c.S125OtherSvcHSA__c}" onchange="saveRecord();"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td   class="fieldLabel s125"><div >{! $ObjectType.Platform_Setup__c.Fields.X125_HRA_Plan__c.Label }<c:cHelp helpText="{!hMap[LOWER('X125_HRA_Plan__c')]}"/></div></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="s125" ><apex:inputField id="x125HRAPlan" value="{!Platform_Setup__c.X125_HRA_Plan__c}" onchange="saveRecord();"/></td>
+                                            </tr>
+                                        </table>
+                                        <script>
+                                        
+                                        if ('{!Platform_Setup__c.S125OtherSvcHaveAFASection125__c}' == 'Yes') {
+                                            $('.s125').show(); 
+                                            $('.s125No').hide();
+                                            if($('[id*=isFSA]').val() == 'Yes')
+                                                $('.hasFSA').show();
+                                        }
+                                        else {
+                                            $('.s125').hide();
+                                            $('.s125No').show();
+                                            $('.hasFSA').hide();
+                                            
+                                        }
+                                        
+                                        
+                                        setFSAVisibility('{!Platform_Setup__c.S125OtherSvcIsThereFSA__c}');
+                                        function setFSAVisibility(value)
+                                        {
+                                            if(value == 'Yes') 
+                                                $('.hasFSA').show();
+                                            else 
+                                                $('.hasFSA').hide();
+                                        }               
+                                        </script>        
+                                        
+                                    </div>  <!-- End S125 Tab -->
+                                    
+                                    
+                                    <div class="tab-pane " id="coreBenefitsTab">
+                                        <!-- Marketing Information -->
+                                        <c:EnrollmentSectionForm fieldSetName="Core_Section"
+                                                                 record="{! p }"
+                                                                 onChangeFunctionNameToCall="saveRecord"
+                                                                 numberOfLayoutColumns="{! $Label.Number_of_Platform_Setup_Core_Section_Columns }"  />
+                                        
+                                        
+                                        <div id="coreBenefitsContainer" style="display:none;">
+                                        <apex:outputPanel id="coreBenefitsPanel" layout="block">
+                                            <input type="button" value="+ Add Benefit"  class="gbtn gbtnSecondary" onclick="addBenefit();"/> 
+                                            <table  style="margin-top:15px; width:95%" class="table table-bordered">
+                                                <thead style="background-color:#2989d8; color:#FFF">
+                                                    <tr>
+                                                        <th style="width:75px" class="removeBenefit"/>
+                                                        <th >Plan Name</th>
+                                                        <th >Carrier</th>
+                                                        <th>Product Description</th>
+                                                        <th>Rates</th>
+                                                        <th>Other Information</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    
+                                                    <apex:repeat value="{!coreBenefits}" var="b">
+                                                        
+                                                        <tr>
+                                                            <td class="removeBenefit"> 
+                                                                <a href="#" onclick="deleteBenefit('{!b.Id}');">[Remove]</a>
+                                                            </td>
+                                                            <td> <apex:inputField value="{!b.Plan_Name__c}"  onblur="updateBenefit('{!b.Id}', 'Plan_Name__c', this.value)"/> </td>
+                                                            <td> <apex:inputField value="{!b.Carrier__c}"    onchange="updateBenefit('{!b.Id}', 'Carrier__c', this.value)"/> </td>
+                                                            <td> <apex:inputField value="{!b.Product_Description__c}"   onchange="updateBenefit('{!b.Id}', 'Product_Description__c', this.value)"/> </td>
+                                                            <td> <apex:inputField value="{!b.Rates__c}"   onchange="updateBenefit('{!b.Id}', 'Rates__c', this.value)"/> </td>
+                                                            <td> <apex:inputField value="{!b.OtherInformation__c}"    onchange="updateBenefit('{!b.Id}', 'OtherInformation__c', this.value)"/> </td>
+                                                        </tr>
+                                                        
+                                                    </apex:repeat>
+                                                </tbody>
+                                            </table>         
+                                        </apex:outputPanel>  <!-- end coreBenefitsPanel -->
+                                        </div>
+                                        
+                                    </div>
+                                    
+                                    <c:UnlockRequest efId="{! If(enrollmentForm != null, enrollmentForm.Id, null) }" />
+                                </div>    <!-- End Tab Content -->
+                                
+                                <c:CustomMultiSelectPicklist fieldsToReplace="dvrInclude" />
+                                
+                                <apex:ActionFunction name="saveRecord" action="{!save}" rerender="messages,tabPanel"  oncomplete="$(currentTab).click();"/>  
+                                <apex:ActionFunction name="checkRequiredFieldsAndDisplay"  action="{!checkRequiredFieldsAndDisplay}" oncomplete="submitForm();" rerender="allTabs, tabPanel"  status="sts"/>
+                                <apex:ActionFunction name="submitFormCTRL" action="{!submitForm}" rerender="page, messages, navBarOutputPanel" oncomplete="$('#platformSetup').addClass('formSubmitted'); onSuccessfulSubmit();"  status="sts"/>
+                                <apex:ActionFunction name="updateEnrollmentForm" action="{!updateEnrollmentForm}" rerender="page" oncomplete="$('#platformSetup').removeClass('formSubmitted'); $('#platformSetup').addClass('formNotSubmitted');window.location.reload();" status="sts" >
+                                    <apex:param name="name" assignTo="{!fieldName}" value="" />
+                                    <apex:param name="value" assignTo="{!fieldValue}" value="" />
+                                </apex:ActionFunction>
+                                
+                                <apex:actionFunction name="addBenefit" action="{!AddBenefitNew}" rerender="messages, coreBenefitsPanel"/>
+                                
+                                <apex:actionFunction name="updateBenefit" action="{!updateBenefit}" rerender="messages">
+                                    <apex:param name="benefit" value="" assignTo="{!BenefitID}"/>
+                                    <apex:param name="name" assignTo="{!fieldName}" value="" />
+                                    <apex:param name="value" assignTo="{!fieldValue}" value="" />
+                                </apex:actionFunction>
+                                <apex:ActionFunction name="deleteBenefit" action="{!deleteBenefit}" rerender="messages, coreBenefitsPanel">
+                                    <apex:param name="BenefitIdToDelete" value="" assignTo="{!BenefitIdToDelete}"/>
+                                </apex:ActionFunction>
+                                <apex:actionstatus id="sts">
+                                    <apex:facet name="start">
+                                        <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb; height:150%;opacity:0.65;width:100%;">
+                                            <div class="waitingHolder" style="top: 130px; width: 91px;">
+                                                <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                                                <span class="waitingDescription">Please Wait...</span>
+                                            </div>
+                                        </div>
+                                    </apex:facet>
+                                </apex:actionstatus>  
+                                
+                                <apex:ActionFunction name="reloadThePage" action="{!reloadPage}" />
+
+				                <apex:ActionFunction name="createUnlockRequest" action="{! createUnlockRequest }" rerender="page" status="sts" oncomplete="reloadThePage2();">
+				                    <apex:param name="unlockReason" assignTo="{! UnlockReason }" value="" />
+				                </apex:ActionFunction>
+
+				                <apex:ActionFunction name="lockSetupForms" action="{! completeUnlockRequest }" rerender="page" status="sts" oncomplete="reloadThePage2();" />
+
+                                <script>
+                                
+                                // page setup script
+                                // must run in area that is rerendered ("page")
+                                
+                                // setup numeric plugin - prevents alpha characters
+                                $("input.numeric3").numeric(",");      
+                                $("input.numeric").numeric();    
+                                
+                                // show required field indicators  
+                                $('.requiredLabel').css('visibility' , 'visible');
+                                
+                                // get rid of error messages
+                                $('[Id$=page]').click(function() {
+                                    $('#submitMessage').empty();
+                                    $('#submitMessage').hide();
+                                }); 
+                                
+                                //Status Indicator
+                                if ({!!formIsSubmitted})
+                                    $("#status").attr("style", "color:red;");
+                                else
+                                    $("#status").attr("style", "color:#0B0;");
+                                
+                                replacePicklists({! formIsSubmitted && IsUnlocked == false });
+                                
+                                setFormColor("color", "#54698D");  //dk blue 
+                                
+                                //When form has been submitted, lock down form - allow no changes - 
+                                // Add to this code as necessary
+                                
+                                if ({!formIsSubmitted && IsUnlocked == false})
+                                { 
+                                    setFormColor("background-color","#EAECEC");
+                                    
+                                    $('input[type=button]').each(function() {
+                                        $(this).attr({
+                                            'disabled': 'disabled'
+                                        });
+                                    });
+                                    
+                                    
+                                    /* jhicks 10/2016 removed comment here */
+                                    $('select').each(function() {
+                                        $(this).attr({
+                                            'disabled': 'disabled'
+                                        });
+                                    });
+                                    
+                                    $('textarea').each(function() {
+                                        $(this).attr({
+                                            'disabled': 'disabled'
+                                        });
+                                    });
+                                    
+                                    $('input').each(function() {
+                                        $(this).attr({
+                                            'disabled': 'disabled'
+                                        });
+                                    });
+                                    
+                                    // $('.requiredLabel').css('visibility' , 'hidden');    
+                                    $('.requiredLabel').toggleClass('noshow');
+                                    
+                                    $('#confirmButton').hide();
+                                    
+                                    if ({!!p.Request_Edit__c}){        
+                                        $('#requestEdit').show();
+                                        $('#requestEdit').prop('disabled',false);
+                                    }
+                                    
+                                    $('td.multiSelectPicklistCell').find('img').css('display','none');
+                                    
+                                    /* added for scroll bars */
+                                    setFormColor("background-color","#EAECEC");
+                                    $('.af-header').addClass('af-header-submitted');
+                                    $('html').css('background-color', '#EAECEC');
+                                    
+                                    if ({! $Permission.Unlock_Setup_Forms }) {
+                                        $('#unlockBtn').show();
+                                        $('#unlockBtn').prop('disabled',false);
+                                    }
+                                }  
+                                
+                                else {
+                                    $('.requiredLabel').css('visibility' , 'visible');
+                                    
+                                    if ({! !formIsSubmitted}) {
+                                        $('#confirmButton').show();
+                                        $('#confirmButton').prop('disabled',false);
+                                    }
+                                    
+                                    /** added for scroll bars **/
+                                    setFormColor("background-color","white");
+                                    $('.af-header').removeClass('af-header-submitted');
+                                    $('html').css('background-color', 'white');
+                                    
+                                }
+                                
+                                if ({! formIsSubmitted && IsUnlocked }) {
+                                    $('#lockBtn').show();
+                                }
+                                
+                                /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/      
+                                var goBackToOpp = function()
+                                {
+                                    //alert(typeof sforce);
+                                    if(typeof sforce !== "undefined" && sforce !== null) {
+                                        // Salesforce1 navigation
+                                        sforce.one.navigateToURL("/{!enrollmentOpp.Id}", true);
+                                    } else {
+                                        // Desktop navigation
+                                        window.open("/{!enrollmentOpp.Id}", '_self');
+                                    }
+                                }
+                                /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+                                function showSubmitMessage(msg) {
+                                    var submitMsgEle = document.getElementById("submitMessage");
+                                
+                                    submitMsgEle.innerHTML = msg;
+                                    submitMsgEle.style.display = '';
+                                }
+                                function submitForm() {
+                                    console.log('**** reached js submitForm');
+                                    
+                                    /**************************** jhicks - change this code as needed for page ******************************************/
+                                    
+                                    if ({!!texasLifeTabComplete }) {
+                                        $('#texasLifeLink').click();
+                                        showSubmitMessage("Confirm Failed. Check all required fields.");
+                                    }
+                                    else if ({!!dvrInfoTabComplete}) {
+                                        $('#dvrInfoLink').click();
+                                        showSubmitMessage("Confirm Failed. Check all required fields.");
+                                    }
+                                    else if ({!!s125servicesTabComplete}) {
+                                        $('#servicesInfoLink').click();
+                                        showSubmitMessage("Confirm Failed. Check all required fields.");
+                                    }
+                                    else if ({!!coreDetailsTabComplete}) {
+                                        $('#coreBenefitsLink').click();
+                                        showSubmitMessage("Confirm Failed. Check all required fields.");
+                                    }
+                                    else if('{!enrollmentForm.Status__c}' != 'Confirmed') {
+                                        showSubmitMessage('The General Information form must be confirmed before this form can be submitted.');       
+                                    }
+                                    else {
+                                        console.log('**** calling Controller to submitForm');
+                                        submitFormCTRL();
+                                    }  
+                                    
+                                }
+                                
+                                /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+                                
+                                
+                                function setFormColor(attr,color) {
+                                    $("body .bPageBlock, body #bodyCell .bResource .secondaryPalette, body .secondaryPalette.bPageBlock, body .individualPalette .secondaryPalette.bPageBlock," +
+                                      "body .bodyDiv .genericTable, body .genericPageBlockTable, body .bodyDiv .bSubBlock, body .bComponentBlock .bPageBlock, body .bMyDashboard .bPageBlock," + 
+                                      " body.rlHoverFrame .bPageBlock, body.subjectSelectionPopup div.choicesBox, body.lookupTab .secondaryPalette.bPageBlock, body.popupTab .secondaryPalette.bPageBlock, body.UserTagStatsPage .secondaryPalette.bPageBlock")
+                                    .css(attr, color);
+                                }
+                                
+                                /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+                                function setupPopover() {
+                                    
+                                    /* TBD */
+                                    
+                                }
+                                
+                                /*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+                                $(document).ready(function() {      
+                                    
+                                    // set active tab  
+                                    //$('#tabs > li:first-child').addClass('active');
+                                    $('#tabs > li:first-child').find('a').click();
+                                    
+                                    currentTab = '#'+ $('#tabs > li:first-child > a').attr('id');
+                                    initCoreBenefitsTab();
+                                    
+                                    showFSAAdminFeeAmount('{!Platform_Setup__c.S125OtherSvcAdminFee__c}');
+                                });
+                                
+                                function initCoreBenefitsTab() {
+                                    toggleCoreBenefitsVisibility();
+                                    
+                                    var coreBenefitsField = getCoreBenefitsFieldInput();
+                                    
+                                    coreBenefitsField.change( function() {
+                                        toggleCoreBenefitsVisibility();
+                                    }); 
+                                }
+                                
+                                function toggleCoreBenefitsVisibility() {
+                                    var coreBenefitsField = getCoreBenefitsFieldInput();
+                                    var coreBenefitsValue = coreBenefitsField.val();
+                                    
+                                    if (coreBenefitsValue == 'Generic Folders') {
+                                        showListGenericFolderNames();
+                                        hideCoreBenefitsTable();
+                                    }
+                                    else if (coreBenefitsValue == 'Detailed Core Benefits') {
+                                        showCoreBenefitsTable();
+                                        hideListGenericFolderNames();
+                                    }
+                                    else {
+                                        hideListGenericFolderNames();
+                                        hideCoreBenefitsTable();
+                                    }
+                                }
+                                
+                                function getCoreBenefitsFieldInput() {
+                                    return getJQueryInputField('What_Core_Benefits_will_show_in_the_case__c');
+                                }
+                                
+                                function hideCoreBenefitsTable() {
+                                    var coreBenefitsSection = getCoreBenefitsTable();
+                                
+                                    coreBenefitsSection.hide();
+                                }
+                                
+                                function showCoreBenefitsTable() {
+                                    var coreBenefitsSection = getCoreBenefitsTable();
+                                
+                                    coreBenefitsSection.show();
+                                }
+                                
+                                function getCoreBenefitsTable() {
+                                    var coreBenefitsPanelIDSelector = '#' + 'coreBenefitsContainer'; //'{! $Component.coreBenefitsPanel}';
+                                    return $(coreBenefitsPanelIDSelector);
+                                }
+                                
+                                function hideListGenericFolderNames() {
+                                    var fields = ['List_Generic_Folder_Names__c'];
+                                    
+                                    setDisplayOnFields(fields, false);
+                                }
+                                
+                                function showListGenericFolderNames() {
+                                    var fields = ['List_Generic_Folder_Names__c'];
+                                    
+                                    setDisplayOnFields(fields, true);
+                                }
+                                
+                                function setDisplayOnFields(fields, display) {
+                                    for (var i = 0; i < fields.length; ++i) {
+                                        var fieldName = fields[i];
+                                        var fieldInput = getJQueryInputField(fieldName);
+                                        var fieldInputLabelContainer = getJQueryInputLabelContainer(fieldName);
+                                        
+                                        if (display) {
+                                            fieldInput.show();
+                                            fieldInputLabelContainer.show();
+                                        }
+                                        else {
+                                            fieldInput.hide();
+                                            fieldInputLabelContainer.hide();
+                                        }
+                                    }
+                                }
+                                
+                                function getJQueryInputContainer(fieldName) {
+                                    var fieldInputContainer = $('[af-data-input-field-container^=' +'"' + fieldName + '"]');
+                                    
+                                    return fieldInputContainer;
+                                }
+                                    
+                                function getJQueryInputField(fieldName) {
+                                    var fieldInputContainer = getJQueryInputContainer(fieldName);
+                                    var fieldInput = fieldInputContainer.children('input');
+                                    
+                                    if (fieldInput &&
+                                        fieldInput.length == 0) {
+                                        fieldInput = fieldInputContainer.children('textarea');
+                                        
+                                        if (fieldInput &&
+                                            fieldInput.length == 0) {
+                                            fieldInput = fieldInputContainer.children('select');
+                                        }
+                                    }
+                                
+                                    return fieldInput;
+                                }
+                                
+                                function getJQueryInputLabelContainer(fieldName) {
+                                    var fieldInputLabelContainer = $('[af-data-input-field-label-container^=' +'"' + fieldName + '"]');
+                                
+                                    return fieldInputLabelContainer;
+                                }
+                                
+                                function showFSAAdminFeeAmount(value) {
+                                    if (value &&
+                                        (value == 'Employer' || value == 'Employee')) {
+                                        $('.fsaAdminFee').show();
+                                    }
+                                    else {
+                                        $('.fsaAdminFee').hide();
+                                    }
+                                }
+                                
+                                function onSuccessfulSubmit() {
+                                    var successMsg = 'The platform setup was submitted. ';
+                                    showSuccessMessageAndContinueToNextUnsubmittedForm(successMsg);
+                                }
+                                
+                                function reloadThePage2() {
+                                    // Don't reload the page if there are any errors.
+                                    if ({! HasErrorMessages == false }) {
+                                        reloadThePage();
+                                    }
+                                }
+                                
+                                </script>
+                            </apex:outputPanel>   <!--   end "allTabs" -->
+                            
+                            <!-- Prev/Next Tab Buttons -->
+                            <hr/>      
+                            <div style="margin-top:15px;width:575px;margin-left:125px">
+                                <a class="gbtn gbtnSecondary" href="#"   id="prevTabButton"  onclick="prevTab();" style="color:#FFF;width:66px">❮ Previous</a>
+                                <a class="gbtn gbtnSecondary"   id="nextTabButton"  onclick="nextTab();" style="color:#FFF;width:66px;" href="#">Next ❯</a>
+                                <a class="gbtn gbtnSecondary" id="submitAndContinueButton" style="color:#FFF;" href="#"></a>
+                            </div>
+                            
+                        </div>   <!-- end content -->
+                    </div>     <!--    end "container" -->
+                    
+                </apex:outputPanel> <!-------end "page" --------->
+                <script>
+                var submitAndContinueBtn = $("#submitAndContinueButton");
+                var confirmButton = $("#confirmButton");
+                appendAndContinueToSubmitButtonIfAnotherUnsubmittedForm();
+
+                submitAndContinueBtn.hide();
+
+                // Do the same click as the confirm button click
+                submitAndContinueBtn.click(function() {
+                    $('#confirmButton').click();
+                });
+
+                submitAndContinueBtn.html(confirmButton.val());
+
+
+                $('#tabs > li:first-child > a').click(); 
+                // hide previous button
+                $("#prevTabButton").hide();
+                
+                $( ".helpButton" ).hover(
+                    function() {
+                        $(this).addClass("helpButtonOn");
+                        $(this).removeClass("helpButton");
+                        $(this).children('span.spanText').css("display", "inline");
+                    }, function() {
+                        $(this).removeClass("helpButtonOn");
+                        $(this).addClass("helpButton");
+                        $(this).children('span.spanText').css("display", "none");
+                    }
+                );
+                
+                //$(".af-header").afStickIt();
+                
+                </script>
+            </apex:form>
+        </apex:pageBlock>
+    </body>
+</apex:page>

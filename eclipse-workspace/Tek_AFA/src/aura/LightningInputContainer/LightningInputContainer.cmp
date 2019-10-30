@@ -1,0 +1,38 @@
+<aura:component extensible="true" abstract="true">
+    <aura:attribute name="label" type="String" />
+    <aura:attribute name="class" type="String" />
+    <aura:attribute name="helptext" type="String" />
+    <aura:attribute name="required" type="Boolean" default="false" />
+    <aura:attribute name="value" type="Object" />
+    <aura:attribute name="hideLabelIfBlank" type="Boolean" default="false" />
+    <aura:attribute name="disabled" type="Boolean" default="false" />
+    <aura:attribute name="messageWhenValueMissing" type="String" />
+    <aura:attribute name="labelClass" type="String" />
+    
+    <aura:registerEvent name="fieldChange" type="c:InputChangeEvent" />
+    
+    <aura:method name="focus" />
+    <aura:method name="showRequiredFieldMessage" />
+    <aura:method name="hideRequiredFieldMessage" />
+
+    <div class="{! v.class ? 'slds-form-element ' + v.class : 'slds-form-element' }">
+        <aura:if isTrue="{! or(!v.hideLabelIfBlank, v.label) }">
+        <label class="{! v.labelClass ? 'slds-form-element__label ' + v.labelClass : 'slds-form-element__label' }">
+            
+            <aura:if isTrue="{! v.required }">
+            <span class="slds-required">*</span>
+            </aura:if>
+            
+            <span class="">{! v.label }</span>
+
+            <aura:if isTrue="{! v.helptext }">
+            <lightning:helptext content="{! v.helptext }" class="slds-m-left_x-small slds-float_right af-input-help-text" />
+            </aura:if>
+        </label>
+        </aura:if>
+
+        <div class="slds-form-element__control slds-grow af-lightning-input-container">
+            {! v.body }
+        </div>
+    </div>
+</aura:component>

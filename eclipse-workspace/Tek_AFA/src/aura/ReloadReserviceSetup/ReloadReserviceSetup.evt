@@ -1,0 +1,1 @@
+<aura:event type="APPLICATION" description="Lets the parent Reservice component know that it needs to reload the records." />

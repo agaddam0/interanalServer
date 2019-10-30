@@ -1,0 +1,191 @@
+<aura:component implements="force:appHostable" controller="ProjectBoardController">
+    <aura:attribute name="Projects" type="ProjectBoardController.Project[]" access="private" />
+    <aura:attribute name="SearchResult" type="ProjectBoardController.SearchResult" access="private" />
+    <aura:attribute name="SelectedProjectIds" type="Id[]" access="private" />
+    <aura:attribute name="SelectedMenu" type="String" access="private" />
+    <aura:attribute name="ProjectFilter" type="String" access="private" />
+    <aura:attribute name="ProjectsUpdatedFromReslection" type="Boolean" access="private" default="false" />
+    <aura:attribute name="Accounts" type="Account[]" access="private" />
+    <aura:attribute name="SelectedAccountId" type="Id" access="private" />
+    <aura:attribute name="SelectedAccountName" type="Id" access="private" />
+    <aura:attribute name="SearchText" type="String" access="private" />
+    <aura:attribute name="SortBy" type="String" access="private" />
+    <aura:attribute name="SortByMenuItems" type="Object[]" access="private" />
+    <aura:attribute name="SelectedMenuItem" type="Object" access="private" />
+    <aura:attribute name="navigationSideBarCollapsed" type="Boolean" default="false" access="private" />
+
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+	<aura:handler name="change" value="{! v.Projects }" action="{! c.reselectSelectedProjects }" />
+	
+	<!-- Luke Freeland 8/18/2017: This div that surrounds the main contents was used so that the two main
+	     sub-divs would have a height of 100% of the available space so that the border that separate them
+	     will extend to the bottom of the viewport. -->
+	<div class="oneContent active forceContentWrapper">
+	   <div class="af-project-board-body-container">
+	   
+		   <div class="{! v.navigationSideBarCollapsed == true ? 'af-project-board-navigation-container slds-p-around_small slds-border_right slds-is-relative af-project-board-navigation-container-collapsed' : 'af-project-board-navigation-container slds-p-around_small slds-border_right slds-is-relative' }">
+		       <div class="af-project-board_navigation-subcontainer">
+			       <div>
+			           <lightning:layout >
+			               <lightning:layoutitem size="11">
+			    		       <lightning:input placeholder="Find projects by name..." name="projectSearch"
+			    		                        label=" " class="af-search-box" onchange="{! c.searchRecords }" value="{! v.SearchText }" />
+	    		           </lightning:layoutitem>
+			       
+			               <lightning:layoutitem size="1" class="slds-m-top_large">
+	   		                   <span onclick="{! c.clearSearchText }">
+	   		                       <lightning:icon alternativeText="clear search text" iconName="utility:close" title="Clear search"
+	                                               size="x-small" class="af-clear-search" />
+	                           </span>
+	                       </lightning:layoutitem>
+	                                   
+	                   </lightning:layout>
+			       </div>
+		       
+			       <ui:menu class="slds-is-relative slds-m-top_medium slds-text-heading_medium">
+	                   <ui:menuTriggerLink aura:id="trigger" class="af-project-board-navigation-menu">
+	                       {! v.SelectedMenu }
+	                       <lightning:buttonIcon alternativeText="Filter" iconName="utility:down" class="slds-m-left_medium" />
+	                   </ui:menuTriggerLink>
+	                   <ui:menuList class="af-filter-menu-container" aura:id="actionMenu" visible="true">
+	                       <ui:actionMenuItem label="My Pinned Projects" click="{! c.viewMyPinnedProjects }" class="af-filter-menuitem" />
+	                       <ui:actionMenuItem label="Recent Projects" click="{! c.viewRecentProjects }" class="af-filter-menuitem" />
+	                       <ui:actionMenuItem label="My Open Projects" click="{! c.viewMyOpenProjects }" class="af-filter-menuitem" />
+	                       <ui:actionMenuItem label="My Assigned Projects" click="{! c.viewMyAssignedProjects }" class="af-filter-menuitem" />
+	                       <ui:actionMenuItem label="All Open Projects" click="{! c.viewAllOpenProjects }" class="af-filter-menuitem" />
+	
+	                   </ui:menuList>
+	               </ui:menu>
+		       
+			       <div class="slds-p-horizontal_medium">
+			           <aura:if isTrue="{! and(v.SelectedMenu == 'Search', v.Projects.length > 0) }">
+	                       <h3 class="slds-text-heading_medium slds-m-top_medium">Projects Found</h3>
+	                   </aura:if>
+			       
+			           <div class="{! and(v.SelectedMenu == 'Search', v.Projects.length > 0) ? 'slds-p-horizontal_medium' :'' }">
+				       <aura:iteration items="{! v.Projects }" var="project">
+				           <div class="af-project-nav-item slds-m-top_medium">
+				               <lightning:layout horizontalAlign="spread" >
+				           
+				                   <lightning:layoutitem size="9">
+				                       <a onclick="{! c.selectProject }" data-project-id="{! project.Record.Id }" title="Open this project's task board">{! project.Record.Name }</a>
+				                   </lightning:layoutitem>
+	
+				                   <lightning:layoutitem size="3">
+					                   <span onclick="{! c.onFavoriteClicked }" data-project-id="{! project.Record.Id }">
+					                       <lightning:icon alternativeText="pin" iconName="utility:favorite" title="{! project.Pinned ? 'Unpin' : 'Pin' }"
+					                                       size="x-small" class="{! project.Pinned ? 'af-project-pinned' : 'af-project-not-pinned' }" />
+					                   </span>
+					                   
+					                   <aura:if isTrue="{! project.Selected }">
+						                   <span onclick="{! c.unselectProject }" data-project-id="{! project.Record.Id }">
+		                                       <lightning:icon alternativeText="pin" iconName="utility:close" title="Remove project from board"
+		                                                       size="x-small" class="af-remove-project-action" />
+		                                   </span>
+	                                   </aura:if>
+					               </lightning:layoutitem>
+				               
+				               </lightning:layout>
+				           </div>
+				       </aura:iteration>
+				       </div>
+				       
+				       <aura:if isTrue="{! and(v.SelectedMenu == 'Search', v.Projects.length == 0) }">
+				           <h3 class="slds-text-heading_medium slds-m-top_medium">No Projects Found</h3>
+				       </aura:if>
+	                   
+	                   <aura:if isTrue="{! and(v.SelectedMenu == 'Search', v.Accounts.length > 0) }">
+	                       <h3 class="slds-text-heading_medium slds-m-top_medium">Accounts Found</h3>
+	                   
+	                       <div class="slds-p-horizontal_medium">
+					           <aura:iteration items="{! v.Accounts }" var="account">
+		                           <div class="slds-m-top_small af-found-account">
+		                               <lightning:layout horizontalAlign="space" >
+	    	                               <lightning:layoutitem size="10">
+	        	                               <a data-account-id="{! account.Id }" onclick="{! c.openAccountProjects }" title="Open this account's projects">{! account.Name }</a>
+	    	                               </lightning:layoutitem>
+	    	                               
+	    	                               <lightning:layoutitem size="2">
+	    	                                   <aura:if isTrue="{! account.Id == v.SelectedAccountId }">
+		                                           <span onclick="{! c.unselectAccount }">
+		                                               <lightning:icon alternativeText="Clear Account Task Boards" iconName="utility:close" title="Remove account project(s) from board"
+		                                                               size="x-small" class="af-remove-project-action" />
+		                                           </span>
+	                                           </aura:if>
+	                                       </lightning:layoutitem>
+		                               </lightning:layout>
+		                           </div>
+		                       </aura:iteration>
+	                       </div>
+				       </aura:if>
+				       
+				       <aura:if isTrue="{! and(v.SelectedMenu == 'Search', v.Accounts.length == 0) }">
+	                       <h3 class="slds-text-heading_medium slds-m-top_medium">No Accounts Found</h3>
+	                   </aura:if>
+			       </div>
+		       
+		       </div>
+               <a class="af-collapsible-sidebar-container" href="javascript:void(0);" title="{! v.navigationSideBarCollapsed == true ? 'Click to Open Sidebar' : 'Click to Close Sidebar' }" onclick="{! c.toggleNavigationSidebar }">
+                   <span class="af-indicator" id="af-pinIndicator"></span>
+                   <span class="af-indicator" id="af-pinIndicator2"></span>
+                   <span class="af-pinBox" id="af-handle">&nbsp;</span>
+               </a>
+		   </div>
+		   
+		   <div class="slds-p-right_medium af-project-board-selected-projects-container">
+		       <aura:if isTrue="{! v.SelectedProjectIds.length > 0 }">
+               <div class="slds-text-heading_medium af-project-body-header slds-is-relative slds-p-vertical_small slds-p-left_medium">
+                   <div class="">
+                       <div>
+                           <ui:menu class="af-project-sort-by-menu">
+                               <ui:menuTriggerLink aura:id="trigger" class="af-project-board-sort-menu-trigger">
+                                    Sort By: {! !v.SortBy ? 'None' : ''} {! v.SortBy }
+                                    <lightning:buttonIcon alternativeText="Sort By" iconName="utility:down" class="slds-m-left_medium" />
+                               </ui:menuTriggerLink>
+                               <ui:menuList class="af-sort-by-menu-item-container" aura:id="actionMenu" visible="true">
+                                   <aura:iteration items="{! v.SortByMenuItems }" var="sortByMenuItem">
+                                       <ui:actionMenuItem label="{! sortByMenuItem.Label }" click="{! c.sortTaskBoards }" class="af-sortby-menuitem" />
+                                   </aura:iteration>
+                               </ui:menuList>
+                           </ui:menu>
+                       
+                           <ui:menu class="af-project-board-filter-menu-container">
+                               <ui:menuTriggerLink aura:id="trigger" class="af-project-board-filter-menu">
+                                    Overall Filter: {! !v.ProjectFilter ? 'None' : ''} {! v.ProjectFilter }
+                                    <lightning:buttonIcon alternativeText="Filter" iconName="utility:down" class="slds-m-left_medium" />
+                               </ui:menuTriggerLink>
+                               <ui:menuList class="af-filter-menu-container " aura:id="actionMenu" visible="true">
+                                   <ui:actionMenuItem label="All Tasks" click="{! c.filterProjectTasks }" class="af-filter-menuitem" />
+                                   <ui:actionMenuItem label="My Tasks" click="{! c.filterProjectTasks }" class="af-filter-menuitem" />
+                                   <ui:actionMenuItem label="Overdue Tasks" click="{! c.filterProjectTasks }" class="af-filter-menuitem" />
+                                   <ui:actionMenuItem label="Unassigned Tasks" click="{! c.filterProjectTasks }" class="af-filter-menuitem" />
+                                   <ui:actionMenuItem label="Upcoming Tasks" click="{! c.filterProjectTasks }" class="af-filter-menuitem" />
+                                    
+                               </ui:menuList>
+                           </ui:menu>                           
+                       </div>
+                   </div>
+               </div>
+               </aura:if>
+		   
+		       <div>
+		           <aura:if isTrue="{! and(v.SelectedProjectIds.length == 0, v.SelectedAccountId) }">
+		              <div class="slds-text-heading_medium slds-m-top_large slds-m-left_medium">{! v.SelectedAccountName } has no projects.</div>
+		           </aura:if>
+		       
+		           <aura:iteration items="{! v.SelectedProjectIds }" var="selectedProjectId" indexVar="i">
+		               <div class="identifier">
+		                   <aura:if isTrue="{! i > 0 }">
+                               <hr class="slds-m-left_medium af-separator" />
+                           </aura:if>
+		               
+		                   <c:TaskBoard ProjectToLoadId="{! selectedProjectId }" ProjectFilter="{! v.ProjectFilter }" ShowRecordLinks="true" SortByMenuItem="{! v.SelectedMenuItem }" />
+		               
+		               </div>
+		           </aura:iteration>
+	           </div>
+	       </div>
+	   </div>
+	</div>
+	
+</aura:component>

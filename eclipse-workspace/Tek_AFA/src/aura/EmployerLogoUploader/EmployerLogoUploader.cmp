@@ -1,0 +1,13 @@
+<aura:component>
+    <aura:attribute name="PreenrollmentFormId" type="String" required="true" />
+    
+    <c:UploadFiles relatedTo="{! v.PreenrollmentFormId }"
+                   uploadMultiple="false"
+                   label=" "
+                   showDocuments="true"
+                   fileDescription="Employer Logo"
+                   filterByDescription="Employer Logo"
+                   sectionHeader="Employer Logo"
+                   sectionDescription="{! $Label.c.Preenrollment_Marketing_Employer_Logo_Upload_Instructions }" />
+	
+</aura:component>

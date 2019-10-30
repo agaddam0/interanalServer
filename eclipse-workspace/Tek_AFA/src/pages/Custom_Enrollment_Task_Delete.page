@@ -1,0 +1,13 @@
+<apex:page action="{!if($User.Alias !='Enter User Alias Here',
+    null,
+    urlFor($Action.Task.Delete, $CurrentPage.Parameters.id, [retURL='/00T'], true)
+    )
+    }"
+  standardController="Task">
+     <apex:pageBlock >
+        <apex:PageMessage summary="You are not allowed to delete Enrollment Tasks"
+            severity="Warning"
+            strength="3"/>
+        <apex:pageMessages />
+    </apex:pageBlock>
+</apex:page>

@@ -1,0 +1,18 @@
+.THIS.af-shopping-cart-history-container {
+	padding-left: 3rem;
+	padding-right: 3rem;
+}
+
+.THIS .af-category-home-btn {
+	background-color: token(AFAteal5);
+	border: none;
+}
+
+.THIS .af-reorder-button {
+	background-color: token(AFAgreen3);
+    border: none;
+}
+
+.THIS .af-reorder-button:hover {
+    background-color: token(AFAgreen4);
+}

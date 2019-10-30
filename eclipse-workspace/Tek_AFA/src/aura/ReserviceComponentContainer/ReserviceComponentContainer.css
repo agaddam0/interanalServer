@@ -1,0 +1,338 @@
+.THIS {
+    
+}
+
+.THIS.container {
+    background: white;
+    padding-bottom: 60px;
+    min-width: 1250px;
+}
+
+.THIS.submitted-state {
+    background: token(AFAgrey3);
+}
+
+.THIS.submitted-state .afa-section-header {
+    background-color: token(AFAgrey5);
+}
+
+.THIS .afa-section-header {
+    background-color: token(AFAgrey1);
+    border-bottom: 4px solid token(AFAredbrand);
+    height: 45px;
+    font-size: 25px;
+}
+
+.THIS .afa-setup-form-subheader {
+    font-size: 20px;
+    font-weight: bold;
+    color: token(AFAredbrand);
+}
+
+.THIS .af-label {
+    font-weight:bold;
+}
+
+.THIS .af-field-set-record-display-container {
+    line-height : 20px;
+}
+
+.THIS .af-field-set-record-display-container dd {
+ 	font-size : 14px;
+    border-bottom : 1px solid lightgray;
+    width : 90% !important;
+    padding-bottom: 10px;
+}
+
+.THIS .af-field-set-record-display-container dt {
+    padding-top : 10px;
+}
+
+.THIS .af-setup-form-table table {
+    border-spacing: 5px 0;
+    border: none;
+}
+
+.THIS .af-setup-form-table thead th{
+	background-color: token(AFAteal0); 
+    height: 40px;    
+}
+
+.THIS .af-setup-form-table tr {
+    height: 40px;
+}
+
+.THIS .af-setup-form-table td {
+    border:none;
+}
+
+.THIS.submitted-state .af-setup-form-table table{
+    background-color: token(AFAgrey3);
+}
+
+.THIS.submitted-state .af-setup-form-table {
+    background: token(AFAgrey3);
+}
+
+.THIS .af-standard-button {
+    background-color: token(AFAgrey7);
+    border: none;
+    color: white;
+    height: 45px;
+    width: 225px;
+    line-height: 1rem;
+    border-radius: 2rem;
+    margin-right: 20px;
+}
+
+.THIS .af-standard-button:hover{
+    background-color: token(AFAgrey8);
+}
+
+.THIS .af-progress-button {
+    background-color: token(AFAgreen2);
+    border: none;
+    color: white;
+    height: 45px;
+    width: 225px;
+    line-height: 1rem;
+    border-radius: 2rem;
+}
+
+.THIS .af-progress-button:disabled{
+    color: white;
+    background-color: gray;
+}
+
+.THIS .af-progress-button:disabled:hover{
+    background-color: gray;
+}
+
+.THIS.submitted-state .af-progress-button {
+    color: white;
+    background-color: gray;
+}
+.THIS.submitted-state .af-progress-button:hover{
+    background-color: gray;
+}
+
+.THIS .af-progress-button:hover {
+    background-color: token(AFAgreen3);
+}
+
+.THIS .af-warning-button {
+    background-color: token(AFAredbrand);
+    border: none;
+    color: white;
+    height: 45px;
+    width: 225px;
+    line-height: 1rem;
+    border-radius: 2rem;
+}
+
+.THIS .af-warning-button:hover {
+    background-color: token(AFAred1);
+}
+
+.THIS .form-spacing div{
+    padding : 5px 0;
+}
+
+.THIS .af-large-checkbox .slds-checkbox_faux {
+    height: 25px;
+    width: 25px;
+}
+
+.THIS .af-large-checkbox .slds-checkbox_faux:after {
+    height: .35rem !important;
+    width: .80rem !important;
+    top: 45% !important;
+}
+
+.THIS .af-path {
+    min-height: 200px;
+}
+
+.THIS .af-path-item {
+    width: 45%;
+    position: relative;
+}
+
+.THIS .af-path-header {
+    background-color: token(AFAblue4);
+    height: 50px;
+}
+
+.THIS .af-path-header-selected {
+    background-color: token(AFAgreen4);
+}
+
+.THIS .af-path-header .slds-form-element__label, .THIS .af-path-header-selected .slds-form-element__label{
+    color: white;
+    font-size: large;
+    font-weight: bold;
+}
+
+.THIS .af-recommended-text{
+    color: token(AFAgreen4);
+    text-transform: uppercase;
+}
+
+.THIS .slds-has-dividers_around-space>.slds-item {
+    padding: 0;
+}
+
+.THIS .slds-has-dividers_around-space>.slds-item+.slds-item {
+    margin-top: 0;
+}
+
+.THIS .details-link-container {
+    position: absolute;
+    bottom: 1px;
+    right: 8px;
+    width: 100%;
+    text-align: right;
+}
+
+.THIS .details-link {
+    color: token(AFAblue6);
+    font-weight: bold;
+}
+
+.THIS .af-border-radius {
+    border-radius : 5px;
+}
+
+.THIS .af-nav-component{
+    white-space: nowrap;
+}
+
+.THIS .af-nav-menu {
+    display: inline-block; /* The menu will have width as needed, not 100% */
+    position: relative;
+    font-family: Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 1em;
+    border-radius: 2px; /* Little curvature in the borders */
+    overflow: hidden; /* Hide everything that overflows, like shadows */
+}
+
+.THIS .af-nav-menu ul {
+    display: flex; /* A key part of our menu, displays items side by side, and allows reversing them */
+    flex-direction: row-reverse; /* Reverse the items */
+    /* Reset styles, overwrite browser defaults */
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.THIS .af-nav-menu ul li {
+    margin: 0;
+}
+
+.THIS .af-nav-menu .title {
+    display: inline-block;
+    font-family: sans-serif;
+    font-size: 0.9em;
+    font-weight: 600;
+    padding: 17px 45px 17px 55px; /* Adjusting padding to get the proper space */
+    margin-left: -20px; /* Pull the items to the left, so the rounded right side will get over them */
+    color: black;
+    background-color: white;
+    text-decoration: none;
+    border-radius: 0; /* Get the right side rounded */
+    box-shadow: 0; /* Apply the shadow */
+}
+
+.THIS .af-nav-menu ul li:hover a.title {
+    background-color: white;
+}
+
+.THIS .af-nav-menu ul li a {
+    display: inline-block;
+    font-family: sans-serif;
+    font-size: 0.9em;
+    font-weight: 600;
+    padding: 17px 100px 17px 45px; /* Adjusting padding to get the proper space */
+    margin-left: -20px; /* Pull the items to the left, so the rounded right side will get over them */
+    color: black;
+    background-color: token(AFAgrey2);
+    text-decoration: none;
+    border-radius: 0 100px 100px 0; /* Get the right side rounded */
+    box-shadow: 0px 0px 0px 3px white; /* Apply the shadow */
+}
+
+/* Hover event */
+.THIS .af-nav-menu ul li:hover a {
+    background-color: token(AFAgrey3);
+}
+
+/* Remove the shadow for first item, last in the right side when it gets reversed */
+.THIS .af-nav-menu ul li:first-child a {
+    box-shadow: none;
+}
+
+/* Active item is a bit different */
+.THIS .af-nav-menu ul li.active a {
+    background-color: token(AFAteal0);
+}
+
+.THIS.submitted-state .af-nav-menu ul li a{
+    box-shadow: 0px 0px 0px 3px token(AFAgrey3); /* Apply the shadow */
+}
+
+.THIS.submitted-state .af-nav-menu ul li:hover a {
+    background-color: token(AFAgrey4);
+}
+
+.THIS .af-nav-button-container {
+    display: inline-block;
+    position: relative;
+    margin-left: 5%;
+    top: -20px;
+}
+
+.THIS .status-text{
+    text-transform: uppercase;
+    padding-right: 2rem;
+    font-size: 1rem;
+    font-weight:bold;
+    color: token(AFAredbrand);
+}
+
+.THIS.submitted-state .status-text {
+    color: token(AFAgreen4);
+}
+
+.THIS.submitted-state .smsp-pill {
+    color: grey;
+    cursor: not-allowed;
+}
+
+.THIS.submitted-state .smsp-pill button {
+    color:grey;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.THIS.submitted-state .slds-pill:hover{
+    background-color: white;
+}
+
+.THIS.submitted-state .secondarySubmitButton {
+    display: none;
+}
+
+.THIS .af-core-folder-divider {
+    text-decoration: none;
+}
+
+.THIS .af-core-folder-divider:hover {
+    text-decoration: none;
+    cursor: default;
+}
+
+.THIS .afa-warning-text {
+    font-weight: bold;
+    color: token(AFAredbrand);
+}

@@ -1,0 +1,29 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId" 
+                controller="RecordTypeComponentController">
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="RecordTypes" type="String[]"/>
+    <aura:attribute name="SelectedTypes" type="String[]" />
+    
+    <header class="slds-modal__header header">
+        <h2 class="slds-text-heading_medium slds-hyphenate">Select Change Request Type</h2>
+    </header>
+    
+    <div class="slds-align_absolute-center">
+        <fieldset class="slds-form-element">
+            <div class="slds-form-element__control ">
+                <aura:iteration items="{!v.RecordTypes}" var="type" indexVar="i" >
+                    <label class="slds-checkbox">
+                           <ui:inputCheckbox text="{!type}" aura:id="boxPack" value=""/>
+                           <span class="slds-checkbox--faux"></span>
+                           <span class="slds-form-element__label text">{!type}</span>
+                        </label>
+                </aura:iteration>
+            </div>
+        </fieldset>
+    </div>
+    
+    <footer class="slds-modal__footer footer">
+        <ui:button label="Next" press="{!c.handleNext}" class="slds-button slds-button--brand" />
+        <ui:button label="Cancel" press="{!c.handleCancel}" class="slds-button slds-button--neutral" />
+    </footer>
+</aura:component>

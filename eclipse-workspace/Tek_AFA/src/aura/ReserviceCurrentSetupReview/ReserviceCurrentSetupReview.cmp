@@ -1,0 +1,279 @@
+<aura:component extends="c:ReserviceComponentContainer" controller="ReserviceSetupController" 
+                implements="force:lightningQuickAction,force:hasRecordId">
+    
+    <aura:attribute name="Account" type="Account" />
+    <aura:attribute name="Opportunity" type="Opportunity" />
+    <aura:attribute name="EnrollmentForm" type="Enrollment_Form__c" />
+    
+    <aura:attribute name="showAdditionalDetails" type="Boolean" access="private" />
+    <aura:attribute name="showAdditionalDetailsId" type="String" access="private" />
+    <aura:attribute name="showAllEligibleCoverages" type="Boolean" access="private" />
+    <aura:attribute name="showS125Message" type="Boolean" access="private" />
+    
+    <aura:attribute name="customAttributes" type="Object[]" access="private" />
+    <aura:attribute name="GroupProductsWhereClause" type="String" access="private" />
+    <aura:attribute name="MarketedProductsWhereClause" type="String" access="private" />
+    <aura:attribute name="PlanDatesWhereClause" type="String" access="private" />
+    <aura:attribute name="EligibleCoveragesWhereClause" type="String" access="private" />
+    <aura:attribute name="BillModesWhereClause" type="String" access="private" />
+    <aura:attribute name="AllEligibleCoveragesWhereClause" type="String" access="private" />
+    <aura:attribute name="detailsGridRowActions" type="Object[]" access="private" />
+    <aura:attribute name="showButtons" type="Boolean" default="true" access="private"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    <aura:handler name="onRowAction" event="c:CustomizableGridRowAction" action="{!c.handleGridRowAction}"/>
+    
+    <aura:registerEvent name="navigate" type="c:ReserviceNavigationEvent" />
+    <aura:registerEvent name="fieldSetFormValueChange" type="c:FieldSetFormValueChange" />
+    
+    <div class="slds-p-around_small">
+        
+        <!-- General Information Section -->
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title afa-section-header">
+                <span class="slds-truncate slds-p-horizontal_small" title="Review Summary">Review Summary for {!v.Account.Name}</span>
+            </h3>
+            <div aria-hidden="false" class="slds-section__content">
+                <div class="slds-p-left_medium">
+                    
+                    <div class="slds-p-vertical_medium">{! $Label.c.Current_Setup_Review_Instructions}</div>
+                    
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-size_1-of-3">
+                            <div class="slds-p-vertical_small af-label">
+                                General Information
+                            </div>
+                            <c:FieldSetRecordDisplay aura:Id="GeneralInformation" record="{!v.Opportunity}" 
+                                                     fieldSetName="Opportunity_Current_Setup_Review" objectName="Opportunity" 
+                                                     dlClass="slds-dl_stacked" dtClass="slds-item_label"
+                                                     ddClass="slds-item_detail"/>
+                        </div>
+                        
+                        <div class="slds-size_1-of-3">
+                            <div class="slds-p-vertical_small af-label">
+                                Administrative Contact
+                            </div>
+                            <c:FieldSetRecordDisplay aura:Id="administrativeContact" record="{!v.Opportunity}"
+                                                     fieldSetName="Administrative_Contact_Fields" objectName="Opportunity"
+                                                     dlClass="slds-dl_stacked" dtClass="slds-item_label"
+                                                     ddClass="slds-item_detail" class="slds-p-left_medium"/>
+                            
+                            <div class="slds-p-vertical_small af-label">
+                            	Account Billing Address
+                            </div>
+                            <c:FieldSetRecordDisplay aura:Id="billingAddress" record="{!v.Account}"
+                                                     fieldSetName="Billing_Address" objectName="Account"
+                                                     dlClass="slds-dl_stacked" dtClass="slds-item_label"
+                                                     ddClass="slds-item_detail" class="slds-p-left_medium"/>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <!-- Products Section -->
+                <div class="afa-setup-form-subheader slds-p-vertical_medium">
+                    Products
+                </div>
+                
+                <div class="slds-p-left_medium">
+                    <div class="slds-p-vertical_small af-label">
+                        {! $Label.c.Group_Plans}
+                    </div>
+                    <c:CustomizableGridWithSearch aura:Id="GroupProductsGrid" 
+                                                  fieldSetColumns="Group_Plans_Current_Setup" 
+                                                  objectName="Group_Plan_Availability__c"
+                                                  whereClause="{!v.GroupProductsWhereClause}"
+                                                  showAlternatingStripes="true"
+                                                  removeHoverHighlight="true"
+                                                  showBox="false"
+                                                  allowGoToRecord="false"
+                                                  class="af-setup-form-table"
+                                                  useUppercaseCaseHeaders="false"
+                                                  loadOnInit="false"
+                                                  showNoRecordsMessage="true"
+                                                  noRecordsMessage="There are no group plans available for this Account."
+                                                  numItemsToShow="50"/>
+                    
+                    <br/>
+                    
+                    <div class="slds-p-vertical_small af-label">
+                        {! $Label.c.Marketed_Products}
+                    </div>
+                    <c:CustomizableGridWithSearch aura:Id="MarketedProductsGrid" 
+                                                  fieldSetColumns="Products_Current_Setup_Review" 
+                                                  objectName="Marketed_Product__c"
+                                                  whereClause="{!v.MarketedProductsWhereClause}"
+                                                  showBox="false"
+                                                  loadOnInit="false"
+                                                  removeHoverHighlight="true"
+                                                  class="af-setup-form-table"
+                                                  showAlternatingStripes="true"
+                                                  allowGoToRecord="false"
+                                                  useUppercaseCaseHeaders="false"
+                                                  showNoRecordsMessage="true"
+                                                  noRecordsMessage="There are no individual products setup for this Account."
+                                                  numItemsToShow="50"
+                                                  sortField="Products__r.Type__c, Products__r.Order__c"
+                                                  sortDirection="ASC"/>
+
+                    <div class="slds-p-vertical_small af-label">
+                        {! $Label.c.Agency_Import_Products}
+                    </div>
+                    <c:CustomizableGridWithSearch aura:Id="AgencyImportProductsGrid" 
+                                                    fieldSetColumns="Current_Setup_Review_Imports" 
+                                                    objectName="Agency_Import_Products__c"
+                                                    whereClause="{!v.AgencyImportProductsWhereClause}"
+                                                    showBox="false"
+                                                    loadOnInit="false"
+                                                    removeHoverHighlight="true"
+                                                    class="af-setup-form-table"
+                                                    showAlternatingStripes="true"
+                                                    allowGoToRecord="false"
+                                                    useUppercaseCaseHeaders="false"
+                                                    showNoRecordsMessage="true"
+                                                    noRecordsMessage="There are no import products setup for this Account."
+                                                    numItemsToShow="50"
+                                                    sortField="Product_Type__c"
+                                                    sortDirection="ASC"/>
+                </div>
+                
+                
+                
+                <!-- Services Information Section -->
+                <div class="afa-setup-form-subheader slds-p-vertical_medium">
+                    Services Information
+                </div>
+                
+                <div class="slds-p-left_medium">
+                    <div class="slds-p-vertical_small af-label">
+                        {! $Label.c.Service_Products}
+                    </div>
+                    <c:CustomizableGridWithSearch aura:Id="planDatesGrid" 
+                                                  fieldSetColumns="Plan_Date_Current_Setup_Review" 
+                                                  objectName="Plan_Date__c"
+                                                  whereClause="{!v.PlanDatesWhereClause}"
+                                                  showAlternatingStripes="true"
+                                                  removeHoverHighlight="true"
+                                                  showBox="false"
+                                                  loadOnInit="false"
+                                                  allowGoToRecord="false"
+                                                  useUppercaseCaseHeaders="false"
+                                                  class="af-setup-form-table"
+                                                  rowActions="{!v.detailsGridRowActions}"
+                                                  showNoRecordsMessage="true"
+                                                  noRecordsMessage="This account has no services currently setup."
+                                                  numItemsToShow="50"/>
+                    
+                    <br/>
+                    
+                    <div class="slds-p-vertical_small af-label">
+                        {! $Label.c.Eligible_Coverages}
+                    </div>
+                    <c:CustomizableGridWithSearch aura:Id="eligibleCoverageGrid" 
+                                                  fieldSetColumns="Services_Current_Setup_Review" 
+                                                  objectName="Eligible_Coverage__c"
+                                                  whereClause="{!v.EligibleCoveragesWhereClause}"
+                                                  showAlternatingStripes="true"
+                                                  removeHoverHighlight="true"
+                                                  showBox="false"
+                                                  loadOnInit="false"
+                                                  allowGoToRecord="false"
+                                                  class="af-setup-form-table"
+                                                  useUppercaseCaseHeaders="false"
+                                                  alignCurrencyHeaderRight="false"
+                                                  rowActions="{!v.detailsGridRowActions}"
+                                                  showNoRecordsMessage="true"
+                                                  noRecordsMessage=""
+                                                  numItemsToShow="50"/>
+                    
+                    <div class="{! v.showS125Message ? 'slds-show slds-p-around_medium' : 'slds-hide'}">
+                    	This account is Section 125 Only
+                    </div>
+                    
+                    <div class="slds-p-around_medium">
+                        <a href="" onclick="{!c.viewAllEligibleCoverages}">View All Eligible Coverages</a>
+                    </div>
+                </div>
+                
+                <!-- Frequencies & Bill Modes Section -->
+                <div class="afa-setup-form-subheader slds-p-vertical_medium">
+                    Bill Modes
+                </div>
+                
+                <div class="slds-p-left_medium">
+                    <c:CustomizableGridWithSearch aura:Id="billModesGrid" 
+                                                  fieldSetColumns="Billing_Mode_Current_Setup_Review" 
+                                                  objectName="Account_Billing_Mode__c"
+                                                  whereClause="{!v.BillModesWhereClause}"
+                                                  showAlternatingStripes="true"
+                                                  removeHoverHighlight="true"
+                                                  loadOnInit="false"
+                                                  allowGoToRecord="false"
+                                                  showBox="false"
+                                                  useUppercaseCaseHeaders="false"
+                                                  class="af-setup-form-table"
+                                                  numItemsToShow="50"/>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="{! v.showButtons ? 'slds-show slds-p-around_medium' : 'slds-hide'}">
+                    <button class="slds-button slds-button_neutral af-standard-button" onclick="{! c.navigateToChanges }" >I see changes I need to make</button>
+                    <button class="slds-button slds-button_neutral af-progress-button" onclick="{! c.navigateToQuickSetup }">No changes / Continue</button>
+                </div>
+                
+                
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    
+    <div class="{! v.showAdditionalDetails ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+                    
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Additional Details</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <force:recordView recordId="{! v.showAdditionalDetailsId }" />
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeModal }">Close</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+    
+    <div class="{! v.showAllEligibleCoverages ? 'slds-show' : 'slds-hide'}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_large">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon alternativeText="Close" onclick="{! c.closeEligibleCoveragesModal }" iconName="utility:close" size="large" variant="bare-inverse" class="slds-modal__close" title="Close" />
+                    
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">All Eligible Coverages</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    
+                    <c:CustomizableGridWithSearch aura:Id="allCoveragesGrid" 
+                                                  fieldSetColumns="Full_Eligible_Coverages_List" 
+                                                  objectName="Eligible_Coverage__c"
+                                                  whereClause="{!v.AllEligibleCoveragesWhereClause}"
+                                                  showAlternatingStripes="true"
+                                                  removeHoverHighlight="true"
+                                                  loadOnInit="false"
+                                                  showBox="false"
+                                                  numItemsToShow="50"/>
+                    
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{! c.closeEligibleCoveragesModal }">Close</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </div>
+	
+</aura:component>

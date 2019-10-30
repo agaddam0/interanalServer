@@ -1,0 +1,71 @@
+.THIS .dividerLine{
+    border-bottom: 1.5px solid token(AFAgrey3);
+}
+
+.THIS .dividerLineRed{
+    border-bottom: 1.5px solid token(AFAredbrand);
+}
+
+.THIS .order-details-header-row th {
+    background-color: token(AFAgrey1);
+    text-align: center;
+    padding: 15px;
+    font-weight: normal;
+}
+
+.THIS .order-details-row-data td {
+    text-align: center;
+    font-weight: bold;
+    padding: 15px;
+}
+
+.THIS .price-line {
+    color: token(AFAgreybrand);
+}
+
+.THIS .af-bolded-item {
+    font-weight: bold;
+}
+
+.THIS .af-rush-icon .slds-icon-text-default {
+    fill: token(AFAOrange3) !important;
+}
+
+.THIS .rush-order-header {
+    background-color: token(AFAYellow3);
+}
+
+.THIS .order-name-element {
+    margin-left : -25%;
+}
+
+.THIS .colleague-element {
+    margin-left : -10%;
+}
+
+.THIS .colleague-element label {
+    /*font-size: 1rem;*/
+    padding-right : 10px;
+}
+
+.THIS .on-behalf-element label {
+    padding-right : 10px;
+}
+
+.THIS .form-name {
+    color : token(AFAteal5);
+    text-decoration : underline;
+    font-weight : bold;
+    font-size : 14px;
+    display : inline-block;
+}
+
+.THIS .reorder-button {
+    width: 12%;
+    background-color: token(AFAgreen3);
+    border: none;
+}
+
+.THIS .reorder-button:hover {
+    background-color: token(AFAgreen4);
+}

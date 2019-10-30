@@ -1,0 +1,56 @@
+<aura:component controller="ShoppingCartController">
+    <aura:attribute name="showOrderDetails" type="Boolean" default="false" access="private" />
+    <aura:attribute name="orderId" type="Id" access="private" />
+
+    <aura:method name="loadOrderHistory" />
+    
+    <aura:registerEvent name="navigate" type="c:ShoppingCartNavigationEvent" />
+    <aura:registerEvent name="reloadCart" type="c:ReloadCart" />
+    
+    <aura:handler name="onRowAction" event="c:CustomizableGridRowAction" action="{!c.handleGridRowAction}"/>
+
+	<div class="slds-box slds-theme_default oneContent active forceContentWrapper af-shopping-cart-history-container">
+	    <div class="{! !v.showOrderDetails  ? 'slds-show' : 'slds-hide' }">
+	    <h2 class="slds-text-heading_large">Order History</h2>
+	    
+	    <h3 class="slds-text-heading_medium slds-m-top_medium">My Orders</h3>
+	    
+	    <c:CustomizableGridWithSearch objectName="Order__c"
+                                      fieldSetColumns="Order_History"
+                                      aura:id="myOrderHistoryGrid"
+                                      sortField="Date_Submitted__c"
+                                      loadOnInit="false"
+                                      allowGoToRecord="true"
+                                      goToRecordAction="{! c.openOrderDetails }"
+                                      sortDirection="DESC"
+                                      sortingEnabled="true"
+                                      class="slds-m-vertical_medium"
+                                      showRowActionsLast="true"
+                                      showAlternatingStripes="true" />
+                                      
+        <h3 class="slds-text-heading_medium slds-m-top_medium">Orders On My Behalf</h3>
+        
+        <c:CustomizableGridWithSearch objectName="Order__c"
+                                      fieldSetColumns="Order_History"
+                                      aura:id="onMyBehalfOrderHistoryGrid"
+                                      sortField="Date_Submitted__c"
+                                      loadOnInit="false"
+                                      allowGoToRecord="true"
+                                      goToRecordAction="{! c.openOrderDetails }"
+                                      sortDirection="DESC"
+                                      sortingEnabled="true"
+                                      class="slds-m-vertical_medium"
+                                      showRowActionsLast="true"
+                                      showAlternatingStripes="true" />
+                                      
+        <lightning:button variant="brand"
+                          label="Catalog Home"
+                          class="af-category-home-btn"
+                          onclick="{! c.onCategoryHomeClick }"/>
+        </div>
+
+        <aura:if isTrue="{! and(v.showOrderDetails, v.orderId) }">
+            <c:ShoppingCartOrderHistoryDetail orderId="{! v.orderId }" backAction="{! c.backToOrderHistory }" />
+        </aura:if>
+	</div>
+</aura:component>

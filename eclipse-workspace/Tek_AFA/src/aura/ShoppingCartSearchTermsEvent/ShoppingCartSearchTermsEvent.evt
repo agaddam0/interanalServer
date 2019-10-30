@@ -1,0 +1,4 @@
+<aura:event type="APPLICATION" description="Sends the search keyword and tags to the results component" >
+	<aura:attribute name="keywords" type="String"/>
+    <aura:attribute name="selectedTags" type="String[]"/>
+</aura:event>

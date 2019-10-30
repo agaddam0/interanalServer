@@ -1,0 +1,209 @@
+<apex:page >
+    <head>
+        <style type="text/css" media="print">
+            @page :first {
+                padding-top: 50px;
+                padding-bottom: 50px;
+
+                @top-center {
+                    content: element(header);
+                }
+
+                @bottom-center {
+                    content: element(footer);
+                }
+            }
+
+            @page {
+                padding-top: 25px;
+                padding-bottom: 50px;
+            
+                @top-center {
+                    content: element(header2);
+                }
+
+                @bottom-center {
+                    content: element(footer);
+                }
+            }
+
+            body {
+                font-family: sans-serif;
+            }
+
+            .logo {
+                width: 300px;
+                padding-left: 300px;
+                padding-top: 0px;
+            }
+
+            div.header {
+                padding: 25px 10px 10px;
+                position: running(header);
+                text-align: center;
+                font-size: x-small;
+                color: gray;
+            }
+
+            div.header2 {
+                padding: 25px 10px 10px;
+                position: running(header2);
+                text-align: center;
+                font-size: x-small;
+                color: gray;
+            }
+
+            div.footer {
+                display: block;
+                padding-bottom: 20px;
+                position: running(footer);
+                text-align: center;
+                font-size: small;
+                color: gray;
+            }
+
+            .fieldLabel {
+                text-align: left;
+                color: rgb(84, 105, 141) !important;
+                font-size: 14px;
+                padding-top:5px;
+            }
+
+            .sectionHeader {
+                color: rgb(22, 50,92) !important;
+                background-color: rgb(244, 246, 249) !important;
+                font-size: 16px;
+                font-weight: normal;
+                font-family:"Salesforce Sans", Arial, sans-serif;
+                border-radius: 4px;
+                box-sizing: border-box;
+                line-height:19.5px;
+                margin-top:4px;
+                text-size-adjust:100%;
+                -webkit-tap-highlight-color: rgba(0,0,0,0);
+                height:33px;
+                line-height:33px;
+                vertical-align: middle;
+                padding-left:10px;
+                page-break-inside: avoid;
+            }
+
+            .title {
+                color: gray;
+                text-align: center;
+            }
+
+            a {
+                text-decoration:none;
+                pointer-events:none;
+                color: rgb(84, 105, 141) !important;
+            }
+            
+            .pageBreak {
+                page-break-after: always;
+            }
+            
+            .dataTable {
+                margin: 15px 0px;
+            }
+            
+            .dataTable thead {
+                background-color:#2989d8;
+                color:#FFF;
+                page-break-inside: avoid;
+            }
+            
+            .af-previouslyEnteredValuesHeader {
+                padding-top: 1rem;
+                color: rgb(22, 50,92) !important;
+            }
+
+            .af-previouslyEnteredValuesHeader hr {
+                margin: 5px 0px;
+            }
+            
+            <!-- New Form Styles -->
+            .af-title {
+            	font-weight: bold;
+            	font-size: 15px !important;
+            }
+            
+            .afa-section-header {
+                background-color: #EEEEEE;
+                border-bottom: 3px solid #EB0029;
+                height:30px;
+                line-height:30px;
+                font-size: 18px;
+            	width: 100%;
+            	vertical-align: middle;
+            	padding-left:10px;
+            	border-radius: 10px;
+            	box-sizing: border-box;
+            	page-break-inside: avoid;
+            }
+            
+            .afa-setup-form-subheader {
+                font-size: 20px;
+                font-weight: bold;
+                color: #EB0029;
+            	padding : 20px 0px;
+            }
+            
+            .af-setup-form-table table {
+                border-spacing: 5px 0;
+                border: none;
+            }
+            
+            .af-setup-form-table thead th{
+            	background-color: #9EDAE0; 
+            	height: 30px;
+            	font-size: 12px;
+            }
+            
+            .af-setup-form-table tbody tr {
+            	height: 25px;
+            	border: none !important;
+            }
+            
+            .af-setup-form-table td {
+            	font-size: 12px;
+            }
+            
+            .altRow td {
+            	background-color: #EEEEEE;
+            }
+            
+            .af-form-table .fieldLabel {
+            	color: #3e3e3c !important;
+            	padding-top : 7px;
+            }
+            
+            .af-form-table .fieldValueClass {
+            	color: black !important;
+            	border-bottom: 1px solid #D3D3D3;
+            	padding-bottom: 7px;
+            }
+            
+            .af-form-table .fieldValueClass a{
+            	color: black !important;
+            }
+            
+        </style>
+    </head>
+
+    <div class="header">
+        <div>
+            <apex:image styleClass="logo" url="{!$Resource.AFALogo}"/>
+        </div>
+    </div>
+    
+    <div class="header2">
+    </div>
+    
+    <div class="footer">
+        <apex:outputText value="American Fidelity Assurance Company &bull; P.O. Box 25523 Oklahoma City, OK  73125-0523 &bull; " escape="false"/><span style="color:red">americanfidelity.com</span>
+    </div>
+
+    <apex:insert name="body" />
+
+</apex:page>

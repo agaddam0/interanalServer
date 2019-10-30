@@ -1,0 +1,42 @@
+.THIS .icon {
+    z-index: 2 !important;
+}
+
+.THIS .new-event {
+    margin-top: 0.5rem;
+}
+
+.THIS .slds-timeline__media_event:before {
+    z-index: 0 !important;
+}
+
+.THIS .title {
+    padding: 5px 1px 17px 10px;
+    line-height: 2rem;
+    color: #485c70;
+    text-shadow: none;
+    font-size: 1.3875rem !important;
+    font-weight: normal;
+    border-bottom: 1px solid #f5f6f7;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.THIS .bottomBorder {
+    border-bottom: 1px solid #f5f6f7;
+}
+
+.THIS .strike {
+    text-decoration: line-through !important;
+}
+
+.THIS {
+    /* for Salesforce's new background */
+    background-color: token(colorBackgroundAlt);
+}
+
+.THIS {
+    margin: 14px;
+    border-radius: .3125rem;
+    overflow: hidden;
+}

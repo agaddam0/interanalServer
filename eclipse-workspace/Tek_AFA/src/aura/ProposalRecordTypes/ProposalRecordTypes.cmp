@@ -1,0 +1,52 @@
+<aura:component controller="NewProposalCTRL" implements="force:lightningQuickAction,force:hasRecordId">
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <aura:attribute name="RecordTypes" 			type="NewProposalCTRL.RecordTypeObject[]"/>
+    <aura:attribute name="SelectedType"			type="NewProposalCTRL.RecordTypeObject" />                                                             
+    <aura:attribute name="recordId"				type="String" />
+    <aura:attribute name="newProposal"    		type="Proposal__c" default="{'sobjectType' : 'Proposal__c'}"/>
+    
+    <aura:attribute name="opportunityId" 		type="String" access="private" />
+    <aura:registerEvent name="navigate" 		type="c:navigateToCmp" />
+    
+    <header class="slds-modal__header header">
+        <h2 class="slds-text-heading_medium slds-hyphenate">Select Proposal Type</h2>
+    </header>    
+    
+    <div class="slds-align_absolute-center">
+        <div aura:Id="errorContainer"></div>
+        <fieldset class="slds-form-element">
+            <div class="slds-form-element__control ">
+                <aura:iteration items="{!v.RecordTypes}" var="type" indexVar="i" >
+                    <label class="slds-radio labelColor">
+                        <ui:inputRadio text="{!type.Name}" aura:id="boxPack" name="options" change="{!c.radioSelect}"/>
+                        <span class="slds-radio--faux"></span>
+                        <span><b>{!type.Name}</b></span>
+                    </label>
+                    <i><div class="slds-text-body_small slds-p-left_large">{!type.Label}</div></i>
+                    <div id="{!type.ScoredName}" class="slds-hide slds-p-left_large">
+                        <br/>
+                        <c:strike_lookup aura:id="{!type.Name}"
+                                         label="Select the Opportunity for this proposal" 
+                                         object="Opportunity" 
+                                         searchField="Name" 
+                                         iconName="standard:opportunity" 
+                                         order="Name"
+                                         value="{!v.opportunityId}"
+                                         filter="RecordType.Name != 'AFES Enrollment' AND RecordType.Name != 'AWD Enrollment'"/>
+                    </div>
+                    
+                    <br/>
+                </aura:iteration>
+            </div>
+        </fieldset>
+    </div>
+    <div class="slds-p-bottom_large">{!$Label.c.Contact_Proposal_Team}<br/></div>    
+    <lightning:spinner aura:id="mySpinner" />
+    
+    <footer class="slds-modal__footer footer">
+        <ui:button label="Next" press="{!c.handleNext}" class="slds-button slds-button--brand" />
+        <ui:button label="Cancel" press="{!c.handleCancel}" class="slds-button slds-button--neutral" />
+    </footer>
+</aura:component>

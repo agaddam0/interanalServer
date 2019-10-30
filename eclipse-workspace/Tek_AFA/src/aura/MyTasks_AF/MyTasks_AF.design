@@ -1,0 +1,3 @@
+<design:component >
+	<design:attribute name="DisplayLimit" label="Display Limit" default="10" description="The number of tasks to show at a time." />
+</design:component>

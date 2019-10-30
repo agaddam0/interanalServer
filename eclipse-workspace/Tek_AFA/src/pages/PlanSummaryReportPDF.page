@@ -1,0 +1,556 @@
+<apex:page standardController="Account" extensions="PlanSummaryReportPDFCTRL" 
+           standardStylesheets="false" docType="html-5.0" sidebar="false" showHeader="false" 
+           renderAs="pdf" applyBodyTag="false" applyHtmlTag="false">
+    <head>
+        <style type="text/css" media="print">
+            @page {
+                @bottom-center {
+                    content: element(footer);
+                }
+            }
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+                height: 100%;
+            }
+
+            div.footer {
+                display: block;
+                padding-bottom: 20px;
+                position: running(footer);
+                text-align: center;
+                font-size: small;
+                color: gray;
+            }
+
+            .logo-class {
+                float: right;
+                width: 250px;
+                padding-top: -10px;
+            }
+
+            span.page-title {
+                font-size: 25px;;
+                color: gray;
+                padding-top: 12px;
+                position: absolute;
+            }
+
+            .page-1-content {
+                margin-top: 75px;
+            }
+
+            .summary-box {
+                border-top: 3px #EB0029 solid;
+                width: 100%;
+                padding-bottom: 20px;
+            }
+
+            .fieldLabel {
+                color: #676767;
+                font-size: 15px;
+            }
+
+            .fieldValue {
+                font-size: 15px;
+                padding-bottom: 10px;
+            }
+
+            .info-text {
+                font-size: 14px;
+                padding-top: 10px;
+            }
+
+            .section-sub-heading {
+                border-bottom: 2px #EB0029 solid;
+                width: 90%;
+                letter-spacing: 2px;
+                font-size: 18px;
+                font-weight: lighter;
+                margin-bottom: 10px;
+                margin-top: 10px;
+            }
+
+            .container-table {
+                width: 100%;
+                padding-top: 10px;
+                
+            }
+
+            .pageBreak {
+                page-break-after: always;
+            }
+
+            .plan-header {
+                background-color: #EB0029;
+                padding: 5px;
+                color: white;
+                margin-bottom: 10px;
+                font-size: 18px;
+            }
+
+        </style>
+    </head>
+    
+    <div class="header">
+        <div>
+            <span class="page-title">Section 125 Plan Summary</span>
+            <apex:image styleClass="logo-class" url="{!$Resource.AFALogo}"/>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <apex:outputText value="American Fideltiy Assurance Company &bull; P.O. Box 25523 Oklahoma City, OK  73125-0523 &bull; " escape="false"/><span style="color:red">americanfidelity.com</span>
+    </div>
+
+    <apex:outputPanel rendered="{! PlanDateInformationContext.size < 1 }" >
+        <span style="color:#EB0029">
+            {! $Label.No_Section_125_Plan}
+        </span>
+    </apex:outputPanel>
+
+    <apex:outputPanel rendered="{! PlanDateInformationContext.size > 0 }">
+        <div class="page-1-content">
+            <div class="summary-box" style="background-color: #EEEEEE;">
+                <div style="padding: 20px;">
+                    <div class="fieldLabel">
+                        Employer Name
+                    </div>
+                    <div class="fieldValue">
+                        {!Account.Name}
+                    </div>
+
+                    <div class="fieldLabel">
+                        Assigned Account Manager
+                    </div>
+                    <div class="fieldValue">
+                        {!Account.Owner.Name}
+                    </div>
+                    <div class="info-text">
+                        {! $Label.Most_Recent_Plan_Info}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 1 -->
+
+            <div>
+                <table class="container-table">
+                    <tr>
+                        <!-- right hand section -->
+                        <td style="width: 50%; vertical-align: top;">
+                            <div class="section-sub-heading">
+                                Employer Information
+                            </div>
+                            <div class="fieldLabel">
+                                {! $ObjectType.Account.Fields.MCP_Number__c.Label }
+                            </div>
+                            <div class="fieldValue">
+                                {! Account.MCP_Number__c }
+                            </div>
+                            <div class="fieldLabel">
+                                {! $ObjectType.Account.Fields.Tax_ID_Number__c.Label }
+                            </div>
+                            <div class="fieldValue">
+                                {! Account.Tax_ID_Number__c }
+                            </div>
+                            <div class="fieldLabel">
+                                Billing Address
+                            </div>
+                            <div class="fieldValue">
+                                {! Account.BillingStreet }
+                                <apex:outputText value="{0}, {1}  {2}">
+                                    <apex:param value="{! Account.BillingCity }"/>
+                                    <apex:param value="{! Account.BillingState }"/>
+                                    <apex:param value="{! Account.BillingPostalCode }" />
+                                </apex:outputText>
+                            </div>
+                            <div class="fieldLabel">
+                                Pysical Address
+                            </div>
+                            <div class="fieldValue">
+                                {! Account.ShippingStreet }
+                                <apex:outputText value="{0}, {1}  {2}">
+                                    <apex:param value="{! Account.ShippingCity }"/>
+                                    <apex:param value="{! Account.ShippingState }"/>
+                                    <apex:param value="{! Account.ShippingPostalCode }" />
+                                </apex:outputText>
+                            </div>
+                            <div class="section-sub-heading">
+                                Related Employers
+                            </div>
+                            <apex:repeat value="{!PlanDateInformationContext}" var="planDate">
+                                <apex:repeat value="{!planDate.RelatedEmployers}" var="relatedEmployer">
+                                    <div class="fieldLabel">
+                                            {! $ObjectType.Account.Fields.Name.Label }
+                                        </div>
+                                        <div class="fieldValue">
+                                            {! relatedEmployer.Name }
+                                        </div>
+                                    <div class="fieldLabel">
+                                        {! $ObjectType.Account.Fields.MCP_Number__c.Label }
+                                    </div>
+                                    <div class="fieldValue">
+                                        {! relatedEmployer.MCP_Number__c }
+                                    </div>
+                                    <div class="fieldLabel">
+                                        {! $ObjectType.Account.Fields.Tax_ID_Number__c.Label }
+                                    </div>
+                                    <div class="fieldValue">
+                                        {! relatedEmployer.Tax_ID_Number__c }
+                                    </div>
+                                    <div class="fieldLabel">
+                                        Billing Address
+                                    </div>
+                                    <div class="fieldValue">
+                                        {! relatedEmployer.BillingStreet }
+                                        <apex:outputText value="{0}, {1}  {2}">
+                                            <apex:param value="{! relatedEmployer.BillingCity }"/>
+                                            <apex:param value="{! relatedEmployer.BillingState }"/>
+                                            <apex:param value="{! relatedEmployer.BillingPostalCode }" />
+                                        </apex:outputText>
+                                    </div>
+                                </apex:repeat>
+                            </apex:repeat>
+                        </td>
+
+                        <!-- left hand section -->
+
+                        <td style="width: 50%; vertical-align: top;">
+                            <div class="section-sub-heading">
+                                125 Contact
+                            </div>
+                            <apex:repeat value="{! generalContacts }" var="generalContact">
+                                <div class="fieldLabel">
+                                    {! $ObjectType.Contact.Fields.Name.Label }
+                                </div>
+                                <div class="fieldValue">
+                                    {! generalContact.Name }
+                                </div>
+                                <div class="fieldLabel">
+                                    {! $ObjectType.Contact.Fields.Phone.Label }
+                                </div>
+                                <div class="fieldValue">
+                                    {! generalContact.Phone }
+                                </div>
+                                <div class="fieldLabel">
+                                    {! $ObjectType.Contact.Fields.Email.Label }
+                                </div>
+                                <div class="fieldValue">
+                                    {! generalContact.Email }
+                                </div>
+                            </apex:repeat>
+                            <div class="section-sub-heading">
+                                Billing Contact
+                            </div>
+                            <apex:repeat value="{! billingContacts }" var="billingContact">
+                                <div class="fieldLabel">
+                                    {! $ObjectType.Contact.Fields.Name.Label }
+                                </div>
+                                <div class="fieldValue">
+                                    {! billingContact.Name }
+                                </div>
+                                <div class="fieldLabel">
+                                    {! $ObjectType.Contact.Fields.Phone.Label }
+                                </div>
+                                <div class="fieldValue">
+                                    {! billingContact.Phone }
+                                </div>
+                                <div class="fieldLabel">
+                                    {! $ObjectType.Contact.Fields.Email.Label }
+                                </div>
+                                <div class="fieldValue">
+                                    {! billingContact.Email }
+                                </div>
+                            </apex:repeat>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div> <!-- End Page 1 -->
+        <div class="pageBreak" />
+
+        <!-- Page 2 Begin -->
+        <div class="page-2">
+            <apex:repeat value="{!PlanDateInformationContext}" var="context">
+                <div class="plan-header">
+                    Plan Information
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.Name.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.Name }
+                </div>
+                <div class="fieldLabel">
+                    Plan Year
+                </div>
+                <div class="fieldValue">
+                    <apex:outputText value="{0, date, MM'/'d'/'yyyy} - {1, date, MM'/'d'/'yyyy}" >
+                        <apex:param value="{! context.PlanDate.Plan_Start_Date__c }"/>
+                        <apex:param value="{! context.PlanDate.Plan_End_Date__c }" />
+                    </apex:outputText>
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.PlanStatus__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.PlanStatus__c }
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.LegalName__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.LegalName__c }
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.DBA__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.DBA__c }
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.EntityType__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.EntityType__c }
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.Plan_Name__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.Plan_Name__c }
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.EligibilityPeriod__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.EligibilityPeriod__c }
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.NonElectiveContribution__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.NonElectiveContribution__c }
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.UnusedTaxable__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.UnusedTaxable__c }
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.CashoutOption__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.CashoutOption__c }
+                </div>
+                <div class="fieldLabel">
+                    Elective Contributions
+                </div>
+                <div class="fieldValue">
+                    <apex:outputText value="{0} & {1}">
+                        <apex:param value="{! context.PlanDate.EmployeeContributionAmount__c }"/>
+                        <apex:param value="{! context.PlanDate.EmployeeContributionPercent__c }"/>
+                    </apex:outputText>
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.MinimumHours__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.MinimumHours__c }
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.MinimumAge__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.MinimumAge__c }
+                </div>
+                <div class="fieldLabel">
+                    {! $ObjectType.Plan_Date__c.Fields.RetireesEligible__c.Label }
+                </div>
+                <div class="fieldValue">
+                    {! context.PlanDate.RetireesEligible__c }
+                </div>
+
+                <div class="section-sub-heading">
+                    Medical Benefits
+                </div>
+                <apex:outputPanel rendered="{! context.MedicalBenefits.size > 0 }">
+                    <apex:repeat value="{! context.MedicalBenefits }" var="medicalBenefit">
+                        <div class="fieldLabel">
+                            {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                        </div>
+                        <div class="fieldValue">
+                            <span style="{!IF(medicalBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                {! medicalBenefit.CarrierName__c }
+                            </span>
+                        </div>
+
+                        <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! medicalBenefit }" layout="vertical" />
+
+                    </apex:repeat>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{! context.MedicalBenefits.size == 0 }">
+                    There are no benefits offered on a pre-tax basis.
+                </apex:outputPanel>
+
+                <div class="section-sub-heading">
+                    Cancer Benefits
+                </div>
+                <apex:outputPanel rendered="{! context.CancerBenefits.size > 0 }">
+                    <apex:repeat value="{! context.CancerBenefits }" var="cancerBenefit">
+                        <div class="fieldLabel">
+                            {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                        </div>
+                        <div class="fieldValue">
+                            <span style="{!IF(cancerBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                {! cancerBenefit.CarrierName__c }
+                            </span>
+                        </div>
+
+                        <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! cancerBenefit }" layout="vertical" />
+
+                    </apex:repeat>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{! context.CancerBenefits.size == 0 }">
+                    There are no benefits offered on a pre-tax basis.
+                </apex:outputPanel>
+
+                <div class="section-sub-heading">
+                    Disability Benefits
+                </div>
+                <apex:outputPanel rendered="{! context.DisabilityBenefits.size > 0 }">
+                    <apex:repeat value="{! context.DisabilityBenefits }" var="disabilityBenefit">
+                        <div class="fieldLabel">
+                            {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                        </div>
+                        <div class="fieldValue">
+                            <span style="{!IF(disabilityBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                {! disabilityBenefit.CarrierName__c }
+                            </span>
+                        </div>
+                        
+                        <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! disabilityBenefit }" layout="vertical" />
+                        
+                    </apex:repeat>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{! context.DisabilityBenefits.size == 0 }">
+                    There are no benefits offered on a pre-tax basis.
+                </apex:outputPanel>
+
+                <div class="section-sub-heading">
+                    Dental Benefits
+                </div>
+                <apex:outputPanel rendered="{! context.DentalBenefits.size > 0 }">
+                    <apex:repeat value="{! context.DentalBenefits }" var="dentalBenefit">
+                        <div class="fieldLabel">
+                            {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                        </div>
+                        <div class="fieldValue">
+                            <span style="{!IF(dentalBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                {! dentalBenefit.CarrierName__c }
+                            </span>
+                        </div>
+                        
+                        <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! dentalBenefit }" layout="vertical" />
+                        
+                    </apex:repeat>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{! context.DentalBenefits.size == 0 }">
+                    There are no benefits offered on a pre-tax basis.
+                </apex:outputPanel>
+
+                <div class="section-sub-heading">
+                    Vision Benefits
+                </div>
+                <apex:outputPanel rendered="{! context.VisionBenefits.size > 0 }">
+                    <apex:repeat value="{! context.VisionBenefits }" var="visionBenefit">
+                        <div class="fieldLabel">
+                            {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                        </div>
+                        <div class="fieldValue">
+                            <span style="{!IF(visionBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                {! visionBenefit.CarrierName__c }
+                            </span>
+                        </div>
+                        
+                        <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! visionBenefit }" layout="vertical" />
+                        
+                    </apex:repeat>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{! context.VisionBenefits.size == 0 }">
+                    There are no benefits offered on a pre-tax basis.
+                </apex:outputPanel>
+
+                <div class="section-sub-heading">
+                    Group Life Benefits
+                </div>
+                <apex:outputPanel rendered="{! context.GroupLifeBenefits.size > 0 }">
+                    <apex:repeat value="{! context.GroupLifeBenefits }" var="groupLifeBenefit">
+                        <div class="fieldLabel">
+                            {! $ObjectType.Eligible_Coverage__c.Fields.CarrierName__c.Label }
+                        </div>
+                        <div class="fieldValue">
+                            <span style="{!IF(groupLifeBenefit.CarrierName__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                {! groupLifeBenefit.CarrierName__c }
+                            </span>
+                        </div>
+                        
+                        <c:FieldSetRecordDisplay fieldSetName="Eligible_Coverages" record="{! groupLifeBenefit }" layout="vertical" />
+                        
+                    </apex:repeat>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{! context.GroupLifeBenefits.size == 0 }">
+                    There are no benefits offered on a pre-tax basis.
+                </apex:outputPanel>
+
+                
+                <apex:outputPanel rendered="{! context.FlexAccountInformation.size > 0 }">
+                    <div class="section-sub-heading">
+                        Flex Account Information
+                    </div>
+                
+                    <apex:repeat value="{! context.FlexAccountInformation }" var="flexInfo">
+                        <div class="fieldLabel">
+                            {! $ObjectType.Eligible_Coverage__c.Fields.Recordkeeper__c.Label }
+                        </div>
+                        <div class="fieldValue">
+                            <span style="{!IF(flexInfo.Recordkeeper__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                {! flexInfo.Recordkeeper__c }
+                            </span>
+                        </div>
+                        
+                        <apex:outputPanel rendered="{! flexInfo.BenefitCode__c == 'DDC' }">
+                            <c:FieldSetRecordDisplay fieldSetName="DDC_Coverages" record="{! flexInfo }" layout="vertical" />
+                        </apex:outputPanel>
+
+                        <apex:outputPanel rendered="{! flexInfo.BenefitCode__c == 'URM' || flexInfo.BenefitCode__c == 'LPF' }">
+                            <c:FieldSetRecordDisplay fieldSetName="URM_or_LPF_Coverages" record="{! flexInfo }" layout="vertical" />
+                        </apex:outputPanel>
+                        
+                    </apex:repeat>
+                </apex:outputPanel>
+
+                <apex:outputPanel rendered="{! context.HSAInformation.size > 0 }">
+                    <div class="section-sub-heading">
+                            HSA Information
+                    </div>
+                
+                    <apex:repeat value="{! context.HSAInformation }" var="hsaInfo">
+                        <div class="fieldLabel">
+                            {! $ObjectType.Eligible_Coverage__c.Fields.Recordkeeper__c.Label }
+                        </div>
+                        <div class="fieldValue">
+                            <span style="{!IF(hsaInfo.Recordkeeper__c == 'American Fidelity Assurance Company', 'color: #EB0029;', '')}">
+                                {! hsaInfo.Recordkeeper__c }
+                            </span>
+                        </div>
+
+                        <c:FieldSetRecordDisplay fieldSetName="HSA_Coverages" record="{! hsaInfo }" layout="vertical" />
+                        
+                    </apex:repeat>
+                </apex:outputPanel>
+            </apex:repeat>
+        </div>
+    </apex:outputPanel>
+</apex:page>

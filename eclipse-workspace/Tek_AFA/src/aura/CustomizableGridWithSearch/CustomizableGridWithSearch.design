@@ -1,0 +1,10 @@
+<design:component >
+    <design:attribute name="objectName" label="SObject" description="The API name of the SObject." required="true" />
+    <design:attribute name="fieldSetColumns" label="Field Set" description="The API name of the field set to use on the given SObject." required="true" />
+    <design:attribute name="useOwnerId" label="Filter Logged in User" description="Shows records owned by the user that is currently logged in." />
+    <design:attribute name="ProTraxUser" label="Filter by the User of the Protrax record" description="FOR PROTRAX ONLY: Shows results based on the User tied to the Protrax record." />
+    <design:attribute name="whereClause" label="Where Clause" description="The where clause to use in the dynamically built SOQL Query." />
+    <design:attribute name="fieldSetFilter" label="Search Field Set" 
+                      description="The API name of the field set that contains the columns you want to filter the table on." />
+    <design:attribute name="numItemsToShow" label="Records to Display" description="Number of records you want to display for pagination.  Default is 10." />
+</design:component>
